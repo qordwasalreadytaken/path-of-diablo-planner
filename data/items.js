@@ -1089,7 +1089,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Rainbow Facet (Cold)", type:"jewel", rarity:"unique", req_level:49, cDamage:5, enemy_cRes:-5, cDamage_min:24, cDamage_max:38, img:"Jewel_blue.gif", ctc:[[100,43,"Frost Nova","when you level up"]]},	// ...or: 100% ctc level 37 Blizzard when you die
 	{name:"Rainbow Facet (Lightning)", type:"jewel", rarity:"unique", req_level:49, lDamage:5, enemy_lRes:-5, lDamage_min:1, lDamage_max:74, img:"Jewel_white.gif", ctc:[[100,41,"Nova","when you level up"]]},	// ...or: 100% ctc level 47 Chain Lightning when you die
 	{name:"Rainbow Facet (Poison)", type:"jewel", rarity:"unique", req_level:49, pDamage:5, enemy_pRes:-5, pDamage_all:37, pDamage_duration:2, img:"Jewel_green.gif", ctc:[[100,23,"Venom","when you level up"]]},	// ...or: 100% ctc level 51 Poison Nova when you die
-	{name:"Rainbow Facet (Physical)", type:"jewel", rarity:"unique", req_level:49, physDamage:5, enemy_physicalRes:-5, Damage_min:5, Damage_max:10, img:"Jewel_green.gif", ctc:[[100,31,"War Cry","when you level up"]]},	// ...or: 100% ctc level 31 war cry when you die
+	{name:"Rainbow Facet (Physical)", type:"jewel", rarity:"unique", req_level:49, physDamage:5, Damage_min:5, Damage_max:10, enemy_physicalRes:-5, img:"Jewel_green.gif", ctc:[[100,31,"War Cry","when you level up"]]},	// ...or: 100% ctc level 31 war cry when you die
 	{name:"Ruby Jewel of Fervor", type:"jewel", rarity:"magic", req_level:50, e_damage:40, ias:15},
 	{name:"Scintillating Jewel of Fervor", type:"jewel", rarity:"magic", req_level:29, all_res:15, ias:15},
 	{name:"Brute's Jewel of Fervor", type:"jewel", rarity:"magic", req_level:29, ias:15, melee_splash:1},

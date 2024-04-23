@@ -1227,7 +1227,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 			{name:"+ Faster Cast Rate", fcr:10},
 			{name:"+ Increased Attack Speed", ias:10},
 			{name:"+ Attack Rating", ar_bonus:75},
-			{name:"+ Attack Rating", ar_per_level:2},
+			{name:"+ Attack Rating per Level", ar_per_level:2},
 			{name:"+ Pierce", pierce:8},
 		],
 		amulet: [

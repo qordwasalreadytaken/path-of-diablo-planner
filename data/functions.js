@@ -4166,6 +4166,7 @@ function updateSecondaryStats() {
 	document.getElementById("enemy_cres").innerHTML = c.enemy_cRes; if (c.enemy_cRes < 0) { document.getElementById("enemy_cres").innerHTML += "%" }
 	document.getElementById("enemy_lres").innerHTML = c.enemy_lRes; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
 	document.getElementById("enemy_pres").innerHTML = c.enemy_pRes; if (c.enemy_pRes < 0) { document.getElementById("enemy_pres").innerHTML += "%" }
+	document.getElementById("enemy_physres").innerHTML = c.enemy_physRes; if (c.enemy_physRes < 0) { document.getElementById("enemy_physres").innerHTML += "%" }
 }
 
 // updateTertiaryStats - Updates other stats

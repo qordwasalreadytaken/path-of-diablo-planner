@@ -1347,7 +1347,7 @@ skills_tree1:{index:["skills_tree1"], format:["+"," to Tree #1 Skills"]},	// unu
 skills_tree2:{index:["skills_tree2"], format:["+"," to Tree #2 Skills"]},	// unused
 skills_tree3:{index:["skills_tree3"], format:["+"," to Tree #3 Skills"]},	// unused
 
-proc_Dangoon_Discharge:{index:["proc_Dangoon_Discharge"], format:["+"," to Discharge proc"]},
+oskill_Dangoon_Discharge:{index:["oskill_Dangoon_Discharge"], format:["+"," to Discharge proc"]},
 
 stamina_skillup:{index:["stamina_skillup"], format:["+","% Stamina"]},
 frw_skillup:{index:["frw_skillup"], format:["+","% Faster Run/Walk"]},

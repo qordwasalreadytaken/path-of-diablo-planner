@@ -35,7 +35,7 @@ var character_any = {
 	
 	// Universal
 		if (skillName == "Ball Lightning" && elem < 2) {			result *= ((1 + 0.01*Math.floor((character.energy + character.all_attributes)*(1+character.max_energy/100)/3)) * (1+character.lDamage/100)) }
-	//	if (skillName == "Dangoon Discharge" && elem < 2) {			result *= ((1 + 0.01*Math.floor((character.energy + character.all_attributes)*(1+character.max_energy/100)/2)) * (1+character.lDamage/100)) }
+		if (skillName == "Dangoon Discharge" && elem < 2) {			result *= ((1 + 0.01*Math.floor((character.energy + character.all_attributes)*(1+character.max_energy/100)/2)) * (1+character.lDamage/100)) }
 	
 		// Barbarian
 		if (skillName == "Battle Command" && elem == 0) {			result = 1 }

@@ -146,6 +146,7 @@ var character_any = {
 		var damage_enhanced = character.damage_bonus + character.e_damage;
 		
 		if (skillName == "Ball Lightning") {		attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
+		else if (skillName == "Dangoon Discharge") {attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		// else if (skillName == "Valkyrie") {		attack = 0; spell = 1; }
 		else if (skillName == "Magic Arrow") {		attack = 1; spell = 0; mDamage_min = character_any.getSkillData(skillName,lvl,1); mDamage_max = character_any.getSkillData(skillName,lvl,2); }
 		else if (skillName == "Multiple Shot") {	attack = 1; spell = 0; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); }
@@ -164,7 +165,7 @@ var character_any = {
 		else if (skillName == "Meteor") {			attack = 0; spell = 1; lvl += character.skills_fire_all; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
 		else if (skillName == "Hydra") {			attack = 0; spell = 1; lvl += character.skills_fire_all; fDamage_min = character_any.getSkillData(skillName,lvl,1); fDamage_max = character_any.getSkillData(skillName,lvl,2); }
 		else if (skillName == "Whirlwind") {		attack = 1; spell = 0; ar_bonus = character_any.getSkillData(skillName,lvl,1); damage_bonus = character_any.getSkillData(skillName,lvl,0); }
-		else if (skillName == "Discharge") {		attack = 0; spell = 1; lvl += character.skills_lightning_all; lDamage_min = character_any.getSkillData(skillName,lvl,1); lDamage_max = character_any.getSkillData(skillName,lvl,2); } 
+	//	else if (skillName == "Discharge") {		attack = 0; spell = 1; lvl += character.skills_lightning_all; lDamage_min = character_any.getSkillData(skillName,lvl,1); lDamage_max = character_any.getSkillData(skillName,lvl,2); } 
 	//	TODO: check weapon requirements (only conflict would be a Passion bow, which grants Bash & Zeal...) & werewolf/werebear requirements
 		if (skillName == "Feral Rage") {
 			var match = 0;

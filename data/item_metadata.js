@@ -1304,6 +1304,7 @@ skill_Hydra:{index:["skill_Hydra"], format:["+"," to Hydra (Sorceress only)"]},
 
 oskill_Warp:{index:["oskill_Warp"], format:["+"," to Warp"]},
 oskill_Ball_Lightning:{index:["oskill_Ball_Lightning"], format:["+"," to Ball Lightning"]},
+oskill_Dangoon_Discharge:{index:["oskill_Dangoon_Discharge"], format:["+"," to Dangoon Discharge"]},
 
 oskill_Inner_Sight:{index:["oskill_Inner_Sight"], format:["+"," to Inner Sight"]},
 oskill_Evade:{index:["oskill_Evade"], format:["+"," to Evade"]},
@@ -1346,8 +1347,6 @@ skills_class:{index:["skills_class"], format:["+"," to Class Skills"]},		// unne
 skills_tree1:{index:["skills_tree1"], format:["+"," to Tree #1 Skills"]},	// unused
 skills_tree2:{index:["skills_tree2"], format:["+"," to Tree #2 Skills"]},	// unused
 skills_tree3:{index:["skills_tree3"], format:["+"," to Tree #3 Skills"]},	// unused
-
-oskill_Dangoon_Discharge:{index:["oskill_Dangoon_Discharge"], format:["+"," to Discharge proc"]},
 
 stamina_skillup:{index:["stamina_skillup"], format:["+","% Stamina"]},
 frw_skillup:{index:["frw_skillup"], format:["+","% Faster Run/Walk"]},

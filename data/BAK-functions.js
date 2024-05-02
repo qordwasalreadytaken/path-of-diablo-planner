@@ -2161,19 +2161,6 @@ function getCTCSkillData(name, lvl, group) {
 	}
 	else if (name == "Venom") { result.pDamage_min = skill.data.values[1][lvl]; result.pDamage_max = skill.data.values[2][lvl]; result.pDamage_duration = 0.4; result.pDamage_duration_override = 0.4; result.duration = skill.data.values[0][lvl]; }
 	// Druid
-	
-	else if (name == "Volcano") {
-		result.damage_min = skill.data.values[0][lvl];
-		result.damage_max = skill.data.values[1][lvl];
-		result.fDamage_min = skill.data.values[2][lvl];
-		result.fDamage_max = skill.data.values[3][lvl];
-			if (character.class_name == "Druid") {
-				result.damage_min  *= (1 + (0.20*skills[1].level))
-				result.damage_max  *= (1 + (0.20*skills[1].level))
-				result.fDamage_min *= ((1 + (0.14*skills[4].level + 0.14*skills[9].level)) * (1+character.fDamage/100))
-				result.fDamage_max *= ((1 + (0.14*skills[4].level + 0.14*skills[9].level)) * (1+character.fDamage/100))
-			}
-	}
 	else if (name == "Cyclone Armor") { result.absorb_elemental = skill.data.values[0][lvl]; }
 	// Sorceress
 	else if (name == "Chilling Armor") {
@@ -2189,8 +2176,6 @@ function getCTCSkillData(name, lvl, group) {
 		}
 	}
 	else if (name == "Discharge") {
-		lvl += character.skills_lightning_all
-		
 //		result.lDamage *= ((skill.data.values[2][lvl]) + (0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2))); 
 		result.lDamage_min = (skill.data.values[1][lvl] + (0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)) / 2)));  
 		result.lDamage_max = (skill.data.values[2][lvl] + (0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)) / 2))); 
@@ -2206,10 +2191,8 @@ function getCTCSkillData(name, lvl, group) {
 
 			result.lDamage_min = (skill.data.values[1][lvl] + (0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)) / 2)));  
 			result.lDamage_max = (skill.data.values[2][lvl] + (0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)) / 2)));  
-			result.lDamage_min *= (1 + 0.03 * skills_all["sorceress"][12].level + 0.03 * skills_all["sorceress"][14].level) * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100)  ;//+= (1 + (0.03 * skills_all["sorceress"][14].level));
-			result.lDamage_max *= (1 + 0.03 * skills_all["sorceress"][12].level + 0.03 * skills_all["sorceress"][14].level) * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100);//+= (1 + (0.03 * skills_all["sorceress"][14].level));
-//			result.lDamage_min *= (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100);
-//			result.lDamage_max *= (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100);
+			result.lDamage_min *= (1 + 0.03 * skills_all["sorceress"][12].level + 0.03 * skills_all["sorceress"][14].level)  ;//+= (1 + (0.03 * skills_all["sorceress"][14].level));
+			result.lDamage_max *= (1 + 0.03 * skills_all["sorceress"][12].level + 0.03 * skills_all["sorceress"][14].level)  ;//+= (1 + (0.03 * skills_all["sorceress"][14].level));
 //			result.lDamage_min *= 0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)));
 //			result.lDamage_max *= 0.01 * Math.floor(((character.energy + character.all_attributes) * (1 + character.max_energy / 100)));
 		
@@ -4317,32 +4300,12 @@ function updateCTC() {
 //						var stat = equipped[group].ctc[i][0])+ "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3];
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
-						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
-						var mindam = Math.floor(result.lDamage_min)
-						var maxdam = Math.floor(result.lDamage_max)
-						var avgdam = (mindam + maxdam)/2
-						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc does... " + mindam + " - " + maxdam + "{" + avgdam + "}";// +getCTCSkillData("Discharge",21).result+" damage";
-//						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc does... " + math.floor(mindam) + " - " + math.floor(maxdam) + "{" + math.floor(avgdam) + "}";// +getCTCSkillData("Discharge",21).result+" damage";
+						var result = getCTCSkillData("Discharge",21);
+						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc does... " + result.lDamage_min + " - " + result.lDamage_max;// +getCTCSkillData("Discharge",21).result+" damage";
 //						stats += (result.lDamage_min + "<br>")
 						stats += (stat + "<br>")
 					}  
-					if (equipped[group].ctc[i][2] == "Volcano") {	
-						var thisctcskill = equipped[group].ctc[i][2]
-						var thisctcskilllvl = equipped[group].ctc[i][1]
-						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
-						var mindam = Math.floor(result.damage_min)
-						var maxdam = Math.floor(result.damage_max)
-						var avgdam = (mindam + maxdam)/2
-						var minfdam = Math.floor(result.fDamage_min)
-						var maxfdam = Math.floor(result.fDamage_max)
-						var avgfdam = (minfdam + maxfdam)/2
-						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc adds " + minfdam + " - " + maxfdam + "{" + avgfdam + "} fire damage";
-						stats += (stat + "<br>")
-						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc adds " + mindam + " - " + maxdam + "{" + avgdam + "} damage";
-						stats += (stat + "<br>")
-					}  
-
-					//					else { var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
+//					else { var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 
 					//					var stat = equipped[group].ctc[i][0] + "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3];
 					var stat = equipped[group].ctc[i][0] + "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] ;

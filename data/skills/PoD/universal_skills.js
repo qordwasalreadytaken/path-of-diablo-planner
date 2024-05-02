@@ -163,6 +163,11 @@ var character_any = {
 		}
 		if (skill.name == "Concentration") { result.ar = skill.data.values[0][lvl]; result.damage_bonus = skill.data.values[1][lvl]; result.hammer_bonus = skill.data.values[2][lvl]; result.radius = 16; }
 
+//		if (skill.name == "Dangoon Discharge Proc") { result *= ((1 + 0.03*skills_all["sorceress"][12].level + 0.03*skills_all["sorceress"][14].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
+		if (skill.name == "Dangoon Discharge Proc") { 
+			result.lDamage_min = skill.data.values[0][lvl] * (1+character.lDamage/100);
+			result.lDamage_max = skill.data.values[1][lvl] * (1+character.lDamage/100);
+		}
 		return result
 	},
 
@@ -188,11 +193,11 @@ var character_any = {
 		var damage_enhanced = character.damage_bonus + character.e_damage;
 		
 		if (skillName == "Ball Lightning") {		attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
-		else if (skillName == "Dangoon Discharge Proc") {		attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
-		else if (skillName == "DangoonChain Proc") {		attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
-		else if (skillName == "DestructionMBoulder Proc") { 		attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
-		else if (skillName == "DestructionVolcano Proc") { 			attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
-		else if (skillName == "DestructionNova Proc") {			attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
+		else if (skillName == "Dangoon Discharge Proc") {		attack = 0; spell = 1; lvl += character.skills_lightning_all; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
+		else if (skillName == "DangoonChain Proc") {		attack = 0; spell = 1; lvl += character.skills_lightning_all; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
+		else if (skillName == "DestructionMBoulder Proc") { 		attack = 0; spell = 1; lvl += character.skills_fire_all; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
+		else if (skillName == "DestructionVolcano Proc") { 			attack = 0; spell = 1; lvl += character.skills_fire_all; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
+		else if (skillName == "DestructionNova Proc") {			attack = 0; spell = 1; lvl += character.skills_lightning_all; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 
 		// else if (skillName == "Valkyrie") {		attack = 0; spell = 1; }
 		else if (skillName == "Magic Arrow") {		attack = 1; spell = 0; mDamage_min = character_any.getSkillData(skillName,lvl,1); mDamage_max = character_any.getSkillData(skillName,lvl,2); }

@@ -2239,13 +2239,18 @@ function getCTCSkillData(name, lvl, group) {
 //			*= ((1 + 0.03*sk[12].level + 0.03*sk[14].level + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
 		}
 	}
-	else if (name == "Ball Lightning") {
-		lvl += character.skills_lightning_all
-		result.lDamage_min = skill.data.values[0][lvl] ;
-		result.lDamage_max = skill.data.values[1][lvl] ;
-	}
+//	else if (name == "Ball Lightning") {
+//		result = getSkillDamage("BallLightProc",26);
+//		lvl += character.skills_lightning_all
+//		unit = oskill_Ball_Lightning
+//		var skill = skills_all[effect_ctcskills["oskill_Ball_Lightning"].native_class][effect_ctcskills["oskill_Ball_Lightning"].i];
+//		result = skill
+//		result.lDamage_min = skill.data.values[0][lvl];
+//		result.lDamage_max = skill.data.values[1][lvl];
+//	}
 		//		lvl += character.skills_lightning_all
 		
+
 //		result.lDamage *= ((skill.data.values[2][lvl]) + (0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2))); 
 //		result.lDamage_min = skill.data.values[0][lvl] ; //+ ((1 + 0.01*Math.floor((character.energy + character.all_attributes)*(1+character.max_energy/100)/3)) * (1+character.lDamage/100)));
 //		result.lDamage_max = skill.data.values[1][lvl] ; //+ ((1 + 0.01*Math.floor((character.energy + character.all_attributes)*(1+character.max_energy/100)/3)) * (1+character.lDamage/100))); 
@@ -4399,7 +4404,7 @@ function updateCTC() {
 				for (let i = 0; i < equipped[group].ctc.length; i++) {
 //					var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 					if (equipped[group].ctc[i][2] == "Discharge") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+						var stat = "<font color=blue>" + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " proc adds: </font color>";
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
 						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
@@ -4414,7 +4419,7 @@ function updateCTC() {
 						stats += (stat + "<br>")
 					}  
 					if (equipped[group].ctc[i][2] == "Chain Lightning") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+						var stat = "<font color=blue>" + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " proc adds: </font color>";
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
 						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
@@ -4429,7 +4434,7 @@ function updateCTC() {
 						stats += (stat + "<br>")
 					}  
 					if (equipped[group].ctc[i][2] == "Nova") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to cast " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+						var stat = "<font color=blue>" + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " proc adds: </font color>";
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
 						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
@@ -4443,21 +4448,28 @@ function updateCTC() {
 //						stats += (result.lDamage_min + "<br>")
 						stats += (stat + "<br>")
 					}  
-					if (equipped[group].ctc[i][2] == "Ball Lightning") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to cast " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
-						var thisctcskill = equipped[group].ctc[i][2]
-						var thisctcskilllvl = equipped[group].ctc[i][1]
-//						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+//oskill_BallLightProc
+//					if (equipped[group].ctc[i][2] == "Ball Lightning") {	
+//						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to ccccast " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+//						var thisctcskill = equipped[group].ctc[i][2]
+//						var thisctcskilllvl = equipped[group].ctc[i][1]
+//						var result = getSkillDamage(oskill_BallLightProc,thisctcskilllvl);
+//						result.lDamage_min = skill.data.values[0][lvl];
+//						result.lDamage_max = skill.data.values[1][lvl];
+
+//						var result = character_any.getCTCSkillData("Ball_Lightning",26);
+//						var result = character_all.any.getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
 //						var mindam = Math.floor(result.lDamage_min)
 //						var maxdam = Math.floor(result.lDamage_max)
 //						var avgdam = (mindam + maxdam)/2
 //						stats += (stat + "<br>")
+//						var stat = "Skill name is " + result
 //						var stat = mindam + " - " + maxdam + "{" + avgdam + "} lightning damage";// +getCTCSkillData("Discharge",21).result+" damage";
 //						stats += (stat + "<br>")
-					}  
+//					}  
 
 					if (equipped[group].ctc[i][2] == "Volcano") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+						var stat = "<font color=blue>" + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " proc adds: </font color>";
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
 						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
@@ -4478,7 +4490,7 @@ function updateCTC() {
 //						stats += (stat + "<br>")
 					}  
 					if (equipped[group].ctc[i][2] == "Molten Boulder") {	
-						var stat = "<font color=blue>" +equipped[group].ctc[i][0]+ "% chance to cast " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " does: </font color>";
+						var stat = "<font color=blue>" + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3] + " proc adds: </font color>";
 						var thisctcskill = equipped[group].ctc[i][2]
 						var thisctcskilllvl = equipped[group].ctc[i][1]
 						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
@@ -4513,7 +4525,7 @@ function updateCTC() {
 
 //					if (equipped[group].ctc[i][2] !== "Volcano" || equipped[group].ctc[i][2] !== "Discharge" || equipped[group].ctc[i][2] !== "Chain Lightning" || equipped[group].ctc[i][2] !== "Nova" || equipped[group].ctc[i][2] !== "Molten Boulder") ;
 //					if (equipped[group].ctc[i][2] !== "Volcano" && equipped[group].ctc[i][2] !== "Discharge" && equipped[group].ctc[i][2] !== "Chain Lightning" && equipped[group].ctc[i][2] !== "Nova" && equipped[group].ctc[i][2] !== "Molten Boulder") ;
-					if ((equipped[group].ctc[i][2] != "Volcano") && (equipped[group].ctc[i][2] != "Discharge") && (equipped[group].ctc[i][2] != "Chain Lightning") && (equipped[group].ctc[i][2] != "Nova") && (equipped[group].ctc[i][2] != "Molten Boulder") && (equipped[group].ctc[i][2] != "Ball Lightning")) ;
+					if ((equipped[group].ctc[i][2] != "Volcano") && (equipped[group].ctc[i][2] != "Discharge") && (equipped[group].ctc[i][2] != "Chain Lightning") && (equipped[group].ctc[i][2] != "Nova") && (equipped[group].ctc[i][2] != "Molten Boulder") && (equipped[group].ctc[i][2] != "BallLightProc")) ;
 //					if ((equipped[group].ctc[i][2] !== "Volcano") || (equipped[group].ctc[i][2] != "Discharge") || (equipped[group].ctc[i][2] != "Chain Lightning") || (equipped[group].ctc[i][2] != "Nova") || (equipped[group].ctc[i][2] != "Molten Boulder")) ;
 //					if (equipped[group].ctc[i][2] != ("Volcano" || "Discharge"))
 						{

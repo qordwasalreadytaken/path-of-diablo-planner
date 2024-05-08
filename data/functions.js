@@ -2239,15 +2239,15 @@ function getCTCSkillData(name, lvl, group) {
 //			*= ((1 + 0.03*sk[12].level + 0.03*sk[14].level + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
 		}
 	}
-//	else if (name == "Ball Lightning") {
+	else if (name == "Ball Lightning") {
 //		result = getSkillDamage("BallLightProc",26);
 //		lvl += character.skills_lightning_all
 //		unit = oskill_Ball_Lightning
 //		var skill = skills_all[effect_ctcskills["oskill_Ball_Lightning"].native_class][effect_ctcskills["oskill_Ball_Lightning"].i];
 //		result = skill
-//		result.lDamage_min = skill.data.values[0][lvl];
-//		result.lDamage_max = skill.data.values[1][lvl];
-//	}
+		result.lDamage_min = skill.data.values[0][lvl];
+		result.lDamage_max = skill.data.values[1][lvl];
+	}
 		//		lvl += character.skills_lightning_all
 		
 
@@ -4458,7 +4458,7 @@ function updateCTC() {
 //						result.lDamage_max = skill.data.values[1][lvl];
 
 //						var result = character_any.getCTCSkillData("Ball_Lightning",26);
-//						var result = character_all.any.getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
+//						var result = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]);
 //						var mindam = Math.floor(result.lDamage_min)
 //						var maxdam = Math.floor(result.lDamage_max)
 //						var avgdam = (mindam + maxdam)/2

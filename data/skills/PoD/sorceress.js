@@ -170,14 +170,17 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 			skills[s].extra_levels += character.skills_cold
 			skills[s].extra_levels += character.skills_tree1
 			skills[s].extra_levels += character.skills_cold_all
+			skills[s].extra_levels += character.skills_ele_poison_all
 		} else if (s > 21) {
 			skills[s].extra_levels += character.skills_fire
 			skills[s].extra_levels += character.skills_tree3
 			skills[s].extra_levels += character.skills_fire_all
+			skills[s].extra_levels += character.skills_ele_poison_all
 		} else {
 			skills[s].extra_levels += character.skills_lightning
 			skills[s].extra_levels += character.skills_tree2
 			skills[s].extra_levels += character.skills_lightning_all
+			skills[s].extra_levels += character.skills_ele_poison_all
 		}
 	}
 };

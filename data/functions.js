@@ -4056,17 +4056,26 @@ function updatePrimaryStats() {
 */
 	var physDamage = getWeaponDamage(strTotal,dexTotal,"weapon",0);
 	var dmg = getNonPhysWeaponDamage("weapon");
+//	var physavg = Math.floor(((physDamage[0]*physDamage[2]) + (physDamage[1]*physDamage[2]))/2) ;
 	var basic_min = Math.floor(physDamage[0]*physDamage[2] + dmg.fMin + dmg.cMin + dmg.lMin + dmg.pMin + dmg.mMin);
 	var basic_max = Math.floor(physDamage[1]*physDamage[2] + dmg.fMax + dmg.cMax + dmg.lMax + dmg.pMax + dmg.mMax);
-	if (basic_min > 0 || basic_max > 0) { document.getElementById("basic_attack").innerHTML = basic_min + "-" + basic_max + " {"+Math.ceil((basic_min+basic_max)/2)+"}"}
+	var physavg_min = Math.floor(basic_min - dmg.fMin - dmg.cMin - dmg.lMin - dmg.pMin - dmg.mMin);
+	var physavg_max = Math.floor(basic_max - dmg.fMax - dmg.cMax - dmg.lMax - dmg.pMax - dmg.mMax);
+	var physavg = ((physavg_min+physavg_max)/2);
+//	if (basic_min > 0 || basic_max > 0) { document.getElementById("basic_attack").innerHTML = basic_min + "-" + basic_max + " {"+Math.ceil((basic_min+basic_max)/2)+"}"}
+	if (basic_min > 0 || basic_max > 0) { document.getElementById("basic_attack").innerHTML = basic_min + "-" + basic_max + " {"+Math.ceil((basic_min+basic_max)/2)+"}"; document.getElementById("avgDamage").innerHTML = physavg}
 	else { document.getElementById("basic_attack").innerHTML = "" }
 	if (offhandType == "weapon") {
 		var ohd = getNonPhysWeaponDamage("offhand");
 		var physDamage_offhand = getWeaponDamage(strTotal,dexTotal,"offhand",0);
 		var basic_min_offhand = Math.floor(physDamage_offhand[0]*physDamage_offhand[2] + ohd.fMin + ohd.cMin + ohd.lMin + ohd.pMin + ohd.mMin);
 		var basic_max_offhand = Math.floor(physDamage_offhand[1]*physDamage_offhand[2] + ohd.fMax + ohd.cMax + ohd.lMax + ohd.pMax + ohd.mMax);
+		var physavg_offhand_min = Math.floor(basic_min_offhand - ohd.fMin - ohd.cMin - ohd.lMin - ohd.pMin - ohd.mMin);
+		var physavg_offhand_max = Math.floor(basic_max_offhand - ohd.fMax - ohd.cMax - ohd.lMax - ohd.pMax - ohd.mMax);
+		var physavg_offhand = ((physavg_offhand_min+physavg_offhand_max)/2);
+//		var physavg_offhand = Math.floor(((basic_min_offhand - ohd.fMin - ohd.cMin - ohd.lMin - ohd.pMin - ohd.mMin) + (basic_max_offhand - ohd.fMax - ohd.cMax - ohd.lMax - ohd.pMax - ohd.mMax))/2);
 		if (equipped.weapon.name != "none") {
-			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("offhand_basic_damage").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"}
+			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("offhand_basic_damage").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"; document.getElementById("avgDamage").innerHTML = Math.floor(physavg + physavg_offhand);}
 			else { document.getElementById("offhand_basic_damage").innerHTML = "" }
 		} else {
 			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("basic_attack").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"; document.getElementById("offhand_basic").style.display = "none"; }
@@ -4307,6 +4316,15 @@ function updateSecondaryStats() {
 	document.getElementById("enemy_cres").innerHTML = c.enemy_cRes; if (c.enemy_cRes < 0) { document.getElementById("enemy_cres").innerHTML += "%" }
 	document.getElementById("enemy_lres").innerHTML = c.enemy_lRes; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
 	document.getElementById("enemy_pres").innerHTML = c.enemy_pRes; if (c.enemy_pRes < 0) { document.getElementById("enemy_pres").innerHTML += "%" }
+
+	document.getElementById("avgfDamage").innerHTML = Math.floor((c.fDamage_min + c.fDamage_max)/2); if (c.fDamage_min > 0) { document.getElementById("avgfDamage").innerHTML += "" }
+	document.getElementById("avgcDamage").innerHTML = Math.floor((c.cDamage_min + c.cDamage_max)/2); if (c.cDamage_min > 0) { document.getElementById("avgcDamage").innerHTML += "" }
+	document.getElementById("avglDamage").innerHTML = Math.floor((c.lDamage_min + c.lDamage_max)/2); if (c.lDamage_min > 0) { document.getElementById("avglDamage").innerHTML += "" }
+	document.getElementById("avgpDamage").innerHTML = Math.floor((c.pDamage_min + c.pDamage_max)/2); if (c.pDamage_min > 0) { document.getElementById("avgpDamage").innerHTML += "" }
+	document.getElementById("avgmDamage").innerHTML = Math.floor((c.mDamage_min + c.mDamage_max)/2); if (c.mDamage_min > 0) { document.getElementById("avgmDamage").innerHTML += "" }
+//	document.getElementById("avgDamage").innerHTML = Math.floor(c.basic_min - c.dmg.fMin - c.dmg.cMin - c.dmg.lMin - c.dmg.pMin - c.dmg.mMin); if (c.basic_min > 0) { document.getElementById("avgDamage").innerHTML += "" }
+//	document.getElementById("avgDamage").innerHTML = Math.floor(c.physavg); if (c.physavg > 0) { document.getElementById("avgDamage").innerHTML += "" }
+
 }
 
 // updateTertiaryStats - Updates other stats
@@ -4512,6 +4530,7 @@ function updateCTC() {
 //						stats += (stat + "<br>")
 //						var stat = "level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " Proc adds " + minfotdam + " - " + maxfotdam + "{" + avgfotdam + "} average fire damage per second";
 //						stats += (stat + "<br>")
+
 						stats += (stat + "<br>")
 						var stat = minfdam + " - " + maxfdam + "{" + avgfdam + "} fire damage";
 						stats += (stat + "<br>")
@@ -4529,7 +4548,7 @@ function updateCTC() {
 //					if ((equipped[group].ctc[i][2] !== "Volcano") || (equipped[group].ctc[i][2] != "Discharge") || (equipped[group].ctc[i][2] != "Chain Lightning") || (equipped[group].ctc[i][2] != "Nova") || (equipped[group].ctc[i][2] != "Molten Boulder")) ;
 //					if (equipped[group].ctc[i][2] != ("Volcano" || "Discharge"))
 						{
-							var stat = "<font color = blue>" +equipped[group].ctc[i][0]+ "% chance to cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3]  + "</font color>";
+							var stat = "<font color = blue>Source: " +equipped[group].ctc[i][0]+ "% CTC level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3]  + "</font color>";
 							stats += (stat + "<br>")
 						}
 					//					else { stat = equipped[group].ctc[i][0]+ "% chance to taco cast level " + equipped[group].ctc[i][1] + " " + equipped[group].ctc[i][2] + " " + equipped[group].ctc[i][3]; stats += (stat + "<br>");}
@@ -4553,7 +4572,7 @@ function updateCTC() {
 		for (let i = 0; i < socketed[group].items.length; i++) { for (affix in socketed[group].items[i]) { if (affix == "ctc") {
 			var source = socketed[group].items[i];
 			for (let j = 0; j < source[affix].length; j++) {
-				var line = source[affix][j][0]+"% chance to ccccccast level "+source[affix][j][1]+" "+source[affix][j][2]+" "+source[affix][j][3];
+				var line = source[affix][j][0]+"% chance to ccccccast pizza level "+source[affix][j][1]+" "+source[affix][j][2]+" "+source[affix][j][3];
 				for (let k = 0; k < ctc_possible.length; k++) { if (line == ctc_possible[k]) {
 					if (ctc_included[k] == 0) { stats += line+"<br>" }
 					ctc_included[k] = 1

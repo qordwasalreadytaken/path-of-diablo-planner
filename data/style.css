@@ -689,7 +689,7 @@ input[type="file"] {
   margin-top: 4px;
   position: relative;
   float: right;
-  color: white;
+  color: gray;
   margin-right: -275px; 
 }
 .newstatright{

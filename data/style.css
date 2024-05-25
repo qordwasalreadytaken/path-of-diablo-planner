@@ -685,3 +685,13 @@ input[type="file"] {
 .cskill {
   margin-right: -135px;
 }
+#newright {
+  margin-top: 4px;
+  position: relative;
+  float: right;
+  color: white;
+  margin-right: -275px; 
+}
+.newstatright{
+  margin-right: -275;
+}

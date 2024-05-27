@@ -1,4 +1,5 @@
 <!--
+	This is qords playground, testing here before pushing to GD"s
 	Character Build Planner for Path of Diablo
 	The original program is available at https://betweenwalls.github.io/portal/ Copyright © 2020 BetweenWalls
 	More information (source, copyright, contact, etc) is available at https://github.com/BetweenWalls/portal
@@ -138,43 +139,15 @@
   </div>
 </div>
 <div id="newright">
-	<font size="2">Basic Attack damage breakdown: </font><br>
-	<font size="2">Fire Damage: </font><font size="2" id="avgfDamage"></font><br>
-	<font size="2">Cold Damage: </font><font size="2" id="avgcDamage"></font><br>
-	<font size="2">Lightning Damage: </font><font size="2" id="avglDamage"></font><br>
-	<font size="2">Poison Damage: </font><font size="2" id="avgpDamage"></font><br>
-	<font size="2">Magic Damage: </font><font size="2" id="avgmDamage"></font><br>
-	<font size="2">Phys Damage: </font><font size="2" id="avgDamage"></font><br><br> 
-
-	<font size="2">Fire Resist: </font><font size="2" id="fres"></font><br>
-	<font size="2">Cold Resist: </font><font size="2" id="cres"></font><br>
-	<font size="2">Lightning Resist: </font><font size="2" id="lres"></font><br>
-	<font size="2">Poison Resist: </font><font size="2" id="pres"></font><br>
-	<font size="2">Magic Resist: </font><font size="2" id="mres"></font><br>
-	<font size="2">Damage Reduction: </font><font size="2" id="pdr"></font><br><br>
-
-	<font size="2">Fire Absorb: </font><font size="2" id="fabsorb"></font><br>
-	<font size="2">Cold Absorb: </font><font size="2" id="cabsorb"></font><br>
-	<font size="2">Lightning Absorb: </font><font size="2" id="labsorb"></font><br>
-	<font size="2">Magic Absorb: </font><font size="2" id="mabsorb"></font><br><br>
-
-	<font size="2">+ Attack Speed: </font><font size="2" id="ias"></font><br>
-	<font size="2">Faster Cast Rate: </font><font size="2" id="fcr"></font><br>
-	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br>
-	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br>
-	<br>
-	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
-
-	<font size="2">Pierce: </font><font size="2" id="pierce"></font><br>
-	<font size="2">Crushing Blow: </font><font size="2" id="cblow"></font><br>
-	<font size="2">Deadly Strike: </font><font size="2" id="dstrike"></font><br>
-	<font size="2">Critical Strike: </font><font size="2" id="cstrike"></font><br>
-	<font size="2">Open Wounds: </font><font size="2" id="owounds"></font><br>
-	<font size="2">Enemy Defense: </font><font size="2" id="enemy_defense"></font><br><br>
-
+	<font size="2">Life Leech: </font><font size="2" id="life_leech"></font><br>
+	<font size="2">Mana Leech: </font><font size="2" id="mana_leech"></font><br>
 	<font size="2">Life per Hit: </font><font size="2" id="life_per_hit"></font><br>
-	<font size="2">Mana per Hit: </font><font size="2" id="mana_per_hit"></font><br><br>
-	
+	<font size="2">Mana per Hit: </font><font size="2" id="mana_per_hit"></font><br>
+	<font size="2">Life Regen: </font><font size="2" id="life_regen"></font><br>
+	<font size="2">Mana Regen: </font><font size="2" id="mana_regen"></font><br>
+	<font size="2">Life per Kill: </font><font size="2" id="life_per_kill"></font><br>
+	<font size="2">Mana per Kill: </font><font size="2" id="mana_per_kill"></font><br><br>
+
 	<font size="2">Fire Pierce: </font><font size="2" id="fpierce"></font><br>
 	<font size="2">Cold Pierce: </font><font size="2" id="cpierce"></font><br>
 	<font size="2">Lightning Pierce: </font><font size="2" id="lpierce"></font><br>
@@ -186,7 +159,25 @@
 	<font size="2">Enemy Fire Resist: </font><font size="2" id="enemy_fres"></font><br>
 	<font size="2">Enemy Cold Resist: </font><font size="2" id="enemy_cres"></font><br>
 	<font size="2">Enemy Lightning Resist: </font><font size="2" id="enemy_lres"></font><br>
-	<font size="2">Enemy Poison Resist: </font><font size="2" id="enemy_pres"></font><br>
+	<font size="2">Enemy Poison Resist: </font><font size="2" id="enemy_pres"></font><br><br>
+
+	<font size="2">Faster Run/Walk: </font><font size="2" id="frw"></font><br>
+	<font size="2">Speed: </font><font size="2" id="velocity"></font><br><br>
+	
+	<font size="2">Poison Reduction: </font><font size="2" id="poison_reduction"></font><br>
+	<font size="2">Curse Reduction: </font><font size="2" id="curse_reduction"></font><br><br>
+
+	<font size="2">Magic Find: </font><font size="2" id="mf"></font><br>
+	<font size="2">Gold Find: </font><font size="2" id="gf"></font><br><br>
+	
+	<font size="2">Damage to Mana: </font><font size="2" id="damage_to_mana"></font><br>
+	<font size="2">Thorns: </font><font size="2" id="thorns"></font><br><br>
+
+	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br>
+	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br>
+	<br>
+	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
+
 </div> 
 
 <div id="gui" class="no_selection" oncontextmenu="return false">
@@ -503,27 +494,24 @@
 </div>
 </div>
 <div class="stat-text-wrapper stat-3" id="stats_column_1">
-	<font size="2">Fire Resist: </font><font size="2" id="fres"></font><br>
-	<font size="2">Cold Resist: </font><font size="2" id="cres"></font><br>
-	<font size="2">Lightning Resist: </font><font size="2" id="lres"></font><br>
-	<font size="2">Poison Resist: </font><font size="2" id="pres"></font><br>
-	<font size="2">Magic Resist: </font><font size="2" id="mres"></font><br>
-	<font size="2">Damage Reduction: </font><font size="2" id="pdr"></font><br><br>
-	
 	<font size="2">+ Attack Speed: </font><font size="2" id="ias"></font><br>
-	<font size="2">Faster Cast Rate: </font><font size="2" id="fcr"></font><br>
-	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br>
-	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br>
-	<br>
-	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
-	
-	<font size="2">Life Leech: </font><font size="2" id="life_leech"></font><br>
-	<font size="2">Mana Leech: </font><font size="2" id="mana_leech"></font><br><br>
-	
-	<font size="2">+ Fire Damage: </font><font size="2" id="fdamage"></font><br>
-	<font size="2">+ Cold Damage: </font><font size="2" id="cdamage"></font><br>
-	<font size="2">+ Lightning Damage: </font><font size="2" id="ldamage"></font><br>
-	<font size="2">+ Poison Damage: </font><font size="2" id="pdamage"></font><br><br>
+	<font size="2">Faster Cast Rate: </font><font size="2" id="fcr"></font><br><br>
+
+	<font size="2">Pierce: </font><font size="2" id="pierce"></font><br>
+	<font size="2">Crushing Blow: </font><font size="2" id="cblow"></font><br>
+	<font size="2">Deadly Strike: </font><font size="2" id="dstrike"></font><br>
+	<font size="2">Critical Strike: </font><font size="2" id="cstrike"></font><br>
+	<font size="2">Open Wounds: </font><font size="2" id="owounds"></font><br>
+	<font size="2">Enemy Defense: </font><font size="2" id="enemy_defense"></font><br><br>
+
+
+<!--	<br><font size="2" id="skill_name"></font><font size="2"> damage breakdown: </font><br>
+	<font size="2">Fire Damage: </font><font size="2" id="skill1f_dmg"></font><br>
+	<font size="2">Cold Damage: </font><font size="2" id="avgcDamage"></font><br>
+	<font size="2">Lightning Damage: </font><font size="2" id="avglDamage"></font><br>
+	<font size="2">Poison Damage: </font><font size="2" id="avgpDamage"></font><br>
+	<font size="2">Magic Damage: </font><font size="2" id="avgmDamage"></font><br>
+	<font size="2">Phys Damage: </font><font size="2" id="avgDamage"></font><br><br>
 
 	<font size="2">Basic Attack damage breakdown: </font><br>
 	<font size="2">Fire Damage: </font><font size="2" id="avgfDamage"></font><br>
@@ -531,27 +519,10 @@
 	<font size="2">Lightning Damage: </font><font size="2" id="avglDamage"></font><br>
 	<font size="2">Poison Damage: </font><font size="2" id="avgpDamage"></font><br>
 	<font size="2">Magic Damage: </font><font size="2" id="avgmDamage"></font><br>
-	<font size="2">Phys Damage: </font><font size="2" id="avgDamage"></font><br><br>
+	<font size="2">Phys Damage: </font><font size="2" id="avgDamage"></font><br><br> -->
 </div>
 <div class="stat-text-wrapper stat-4" id="stats_column_2">
-	<font size="2">Fire Absorb: </font><font size="2" id="fabsorb"></font><br>
-	<font size="2">Cold Absorb: </font><font size="2" id="cabsorb"></font><br>
-	<font size="2">Lightning Absorb: </font><font size="2" id="labsorb"></font><br><br>
-	<font size="2">Magic Absorb: </font><font size="2" id="mabsorb"></font><br><br><br>
-	
-	<font size="2">Pierce: </font><font size="2" id="pierce"></font><br>
-	<font size="2">Crushing Blow: </font><font size="2" id="cblow"></font><br>
-	<font size="2">Deadly Strike: </font><font size="2" id="dstrike"></font><br>
-	<font size="2">Critical Strike: </font><font size="2" id="cstrike"></font><br>
-	<font size="2">Open Wounds: </font><font size="2" id="owounds"></font><br>
-	<font size="2">Enemy Defense: </font><font size="2" id="enemy_defense"></font><br><br>
-	<font size="2">Life per Hit: </font><font size="2" id="life_per_hit"></font><br>
-	<font size="2">Mana per Hit: </font><font size="2" id="mana_per_hit"></font><br><br>
-	
-	<font size="2">Fire Pierce: </font><font size="2" id="fpierce"></font><br>
-	<font size="2">Cold Pierce: </font><font size="2" id="cpierce"></font><br>
-	<font size="2">Lightning Pierce: </font><font size="2" id="lpierce"></font><br>
-	<font size="2">Poison Pierce: </font><font size="2" id="ppierce"></font><br>
+
 </div>
 <div class="stat-text-wrapper stat-5" id="stats_column_3">
 	<br>
@@ -559,21 +530,22 @@
 	<font size="3">Mana: </font><font size="3" id="mana"></font><br>
 	<font size="3">Stamina: </font><font size="3" id="stamina"></font><br>
 	<font size="3">Defense: </font><font size="3" id="defense"></font><br>
-	<font size="3" id="block_label" style="visibility:hidden;">Block Chance: </font><font size="3" id="block"></font><br><br>
+	<font size="3" id="block_label" style="visibility:hidden;">Block Chance: </font><font size="3" id="block"></font><br>
 	
-	<font size="2">Faster Run/Walk: </font><font size="2" id="frw"></font><br>
-	<font size="2">Speed: </font><font size="2" id="velocity"></font><br><br>
-	
-	<font size="2">Poison Reduction: </font><font size="2" id="poison_reduction"></font><br>
-	<font size="2">Curse Reduction: </font><font size="2" id="curse_reduction"></font><br>
+	<font size="2">Damage Reduction: </font><font size="2" id="pdr"></font><br><br>
+
+	<font size="2">Fire Resist: </font><font size="2" id="fres"></font><br>
+	<font size="2">Cold Resist: </font><font size="2" id="cres"></font><br>
+	<font size="2">Lightning Resist: </font><font size="2" id="lres"></font><br>
+	<font size="2">Poison Resist: </font><font size="2" id="pres"></font><br>
+	<font size="2">Magic Resist: </font><font size="2" id="mres"></font><br><br>
+
+	<font size="2">Fire Absorb: </font><font size="2" id="fabsorb"></font><br>
+	<font size="2">Cold Absorb: </font><font size="2" id="cabsorb"></font><br>
+	<font size="2">Lightning Absorb: </font><font size="2" id="labsorb"></font><br>
+	<font size="2">Magic Absorb: </font><font size="2" id="mabsorb"></font><br><br>
+
 	<br><br>
-	<font size="2">Life per Kill: </font><font size="2" id="life_per_kill"></font><br>
-	<font size="2">Mana per Kill: </font><font size="2" id="mana_per_kill"></font><br><br>
-	
-	<font size="2">Enemy Fire Resist: </font><font size="2" id="enemy_fres"></font><br>
-	<font size="2">Enemy Cold Resist: </font><font size="2" id="enemy_cres"></font><br>
-	<font size="2">Enemy Lightning Resist: </font><font size="2" id="enemy_lres"></font><br>
-	<font size="2">Enemy Poison Resist: </font><font size="2" id="enemy_pres"></font><br>
 </div>
 <div class="stat-text-wrapper stat-6" id="stats_column_4">
 	<br>
@@ -581,15 +553,7 @@
 	<font>Dexterity: </font><font id="dexterity2"></font><br>
 	<font>Vitality: </font><font id="vitality2"></font><br>
 	<font>Energy: </font><font id="energy2"></font><br><br><br>
-	
-	<font size="2">Magic Find: </font><font size="2" id="mf"></font><br>
-	<font size="2">Gold Find: </font><font size="2" id="gf"></font><br><br>
-	
-	<font size="2">Damage to Mana: </font><font size="2" id="damage_to_mana"></font><br>
-	<font size="2">Thorns: </font><font size="2" id="thorns"></font><br><br>
-	<br>
-	<font size="2">Life Regen: </font><font size="2" id="life_regen"></font><br>
-	<font size="2">Mana Regen: </font><font size="2" id="mana_regen"></font><br><br>
+
 	
 	<font size="2" id="f4"></font><br>
 	<font size="2" id="c4"></font><br>

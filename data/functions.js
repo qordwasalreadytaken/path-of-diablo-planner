@@ -4789,6 +4789,15 @@ function checkSkill(skillName, num) {
 		native_skill = 1
 		skill = skills[s]
 	} }
+
+	var skill_name = selectedSkill[0]
+
+	document.getElementById("skill_name").innerHTML = skill_name
+//	document.getElementById("avgfDamage").innerHTML = Math.floor((c.fDamage_min + c.fDamage_max)/2); if (c.fDamage_min > 0) { document.getElementById("avgfDamage").innerHTML += "" }
+//	document.getElementById("avgcDamage").innerHTML = Math.floor((c.cDamage_min + c.cDamage_max)/2); if (c.cDamage_min > 0) { document.getElementById("avgcDamage").innerHTML += "" }
+//	document.getElementById("avglDamage").innerHTML = Math.floor((c.lDamage_min + c.lDamage_max)/2); if (c.lDamage_min > 0) { document.getElementById("avglDamage").innerHTML += "" }
+//	document.getElementById("avgpDamage").innerHTML = Math.floor((c.pDamage_min + c.pDamage_max)/2); if (c.pDamage_min > 0) { document.getElementById("avgpDamage").innerHTML += "" }
+//	document.getElementById("avgmDamage").innerHTML = Math.floor((c.mDamage_min + c.mDamage_max)/2); if (c.mDamage_min > 0) { document.getElementById("avgmDamage").innerHTML += "" }
 	
 	var c = character;
 	var strTotal = (c.strength + c.all_attributes + c.level*c.strength_per_level);
@@ -4804,11 +4813,20 @@ function checkSkill(skillName, num) {
 	dmg = getNonPhysWeaponDamage("weapon")
 	var nonPhys_min = Math.floor(dmg.fMin + dmg.cMin + dmg.lMin + dmg.pMin + dmg.mMin);
 	var nonPhys_max = Math.floor(dmg.fMax + dmg.cMax + dmg.lMax + dmg.pMax + dmg.mMax);
-	
+
+//	var skill1f_dmg = Math.floor(dmg.fMin + dmg.fMax)/2;
+//	document.getElementById("skill1f_dmg").innerHTML = skill1f_dmg
+
+
 	if (skillName != " ­ ­ ­ ­ Skill 1" && skillName != " ­ ­ ­ ­ Skill 2") {
 		var outcome = {min:0,max:0,ar:0};
+		
 		if (native_skill == 0) { outcome = character_all.any.getSkillDamage(skillName, ar, physDamage[0], physDamage[1], physDamage[2], nonPhys_min, nonPhys_max); }
 		else { outcome = c.getSkillDamage(skill, ar, physDamage[0], physDamage[1], physDamage[2], nonPhys_min, nonPhys_max); }
+
+		var skill1f_dmg = fDamage
+		document.getElementById("skill1f_dmg").innerHTML = skill1f_dmg
+
 		
 		//var enemy_lvl = ~~MonStats[monsterID][4+c.difficulty];
 		var enemy_lvl = Math.min(~~c.level,89);	// temp, sets 'area level' at the character's level (or as close as possible if the area level isn't available in the selected difficulty)
@@ -4822,6 +4840,8 @@ function checkSkill(skillName, num) {
 		var output = ": " + outcome.min + "-" + outcome.max + " {"+Math.ceil((outcome.min+outcome.max)/2)+"}";
 		if (~~outcome.min != 0 && ~~outcome.max != 0) { document.getElementById("skill"+num+"_info").innerHTML = output } else { document.getElementById("skill"+num+"_info").innerHTML = ":" }
 		if (outcome.ar != 0) { document.getElementById("ar_skill"+num).innerHTML = "AR: " + outcome.ar + " ("+hit_chance+"%)" } else { document.getElementById("ar_skill"+num).innerHTML = "" }
+
+	
 	}
 	if (offhandType == "weapon" && (skillName == "Dual Strike" || skillName == "Double Swing" || skillName == "Frenzy" || skillName == "Whirlwind") && equipped.weapon.name != "none") {
 		document.getElementById("offhand_skill"+num).style.display = "inline"

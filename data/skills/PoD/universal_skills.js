@@ -2,7 +2,7 @@
 // TODO/TOCHECK: Does Fire Ball work as a synergy for Meteor (and vice versa) if both are oskills?
 
 var character_any = {
-	
+	 
 	// getSkillData - gets skill info from the appropriate skills data table
 	//	skillName: name of skill
 	//	lvl: level of the skill
@@ -95,6 +95,7 @@ var character_any = {
 	// Barbarian
 		if (skillName == "Battle Command" && elem == 0) {			result = 1 }
 		if (skillName == "Whirling Axes" && elem == 2) {			result = skill.data.values[2][lvl] }
+		if (skillName == "Whirling Axes" && elem < 2) { 			result *= ((0.01*Math.floor(character.dexterity + character.all_attributes))) }
 
 		// Druid
 		if (skillName == "Flame Dash" && elem == 0) {				result = 8 }

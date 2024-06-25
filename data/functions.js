@@ -1371,7 +1371,7 @@ function loadItems(group, dropdown, className) {
 					if (choices == "") {
 //						if (item.synth == "true") { addon = "" }
 //						if (settings.synthwep == "0" && item.synth == "true") { halt = 1 }
-						if (item.synth == "true") { addon = "<option class='dropdown-debug'>" + item.name + "</option>" }
+						if (item.synth == "true") { addon = "<option class='dropdown-unique'>" + item.name + "</option>" }
 						if (group != "charms") { addon = "<option selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
 						else { addon = "<option disabled selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
 					} else {

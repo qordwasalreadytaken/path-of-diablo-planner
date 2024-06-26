@@ -4312,8 +4312,14 @@ function updateSecondaryStats() {
 	}
 //	if (offwepias > 0) {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + "&io=" + offwepias}
 //	else {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num} 
+//	if (bear){wereurl = "&ss=1"}
+//	else if(wolf){wereurl = "&ss=2"}
+//	else{wereurl = null}
+	if (c.ias > 0) {iasurl = "&io=" + c.ias}
+	else {iasurl = null}
 	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num
-	document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
+	document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
+//	document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + wereurl + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
 
 //	document.write("<a href='" + link + "'>" + text + "</a>");
 	//	if (c.fhr_bp_alt)	{document.getElementById("fhr_bp").innerHTML = c.fhr_bp + "<br>" + "1-hand swing FHR: " + c.fhr_bp_alt}

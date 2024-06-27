@@ -4094,7 +4094,7 @@ function updatePrimaryStats() {
 		// This adds the on-weapon ias stat, not the best way to do it but it adds up ias from all equipped items except weapon
 		// and subtracts that from the total ias. I couldn't figure out how to get just the on weapon ias plus ias from sockets
 		// so i took everything else and removed it from the total. 
-		if (effects["Werebear"] != null || effects["Werewolf"] != null ) {	
+//		if (effects["Werebear"] != null || effects["Werewolf"] != null ) {	
 			if (equipped.armor.ias > 1) {armorias = equipped.armor.ias}		
 				else {armorias = 0}	
 			if (equipped.helm.ias > 1) {helmias = equipped.helm.ias}		
@@ -4113,6 +4113,7 @@ function updatePrimaryStats() {
 				else {glovesias = 0}	
 			offwepias = armorias + helmias + amuletias + beltias + ring1ias + ring2ias + bootsias + glovesias
 			wias = ias - offwepias
+		if (effects["Werebear"] != null || effects["Werewolf"] != null ) {	
 			document.getElementById("wias_label").style.visibility = "visible"
 			document.getElementById("wias").innerHTML = wias + "<br>"
 		} else {
@@ -4287,39 +4288,7 @@ function updateSecondaryStats() {
 	if (character.class_name == "Amazon"||"Assassin"||"Barbarian"||"Paladin"||"Necromancer"){document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp}
 	if (character.class_name == "Druid") {document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werebear: " + c.fcr_bp_werebear + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werewolf: " + c.fcr_bp_werewolf}
 	if (character.class_name == "Sorceress") {document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Light/Chain Light: " + c.fcr_bp_alt}
-	switch (character.class_name){
-		case "Amazon":
-			url_num = 0;
-			break;
-		case "Assassin":
-			url_num = 1;
-			break;
-		case "Barbarian":
-			url_num = 2;
-			break;
-		case "Druid":
-			url_num = 3;
-			break;
-		case "Necromancer":
-			url_num = 4;
-			break;
-		case "Paladin":
-			url_num = 5;
-			break;
-		case "Sorceress":
-			url_num = 6;
-			break;
-	}
-//	if (offwepias > 0) {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + "&io=" + offwepias}
-//	else {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num} 
-//	if (bear){wereurl = "&ss=1"}
-//	else if(wolf){wereurl = "&ss=2"}
-//	else{wereurl = null}
-	if (c.ias > 0) {iasurl = "&io=" + c.ias}
-	else {iasurl = null}
-	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num
-	document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
-//	document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + wereurl + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
+
 
 //	document.write("<a href='" + link + "'>" + text + "</a>");
 	//	if (c.fhr_bp_alt)	{document.getElementById("fhr_bp").innerHTML = c.fhr_bp + "<br>" + "1-hand swing FHR: " + c.fhr_bp_alt}
@@ -4834,9 +4803,79 @@ function updateURL() {
 	//if (settings.parameters == 1) { window.history.replaceState({}, '', `${location.pathname}?`+params_string) }
 }
 
+function getmmmpld() {
+	updatePrimaryStats()
+//	updateStats()
+	getCharacterInfo()
+//	updatePrimaryStats()
+//	ias_link = ""
+	switch (character.class_name){
+	case "Amazon":
+		url_num = 0;
+		break;
+	case "Assassin":
+		url_num = 1;
+		break;
+	case "Barbarian":
+		url_num = 2;
+		break;
+	case "Druid":
+		url_num = 3;
+		break;
+	case "Necromancer":
+		url_num = 4;
+		break;
+	case "Paladin":
+		url_num = 5;
+		break;
+	case "Sorceress":
+		url_num = 6;
+		break;
+	}
+//	if (offwepias > 0) {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + "&io=" + offwepias}
+//	else {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num} 
+	if (effects["Werebear"] != null){wereurl = "&ss=1"}
+	else if(effects["Werewolf"] != null){wereurl = "&ss=2"}
+	else{wereurl = null}
 
+	iasurl = null
+	try{
+		thisias = offwepias + wias;
+		iasurl = "&io=" + thisias;
+	}
+	catch(error){
+		iasurl = "&io=0";
+	}
+	//	if (offwepias != null && wias != null)	{thisias = offwepias + wias}
+//	thisias = offwepias + wias
+//	if (thisias > 0){iasurl = "&io=" + thisias} 
+//	else {iasurl = "&io=0"}
 
+//	else if (thisias){iasurl = "&io=0"}
+//	else {iasurl = "&io=0"}  //{iasurl = null}
 
+	thisiasindex = equipped.weapon.iasindex
+	if (thisiasindex != null && thisiasindex > 0) {wepindex = "&w1=" + thisiasindex}
+	else {wepindex = null}
+
+//  url structure: https://mmmpld.github.io/pod-attack-calc/?c=2&ss=2&io=55&w1=22
+
+	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num 
+	if (wereurl != null) {ias_link += wereurl}
+	if (iasurl != null) {ias_link += iasurl}
+	if (wepindex != null) {ias_link += wepindex}
+//	else {	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num }
+
+//	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + wereurl //+ wepindex//+ iasurl
+//ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + wereurl 
+
+//window.location = ias_link;
+	window.open(ias_link);
+
+	//document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + url_num + wereurl + wepindex + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
+//document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
+
+}
 
 
 

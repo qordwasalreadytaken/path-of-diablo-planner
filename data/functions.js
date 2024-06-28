@@ -3805,6 +3805,7 @@ function hoverStatOff(stat) {
 	checkOffhand
 	updateSocketTotals
 	updateURL
+	getmmmpld
 */
 
 // update - Updates everything
@@ -4802,13 +4803,16 @@ function updateURL() {
 	//params_string = params_string.split("%C2%AD").join("~")
 	//if (settings.parameters == 1) { window.history.replaceState({}, '', `${location.pathname}?`+params_string) }
 }
+// 	getmmmpl
+//	This creates the url to mmmpld's ias calc and opens it in a new browser tab
+//  url structure: https://mmmpld.github.io/pod-attack-calc/?c=2&ss=2&io=55&w1=22
+//	c for class, ss for shapeshift, io for ias, and w for weapon id
 
 function getmmmpld() {
 	updatePrimaryStats()
 //	updateStats()
+//	get class
 	getCharacterInfo()
-//	updatePrimaryStats()
-//	ias_link = ""
 	switch (character.class_name){
 	case "Amazon":
 		url_num = 0;
@@ -4832,12 +4836,12 @@ function getmmmpld() {
 		url_num = 6;
 		break;
 	}
-//	if (offwepias > 0) {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + "&io=" + offwepias}
-//	else {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num} 
+
+//	get werebear/wolf status for url
 	if (effects["Werebear"] != null){wereurl = "&ss=1"}
 	else if(effects["Werewolf"] != null){wereurl = "&ss=2"}
 	else{wereurl = null}
-
+//	get ias for url
 	iasurl = null
 	try{
 		thisias = offwepias + wias;
@@ -4846,34 +4850,28 @@ function getmmmpld() {
 	catch(error){
 		iasurl = "&io=0";
 	}
-	//	if (offwepias != null && wias != null)	{thisias = offwepias + wias}
-//	thisias = offwepias + wias
-//	if (thisias > 0){iasurl = "&io=" + thisias} 
-//	else {iasurl = "&io=0"}
-
-//	else if (thisias){iasurl = "&io=0"}
-//	else {iasurl = "&io=0"}  //{iasurl = null}
-
+//	get weapon id for url
 	thisiasindex = equipped.weapon.iasindex
 	if (thisiasindex != null && thisiasindex > 0) {wepindex = "&w1=" + thisiasindex}
 	else {wepindex = null}
 
-//  url structure: https://mmmpld.github.io/pod-attack-calc/?c=2&ss=2&io=55&w1=22
+//	Does this really metter here, off weapon vs on weapon ias?
+//	if (offwepias > 0) {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + "&io=" + offwepias}
+//	else {ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num} 
+//	if (offwepias != null && wias != null)	{thisias = offwepias + wias}
+//	thisias = offwepias + wias
+//	if (thisias > 0){iasurl = "&io=" + thisias} 
+//	else {iasurl = "&io=0"}
+//	else if (thisias){iasurl = "&io=0"}
+//	else {iasurl = "&io=0"}  //{iasurl = null}
 
+//	put it all together
 	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num 
 	if (wereurl != null) {ias_link += wereurl}
 	if (iasurl != null) {ias_link += iasurl}
 	if (wepindex != null) {ias_link += wepindex}
-//	else {	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num }
-
-//	ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + wereurl //+ wepindex//+ iasurl
-//ias_link = "https://mmmpld.github.io/pod-attack-calc/?c=" + url_num + wereurl 
-
-//window.location = ias_link;
+//	go to the url
 	window.open(ias_link);
-
-	//document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + url_num + wereurl + wepindex + iasurl + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
-//document.getElementById("ias_url").innerHTML = "<a href=" + ias_link + "  target='_blank' >" + "mmmpld's IAS Calculator" + "</a>" ;
 
 }
 

@@ -1042,7 +1042,8 @@ original_tier:1,
 weapon:1,
 armor:1,
 shield:1,
-debug:1,
+//debug:1,
+debug:{index:[],format:['<span style="color:red; font-size:12px">'+"Charm does not exist in game,<br>only exists here for ease of testing"+'</span>']},
 //synth:0,
 //0:1,
 //1:1,
@@ -1369,6 +1370,8 @@ oskill_Fire_Ball:{index:["oskill_Fire_Ball"], format:["+"," to Fire Ball"]},
 oskill_Fire_Wall:{index:["oskill_Fire_Wall"], format:["+"," to Fire Wall"]},
 oskill_Meteor:{index:["oskill_Meteor"], format:["+"," to Meteor"]},
 oskill_Fire_Mastery:{index:["oskill_Fire_Mastery"], format:["+"," to Fire Mastery"]},
+oskill_Blizzard:{index:["oskill_Blizzard"], format:["+"," to Blizzard"]},
+
 
 skills_class:{index:["skills_class"], format:["+"," to Class Skills"]},		// unneeded once item customization gets implemented
 skills_tree1:{index:["skills_tree1"], format:["+"," to Tree #1 Skills"]},	// unused
@@ -1453,6 +1456,7 @@ charge_bonus_icicles:{index:[], format:["Attacks release enemy-seeking icicles"]
 charge_bonus_accuracy:{index:[], format:["Attacks have increased accuracy"]},
 charge_bonus_reduce:{index:[], format:["Attacks reduce enemy defenses"]},
 charge_bonus_leech:{index:[], format:["Attacks regenerate life and mana"]},
+//noexist:{index:[],format:["Charm does not exist in game,<br>only exists here for testing"]},
 };
 
 var stats_alternate = {

@@ -28,7 +28,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	/* oskills  druid		*/	oskill_Lycanthropy:0, oskill_Werebear:0, oskill_Werewolf:0, oskill_Feral_Rage:0, oskill_Flame_Dash:0, oskill_Summon_Dire_Wolf:0, 									// Frostwind, Wolfhowl, Beast, Flamebellow, Boneflesh
 	/* oskills  necromancer	*/	oskill_Desecrate:0, 																																				// Radament's Sphere
 	/* oskills  paladin		*/	oskill_Zeal:0, oskill_Vengeance:0, oskill_Dashing_Strike:0, oskill_Concentration:0,																														// Passion, Kingslayer
-	/* oskills  sorceress	*/	oskill_Frigerate:0, oskill_Shiver_Armor:0, oskill_Cold_Mastery:0, oskill_Hydra:0, oskill_Fire_Ball:0, oskill_Fire_Wall:0, oskill_Meteor:0, oskill_Fire_Mastery:0, 	// Frostwind, Medusa's Gaze, Bing Sz Wang, Dragonscale, Trang-Oul's Set
+	/* oskills  sorceress	*/	oskill_Frigerate:0, oskill_Shiver_Armor:0, oskill_Cold_Mastery:0, oskill_Hydra:0, oskill_Fire_Ball:0, oskill_Fire_Wall:0, oskill_Meteor:0, oskill_Fire_Mastery:0, oskill_Blizzard:0,	// Frostwind, Medusa's Gaze, Bing Sz Wang, Dragonscale, Trang-Oul's Set
 								oskill_Berserk:0, oskill_Teleport:0, oskill_Heart_of_Wolverine:0,  
 	
 	/*   not used (yet?)	*///	energy_per_level:0, lAbsorb_flat_per_level:0, mAbsorb_flat_per_level:0, mAbsorb:0, pDamage_max_per_level:0, e_damage_per_level:0, stun_length:0, base:"", img:"", original_tier:0, 
@@ -1180,6 +1180,8 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{debug:1, name:"-10 on-weapon ed", req_level:100, e_damage:-10},
 	{debug:1, name:"-50 on-weapon ed", req_level:100, e_damage:-50},
 	{debug:1, name:"-100 on-weapon ed", req_level:100, e_damage:-100},
+	{synth:"true", debug:1, name:"+20 Blizzard", req_level:100, oskill_Blizzard:20},
+	
 //	{debug:1, name:"Map Mod-Decrep", req_level:100, e_damage:-100},
 ],
 	};

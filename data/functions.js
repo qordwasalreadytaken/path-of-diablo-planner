@@ -2463,7 +2463,7 @@ function setCharacterInfo(className) {
 	startup(className)
 	if (settings.coupling == 0) { document.getElementById("coupling").checked = true; toggleCoupling(document.getElementById("coupling")); }
 	if (settings.autocast == 0) { document.getElementById("autocast").checked = true; toggleAutocast(document.getElementById("autocast")); }
-	if (settings.synthwep == 0) { document.getElementById("synthwep").checked = true; toggleSynthwep(document.getElementById("synthwep")); }
+	if (settings.synthwep == 1) { document.getElementById("synthwep").checked = true; toggleSynthwep(document.getElementById("synthwep")); }
 	if (character.difficulty != fileInfo.character.difficulty) { document.getElementById("difficulty3").checked = false; document.getElementById("difficulty"+fileInfo.character.difficulty).checked = true; changeDifficulty(fileInfo.character.difficulty) }
 	if (character.running != fileInfo.character.running) { document.getElementById("running").checked = true; toggleRunning(document.getElementById("running")) }
 	if (character.quests_completed != fileInfo.character.quests_completed) { document.getElementById("quests").checked = true; toggleQuests(document.getElementById("quests")) }
@@ -2540,7 +2540,7 @@ function setCharacterInfo(className) {
 	for (stat in fileInfo.character) { character[stat] = fileInfo.character[stat] }
 	if (settings.coupling != fileInfo.settings.coupling) { if (settings.coupling == 1) { document.getElementById("coupling").checked = false }; toggleCoupling(document.getElementById("coupling")) }
 	if (settings.autocast != fileInfo.settings.autocast) { if (settings.autocast == 1) { document.getElementById("autocast").checked = false }; toggleAutocast(document.getElementById("autocast")) }
-	if (settings.synthwep != fileInfo.settings.synthwep) { if (settings.synthwep == 1) { document.getElementById("synthwep").checked = false }; toggleSynthwep(document.getElementById("synthwep")) }
+	if (settings.synthwep != fileInfo.settings.synthwep) { if (settings.synthwep == 0) { document.getElementById("synthwep").checked = false }; toggleSynthwep(document.getElementById("synthwep")) }
 	//updateStats()
 	document.getElementById("inputTextToSave").value = ""
 	update()

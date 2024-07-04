@@ -296,8 +296,29 @@ input[type="file"] {
 .nav-dropbtn a {
   padding: 0;
 }
+.nav-dropbtn2 {
+  margin: 0;
+  border: none;
+  color: #ddd;
+  background-color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  text-decoration: none;
+}
+.nav-dropbtn3 {
+  margin: 0;
+  border: none;
+  color: #ddd;
+  background-color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  text-decoration: none;
+  left: 100%;
+  top: 0%;
+  margin-right: 0.125rem;
+}
 /* Highlight navbar options on hover */
-.nav-dropdown:hover, .nav-dropbtn:hover, .nav-dropbtn:hover a, .nav-dropdown-content-item:hover {
+.nav-dropdown:hover, .nav-dropbtn:hover, .nav-dropbtn:hover a, .nav-dropbtn3, .nav-dropdown-content-item:hover, .nav-dropdown-content2-item:hover {
   background-color: #222;
   color: #fff;
 }
@@ -313,6 +334,14 @@ input[type="file"] {
   box-shadow: 0px 8px 12px 4px rgba(0,0,0,0.5);
   z-index: 9;
 }
+.nav-dropdown-content2 {
+  display: none;
+  color: #eee;
+  background-color: #333;
+  min-width: 100px;
+  z-index: 9;
+
+}
 .nav-dropdown-content-item {
   font-size: 13px;
   border-top: 1px solid rgba(150, 150, 150, 0.15);
@@ -320,12 +349,27 @@ input[type="file"] {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+ 
 }
-.nav-dropdown-content-item:first-child {
+.nav-dropdown-content2-item {
+  position: relative;
+  font-size: 13px;
+  border-top: 1px solid rgba(150, 150, 150, 0.15);
+  margin: 0px 2px;
+  background-color: #333;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  left: 90%;
+  top: -100%;
+
+}
+
+.nav-dropdown-content-item:first-child, .nav-dropdown-content2-item:first-child {
   border-top: 0;
   margin-top: 2px;
 }
-.nav-dropdown-content-item:last-child {
+.nav-dropdown-content2-item:last-child, .nav-dropdown-content2-item:first-child {
   margin-bottom: 2px;
 }
 .nav-text {
@@ -349,6 +393,10 @@ input[type="file"] {
 .nav-dropdown:hover .nav-dropdown-content {
   display: block;
 }
+.nav-dropdown-content-item:hover .nav-dropdown-content2 {
+  display: block;
+}
+
 #class_name {
   left: 67px;
   top: 12px;

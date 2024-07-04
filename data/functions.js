@@ -412,11 +412,18 @@ function toggleAutocast(autocast) {
 // ---------------------------------
 function toggleSynthwep(synthwep) {
 	if (synthwep.checked) { settings.synthwep = 1 } else { settings.synthwep = 0 }
-	updateURL()
+//	if (settings.synthwep == 1) 
+	update()
+//	updateURL()
 //	setCharacterInfo()
 	getCharacterInfo()
-	loadEquipment()
+//	loadItems(equipmentGroups[i], equipmentDropdowns[i], className) 
+	loadEquipment(chioce)
+//	loadEquipment()
+	
+	loadItems(choice)
 //	loadItems()
+//	update()	
 }
 
 // toggleParameters - Changes whether parameters are shown in the address bar
@@ -1342,7 +1349,8 @@ function loadEquipment(className) {
 function loadItems(group, dropdown, className) {
 	var showsynth = ""
 	if (document.getElementById("synthwep").checked) {showsynth = "yes"}
-	else {showsynth = "no"}
+	if (synthwep == 1) {showsynth = "yes"}
+//	else {showsynth = "no"}
 	if (group.length == 0) { document.getElementById(dropdown).innerHTML = "<option></option>" }
 	else {
 		var choices = "";
@@ -1356,22 +1364,29 @@ function loadItems(group, dropdown, className) {
 			if (typeof(item.only) == 'undefined' || item.only == className) {
 				var halt = 0;
 				if (className == "clear") { halt = 1 }
+//				if (item.synth == "true" && showsynth != "yes") { halt = 1 }
 //				if (toggleSynthwep() == 0 && settings.synthwep == "0") { halt = 1 }
 //				if (document.getElementById("synthwep").checked = false && item.synth == "true") { halt = 1 }
 //				else if (synthwep.checked = "true" && item.synth == "true") { halt = 1 }
-				if (item.synth == "true" && showsynth != "yes") { halt = 1 }
+//				if (showsynth = "no" && item.synth == "true" ) { halt = 1 }
+//				if (item.synth == "true" && showsynth != "yes") { halt = 1 }
 //				else if (settings.synthwep == "1" && item.synth == "true") { halt = 0 }
 				if (typeof(item.not) != 'undefined') { for (let l = 0; l < item.not.length; l++) { if (item.not[l] == className) { halt = 1 } } }
 				if (className == "Rogue Scout") { if (group == "offhand" || (group == "weapon" && item.type != "bow" && item.type != "crossbow" && item.name != "Weapon")) { halt = 1 } }
 				if (className == "Desert Guard") { if (group == "offhand" || (group == "weapon" && item.type != "polearm" && item.type != "spear" && item.name != "Weapon")) { halt = 1 } }
 				if (className == "Iron Wolf") { if ((group == "offhand" && item.type != "shield" && item.name != "Offhand") || (group == "weapon" && (item.type != "sword" || typeof(item.twoHanded) != 'undefined') && item.name != "Weapon")) { halt = 1 } }
 				if (className == "Barb (merc)") { if (group == "offhand" || (group == "weapon" && item.type != "sword" && item.name != "Weapon")) { halt = 1 } }
+				if (item.synth == "true" && showsynth != "yes") { halt = 1 }
+//				if (showsynth != 1 && item.synth == "true" ) { halt = 1 }
 				if (halt == 0) {
 					var addon = "";
 					if (choices == "") {
 //						if (item.synth == "true") { addon = "" }
 //						if (settings.synthwep == "0" && item.synth == "true") { halt = 1 }
+//						if (showsynth = "no" && item.synth == "true" ) { halt = 1 }
+//						if (item.synth == "true") { addon = "<option class='dropdown-unique'>" + item.name + "</option>" }
 						if (item.synth == "true") { addon = "<option class='dropdown-unique'>" + item.name + "</option>" }
+
 						if (group != "charms") { addon = "<option selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
 						else { addon = "<option disabled selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
 					} else {
@@ -1401,6 +1416,8 @@ function loadItems(group, dropdown, className) {
 					if (className == "barbarian" && item.name != "Weapon" && (typeof(item.twoHanded) == 'undefined' || item.twoHanded != 1 || item.type == "sword")) { choices_offhand += addon }
 				}
 			}
+//			if (showsynth = "no" && item.synth == "true" ) { halt = 1 }
+
 		}
 		if (group == "weapon") { offhandSetup = choices_offhand }
 		if (className == "barbarian" && group == "offhand") { choices += offhandSetup }	// weapons inserted into offhand dropdown list
@@ -2463,7 +2480,7 @@ function setCharacterInfo(className) {
 	startup(className)
 	if (settings.coupling == 0) { document.getElementById("coupling").checked = true; toggleCoupling(document.getElementById("coupling")); }
 	if (settings.autocast == 0) { document.getElementById("autocast").checked = true; toggleAutocast(document.getElementById("autocast")); }
-	if (settings.synthwep == 1) { document.getElementById("synthwep").checked = true; toggleSynthwep(document.getElementById("synthwep")); }
+	if (settings.synthwep == 0) { document.getElementById("synthwep").checked = true; toggleSynthwep(document.getElementById("synthwep")); }
 	if (character.difficulty != fileInfo.character.difficulty) { document.getElementById("difficulty3").checked = false; document.getElementById("difficulty"+fileInfo.character.difficulty).checked = true; changeDifficulty(fileInfo.character.difficulty) }
 	if (character.running != fileInfo.character.running) { document.getElementById("running").checked = true; toggleRunning(document.getElementById("running")) }
 	if (character.quests_completed != fileInfo.character.quests_completed) { document.getElementById("quests").checked = true; toggleQuests(document.getElementById("quests")) }
@@ -2540,7 +2557,7 @@ function setCharacterInfo(className) {
 	for (stat in fileInfo.character) { character[stat] = fileInfo.character[stat] }
 	if (settings.coupling != fileInfo.settings.coupling) { if (settings.coupling == 1) { document.getElementById("coupling").checked = false }; toggleCoupling(document.getElementById("coupling")) }
 	if (settings.autocast != fileInfo.settings.autocast) { if (settings.autocast == 1) { document.getElementById("autocast").checked = false }; toggleAutocast(document.getElementById("autocast")) }
-	if (settings.synthwep != fileInfo.settings.synthwep) { if (settings.synthwep == 0) { document.getElementById("synthwep").checked = false }; toggleSynthwep(document.getElementById("synthwep")) }
+	if (settings.synthwep != fileInfo.settings.synthwep) { if (settings.synthwep == 1) { document.getElementById("synthwep").checked = false }; toggleSynthwep(document.getElementById("synthwep")) }
 	//updateStats()
 	document.getElementById("inputTextToSave").value = ""
 	update()

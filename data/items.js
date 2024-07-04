@@ -450,7 +450,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 		weapon: [	// TODO: Add a "rank" parameter? It would allow weapons to be displayed in different orders per class, without needing to duplicate entries using "only" and "not"
 	{name:"Weapon"},
 	// Mercenary Runewords
-//	{synth:"true", name:"Testeroo",req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},
+	{synth:"true", name:"Testeroo",req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},
 	{only:"Rogue Scout",	rarity:"rw", name:"Plague ­ ­ - ­ ­ Hydra Bow", sup:15, twoHanded:1, req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"bow", base:"Hydra Bow", pod_changes:1},
 	{only:"Desert Guard",	rarity:"rw", name:"Plague ­ ­ - ­ ­ Giant Thresher", ethereal:1, twoHanded:1, req_level:68, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"polearm", base:"Giant Thresher", pod_changes:1},
 	{only:"Iron Wolf",		rarity:"rw", name:"Plague ­ ­ - ­ ­ Cryptic Sword", ethereal:1, req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"sword", base:"Cryptic Sword", pod_changes:1},
@@ -1180,7 +1180,11 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{debug:1, name:"-10 on-weapon ed", req_level:100, e_damage:-10},
 	{debug:1, name:"-50 on-weapon ed", req_level:100, e_damage:-50},
 	{debug:1, name:"-100 on-weapon ed", req_level:100, e_damage:-100},
-	{synth:"true", debug:1, name:"+20 Blizzard", req_level:100, oskill_Blizzard:20},
+	{synth:"true", only:"barbarian", debug:1, name:"Aramex Special (Barbarian Only)", req_level:100, oskill_Blizzard:20},
+	{debug:1, name:"Enflame sorc in party", fDamage_min:837, fDamage_max:1113},
+	{debug:1, name:"Frigerate sorc in party", cDamage_min:552, cDamage_max:758},
+
+	
 	
 //	{debug:1, name:"Map Mod-Decrep", req_level:100, e_damage:-100},
 ],

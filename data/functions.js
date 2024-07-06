@@ -4019,11 +4019,11 @@ function updatePrimaryStats() {
 			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("offhand_basic_damage").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"
 				var ohdbreakdown = "Damage Breakdown- "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
 				if (Math.floor(physDamage_offhand[0]*physDamage_offhand[2]) > 0) {ohdbreakdown += "\nPhys Damage: " + Math.floor(physDamage_offhand[0]*physDamage_offhand[2]) + "-" + Math.floor(physDamage_offhand[1]*physDamage_offhand[2])};
-				if (ohd.fMin > 0) {ofhbreakdown += "\nFire Damage: " + ohd.fMin + "-" + ohd.fMax};
-				if (ohd.cMin > 0) {ofhbreakdown += "\nCold Damage: " + ohd.cMin + "-" + ohd.cMax};
-				if (ohd.lMin > 0) {ofhbreakdown += "\nLight Damage: " + ohd.lMin + "-" + ohd.lMax};
-				if (ohd.mMin > 0) {ofhbreakdown += "\nMagic Damage: " + ohd.mMin + "-" + ohd.mMax};
-				if (ohd.pMin > 0) {ofhbreakdown += "\nPoison Damage: " + ohd.pMin + "-" + ohd.pMax};
+				if (ohd.fMin > 0) {ohdbreakdown += "\nFire Damage: " + ohd.fMin + "-" + ohd.fMax};
+				if (ohd.cMin > 0) {ohdbreakdown += "\nCold Damage: " + ohd.cMin + "-" + ohd.cMax};
+				if (ohd.lMin > 0) {ohdbreakdown += "\nLight Damage: " + ohd.lMin + "-" + ohd.lMax};
+				if (ohd.mMin > 0) {ohdbreakdown += "\nMagic Damage: " + ohd.mMin + "-" + ohd.mMax};
+				if (ohd.pMin > 0) {ohdbreakdown += "\nPoison Damage: " + ohd.pMin + "-" + ohd.pMax};
 				var TooltipElement = document.getElementById("offhand_basic_damage");
 				TooltipElement.title = ohdbreakdown;
 			}

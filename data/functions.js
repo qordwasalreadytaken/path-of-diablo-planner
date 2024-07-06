@@ -4011,7 +4011,21 @@ function updatePrimaryStats() {
 			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("basic_attack").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"; document.getElementById("offhand_basic").style.display = "none"; }
 		}
 	}
+//	var breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax 
+//	var TooltipElement = document.getElementById("basic_attack");
+//	TooltipElement.title = breakdown;
 	
+	var breakdown = "Damage Breakdown- "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
+	if (Math.floor(physDamage[0]*physDamage[2]) > 0) {breakdown += "\nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
+	if (dmg.fMin > 0) {breakdown += "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax};
+	if (dmg.cMin > 0) {breakdown += "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax};
+	if (dmg.lMin > 0) {breakdown += "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax};
+	if (dmg.mMin > 0) {breakdown += "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
+	if (dmg.pMin > 0) {breakdown += "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+
+	var TooltipElement = document.getElementById("basic_attack");
+	TooltipElement.title = breakdown;
+
 	var block_shield = c.block;
 	if (c.class_name == "Amazon" || c.class_name == "Assassin" || c.class_name == "Barbarian") { block_shield -= 5 }
 	if (c.class_name == "Druid" || (c.class_name == "Necromancer" && equipped.offhand.only != "necromancer") || c.class_name == "Sorceress") { block_shield -= 10 }
@@ -4680,6 +4694,11 @@ function checkSkill(skillName, num) {
 		var output = ": " + outcome.min + "-" + outcome.max + " {"+Math.ceil((outcome.min+outcome.max)/2)+"}";
 		if (~~outcome.min != 0 && ~~outcome.max != 0) { document.getElementById("skill"+num+"_info").innerHTML = output } else { document.getElementById("skill"+num+"_info").innerHTML = ":" }
 		if (outcome.ar != 0) { document.getElementById("ar_skill"+num).innerHTML = "AR: " + outcome.ar + " ("+hit_chance+"%)" } else { document.getElementById("ar_skill"+num).innerHTML = "" }
+
+//		var skill1Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
+//		var TooltipElement = document.getElementById("skill1_info");
+//		TooltipElement.title = skill1Breakdown;
+
 	}
 	if (offhandType == "weapon" && (skillName == "Dual Strike" || skillName == "Double Swing" || skillName == "Frenzy" || skillName == "Whirlwind") && equipped.weapon.name != "none") {
 		document.getElementById("offhand_skill"+num).style.display = "inline"
@@ -4702,7 +4721,33 @@ function checkSkill(skillName, num) {
 		for (let i = 1; i < c.fcr_bp_alt.length; i++) { if (fcrTotal >= c.fcr_bp_alt[i]) { fcr_f -= 1 } }
 		document.getElementById("ar_skill"+num).innerHTML = "Cast Rate: "+fcr_f+" frames"
 	}
-	 
+//		var skill1Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
+//		var TooltipElement = document.getElementById("skill1_info");
+//		TooltipElement.title = physDamage;
+//		var skill2Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
+//		var TooltipElement = document.getElementById("skill2_info");
+//		TooltipElement.title = skill2Breakdown;
+
+//skillBreakdown = "Damage Breakdown \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
+//		skillBreakdown = "Damage Breakdown \nFire Damage: " + fDamage_min + "-" + fDamage_max ;
+//		TooltipElement = document.getElementById("skill1_info");
+//		TooltipElement.title = skillBreakdown;
+
+//if (selectedSkill.num = 1) {
+//		var skill1Breakdown = "Damage Breakdown "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
+//		if (phys_min > 1) {skill1Breakdown += "\nPhys Damage: " + phys_min + "-" + phys_max}
+//		if (fDamage_min > 1) {skill1Breakdown += + "\nFire Damage: " + fDamage_min + "-" + fDamage_max}
+//		if (cDamage_min > 1) {skill1Breakdown += + "\nCold Damage: " + cDamage_min + "-" + cDamage_max}
+//		if (lDamage_min > 1) {skill1Breakdown += + "\nLight Damage: " + lDamage_min + "-" + lDamage_max}
+//		if (mDamage_min > 1) {skill1Breakdown += + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max}
+//		if (pDamage_min > 1) {skill1Breakdown += + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max}
+//		var TooltipElement = document.getElementById("skill1_info");
+//		TooltipElement.title = skill1Breakdown;
+//}
+//	skillBrkdn(skillName)
+//	var TooltipElement = document.getElementById("skill1_info");
+//	TooltipElement.title = skillBreakdown;
+
 	updateSkills()
 }
 
@@ -4892,7 +4937,23 @@ function getmmmpld() {
 
 }
 
+// Trying to break down the damage that makes the combined skill damage
+// would be cool to see how much of total is from each element
+// Works when added to class js but not when called as a function
+function skillBrkdn() {
+	var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
+//	if (phys_min > 0) {skillBreakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
+	if (fDamage_min > 0) {skillBreakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
+	if (cDamage_min > 0) {skillBreakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
+//	if (lDamage_min > 0) {skillBreakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
+//	if (mDamage_min > 0) {skillBreakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
+//	if (pDamage_min > 0) {skillBreakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
+//	var TooltipElement = document.getElementById("skill1_info");
+//	TooltipElement.title = skillBreakdown;
+	var TooltipElement = document.getElementById("skill2_info");
+	TooltipElement.title = skillBreakdown;
 
+}
 
 
 

@@ -185,6 +185,9 @@ var character_paladin = {class_name:"Paladin", strength:25, dexterity:20, vitali
 		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
 		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
 		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
+		if (attack == 1){
+			addmore = "yes"
+		}
 		TooltipElement = document.getElementById("skill2_info");
 		TooltipElement.title = skill2Breakdown;
 	

@@ -4672,13 +4672,13 @@ function checkSkill(skillName, num) {
 		native_skill = 1
 		skill = skills[s]
 	} }
-	
+//	var skill2Breakdown = ""
 	var c = character;
 	var strTotal = (c.strength + c.all_attributes + c.level*c.strength_per_level);
 	var dexTotal = (c.dexterity + c.all_attributes + c.level*c.dexterity_per_level);
 	var energyTotal = Math.floor((c.energy + c.all_attributes)*(1+c.max_energy/100));
 	var ar = ((dexTotal - 7) * 5 + c.ar + c.level*c.ar_per_level + c.ar_const) * (1+(c.ar_skillup + c.ar_skillup2 + c.ar_bonus + c.level*c.ar_bonus_per_level)/100) * (1+c.ar_shrine_bonus/100);
-
+	
 	var physDamage = [0,0,1];
 	if (skillName == "Poison Javelin" || skillName == "Lightning Bolt" || skillName == "Plague Javelin" || skillName == "Lightning Fury" || skillName == "Power Throw" || skillName == "Ethereal Throw") {
 		physDamage = getWeaponDamage(strTotal,dexTotal,"weapon",1);
@@ -4705,6 +4705,19 @@ function checkSkill(skillName, num) {
 		var output = ": " + outcome.min + "-" + outcome.max + " {"+Math.ceil((outcome.min+outcome.max)/2)+"}";
 		if (~~outcome.min != 0 && ~~outcome.max != 0) { document.getElementById("skill"+num+"_info").innerHTML = output } else { document.getElementById("skill"+num+"_info").innerHTML = ":" }
 		if (outcome.ar != 0) { document.getElementById("ar_skill"+num).innerHTML = "AR: " + outcome.ar + " ("+hit_chance+"%)" } else { document.getElementById("ar_skill"+num).innerHTML = "" }
+
+		if (addmore == "yes") {
+//			addSomemore(this)
+//			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nWPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
+			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + dmg.fMin + "-" + dmg.fMax};
+			if (dmg.cMin > 0) {skill2Breakdown += "\nWCold Damage: " + dmg.cMin + "-" + dmg.cMax};
+			if (dmg.lMin > 0) {skill2Breakdown += "\nWLight Damage: " + dmg.lMin + "-" + dmg.lMax};
+			if (dmg.mMin > 0) {skill2Breakdown += "\nWMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
+			if (dmg.pMin > 0) {skill2Breakdown += "\nWPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+			
+		}
+		TooltipElement = document.getElementById("skill2_info");
+		TooltipElement.title = skill2Breakdown;
 
 //		var skill1Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
 //		var TooltipElement = document.getElementById("skill1_info");
@@ -4951,19 +4964,13 @@ function getmmmpld() {
 // Trying to break down the damage that makes the combined skill damage
 // would be cool to see how much of total is from each element
 // Works when added to class js but not when called as a function
-function skillBrkdn() {
-	var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//	if (phys_min > 0) {skillBreakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-	if (fDamage_min > 0) {skillBreakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-	if (cDamage_min > 0) {skillBreakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//	if (lDamage_min > 0) {skillBreakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//	if (mDamage_min > 0) {skillBreakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//	if (pDamage_min > 0) {skillBreakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//	var TooltipElement = document.getElementById("skill1_info");
-//	TooltipElement.title = skillBreakdown;
-	var TooltipElement = document.getElementById("skill2_info");
-	TooltipElement.title = skillBreakdown;
-
+function addSomemore() {
+	if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nWPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
+	if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + dmg.fMin + "-" + dmg.fMax};
+	if (dmg.cMin > 0) {skill2Breakdown += "\nWCold Damage: " + dmg.cMin + "-" + dmg.cMax};
+	if (dmg.lMin > 0) {skill2Breakdown += "\nWLight Damage: " + dmg.lMin + "-" + dmg.lMax};
+	if (dmg.mMin > 0) {skill2Breakdown += "\nWMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
+	if (dmg.pMin > 0) {skill2Breakdown += "\nWPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
 }
 
 

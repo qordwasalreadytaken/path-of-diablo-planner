@@ -164,8 +164,12 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
 		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
 		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		TooltipElement = document.getElementById("skill2_info");
-		TooltipElement.title = skill2Breakdown;
+		if (attack == 1){
+			addmore = "yes"
+		}
+
+//		TooltipElement = document.getElementById("skill2_info");
+//		TooltipElement.title = skill2Breakdown;
 
 //		skillBreakdown = "Damage Breakdown \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
 //		skillBreakdown = "Damage Breakdown \nFire Damage: " + fDamage_min + "-" + fDamage_max ;

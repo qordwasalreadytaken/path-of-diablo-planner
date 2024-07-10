@@ -22,7 +22,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	/* skills   necromancer	*/	skill_Skeleton_Mastery:0, skill_Summon_Resist:0, skill_Raise_Skeleton:0, skill_Golem_Mastery:0, skill_Clay_Golem:0, skill_Raise_Skeletal_Mage:0, skill_Blood_Golem:0, skill_Iron_Golem:0, skill_Fire_Golem:0, skill_Revive:0, skill_Poison_Dagger:0, skill_Teeth:0, skill_Bone_Armor:0, skill_Corpse_Explosion:0, skill_Poison_Explosion:0, skill_Bone_Spear:0, skill_Bone_Wall:0, skill_Bone_Spirit:0, skill_Bone_Prison:0, skill_Poison_Nova:0, skill_Amplify_Damage:0, skill_Dim_Vision:0, skill_Weaken:0, skill_Iron_Maiden:0, skill_Terror:0, skill_Confuse:0, skill_Life_Tap:0, skill_Attract:0, skill_Decrepify:0, skill_Lower_Resist:0, 
 	/* skills   paladin		*/	skill_Prayer:0, skill_Resist_Fire:0, skill_Defiance:0, skill_Resist_Cold:0, skill_Cleansing:0, skill_Resist_Lightning:0, skill_Vigor:0, skill_Meditation:0, skill_Redemption:0, skill_Salvation:0, skill_Might:0, skill_Holy_Fire:0, skill_Thorns:0, skill_Blessed_Aim:0, skill_Concentration:0, skill_Holy_Freeze:0, skill_Holy_Shock:0, skill_Sanctuary:0, skill_Fanaticism:0, skill_Conviction:0, skill_Sacrifice:0, skill_Smite:0, skill_Holy_Bolt:0, skill_Zeal:0, skill_Charge:0, skill_Vengeance:0, skill_Blessed_Hammer:0, skill_Conversion:0, skill_Holy_Shield:0, skill_Fist_of_the_Heavens:0, 
 	/* skills   sorceress	*/	skill_Ice_Bolt:0, skill_Frozen_Armor:0, skill_Frost_Nova:0, skill_Ice_Blast:0, skill_Shiver_Armor:0, skill_Glacial_Spike:0, skill_Blizzard:0, skill_Chilling_Armor:0, skill_Frozen_Orb:0, skill_Cold_Mastery:0, skill_Charged_Bolt:0, skill_Static_Field:0, skill_Telekinesis:0, skill_Nova:0, skill_Lightning:0, skill_Chain_Lightning:0, skill_Teleport:0, skill_Energy_Shield:0, skill_Lightning_Mastery:0, skill_Thunder_Storm:0, skill_Fire_Bolt:0, skill_Warmth:0, skill_Blaze:0, skill_Inferno:0, skill_Fire_Ball:0, skill_Fire_Wall:0, skill_Enchant:0, skill_Meteor:0, skill_Fire_Mastery:0, skill_Hydra:0, 
-	/* oskills				*/	oskill_Warp:0, oskill_Ball_Lightning:0, oskill_Dangoon_Discharge_Proc:0, oskill_DangoonChain_Proc:0, oskill_DestructionVolcano_Proc:0, oskill_DestructionMBoulder_Proc:0, oskill_DestructionNova_Proc:0, oskill_CTC_Discharge_Proc:0, oskill_CTC_Chain_Light_Proc:0, oskill_CTC_Volcano_Proc:0,	oskill_CTC_MBoulder_Proc:0,	oskill_CTC_Nova_Proc:0,																					// Enigma, Ondal's Wisdom
+	/* oskills				*/	oskill_Warp:0, oskill_Ball_Lightning:0, oskill_Dangoon_Discharge_Proc:0, oskill_DangoonChain_Proc:0, oskill_DestructionVolcano_Proc:0, oskill_DestructionMBoulder_Proc:0, oskill_DestructionNova_Proc:0, oskill_CTC_Discharge_Proc:0, oskill_CTC_Chain_Light_Proc:0, oskill_CTC_Volcano_Proc:0,	oskill_CTC_MBoulder_Proc:0,	oskill_CTC_Nova_Proc:0, oskill_CTC_Fissure_Proc:0, oskill_CTC_Bone_Spear_Proc:0,																			// Enigma, Ondal's Wisdom
 	/* oskills  amazon		*/	oskill_Inner_Sight:0, oskill_Lethal_Strike:0, oskill_Valkyrie:0, oskill_Magic_Arrow:0, oskill_Guided_Arrow:0, oskill_Multiple_Shot:0, oskill_Immolation_Arrow:0, oskill_Evade:0,	// Blackoak Shield, Insight, Harmony, Witherstring, Wizendraw, Witchwild String, Widowmaker, Doomslinger, hellrack
 	/* oskills  barbarian	*/	oskill_Battle_Command:0, oskill_Battle_Orders:0, oskill_Battle_Cry:0, oskill_Bash:0, oskill_Edged_Weapon_Mastery:0, oskill_Whirlwind:0, oskill_Whirling_Axes:0,						// Call to Arms, Passion, The Grandfather, Chaos
 	/* oskills  druid		*/	oskill_Lycanthropy:0, oskill_Werebear:0, oskill_Werewolf:0, oskill_Feral_Rage:0, oskill_Flame_Dash:0, oskill_Summon_Dire_Wolf:0, 									// Frostwind, Wolfhowl, Beast, Flamebellow, Boneflesh
@@ -544,10 +544,10 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{only:"paladin", rarity:"magic", name:"Rose Branded Caduceus of the Magus", req_level:45, fcr:20, skills_combat_paladin:3, skill_Blessed_Hammer:3, skill_Fist_of_the_Heavens:3, skill_Holy_Shield:3, type:"scepter", base:"Caduceus"},
 	{only:"paladin", rarity:"magic", name:"Marshal's Caduceus of Quickness", req_level:45, ias:40, skills_offensive:3, skill_Holy_Freeze:3, skill_Holy_Shock:3, skill_Fist_of_the_Heavens:3, type:"scepter", base:"Caduceus"},
 	// Bows
-	{name:"Runewords---------------------------"},
+	{name:"Runewords---------------------------",  img:"Wirt's_Leg"},
 	{only:"amazon",	rarity:"rw", 	name:"Plague ­ ­ - ­ ­ Grand Matron Bow", sup:15, req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, skills_bows:3, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, twoHanded:1, type:"bow", base:"Grand Matron Bow", pod_changes:1},
-	{only:"amazon", rarity:"rw", 	name:"Brand ­ ­ - ­ ­ Grand Matron Bow", sup:15, req_level:65, ctc:[[35,14,"Amplify Damage","when struck"],[100,18,"Bone Spear","on striking"]], skills_bows:3, e_damage:340, itd:1, ar_bonus:20, damage_vs_demons:330, dstrike:20, pmh:1, knockback:1, explosive_attack:15, twoHanded:1, type:"bow", base:"Grand Matron Bow"},
-	{not:["amazon"], rarity:"rw", 	name:"Brand ­ ­ - ­ ­ Hydra Bow", sup:15, req_level:65, ctc:[[35,14,"Amplify Damage","when struck"],[100,18,"Bone Spear","on striking"]], e_damage:340, itd:1, ar_bonus:20, damage_vs_demons:330, dstrike:20, pmh:1, knockback:1, explosive_attack:15, twoHanded:1, type:"bow", base:"Hydra Bow"},
+	{only:"amazon", rarity:"rw", 	name:"Brand ­ ­ - ­ ­ Grand Matron Bow", sup:15, req_level:65, ctc:[[35,14,"Amplify Damage","when struck"],[100,18,"Bone Spear","on striking"]], oskill_CTC_Bone_Spear_Proc:18, skills_bows:3, e_damage:340, itd:1, ar_bonus:20, damage_vs_demons:330, dstrike:20, pmh:1, knockback:1, explosive_attack:15, twoHanded:1, type:"bow", base:"Grand Matron Bow"},
+	{not:["amazon"], rarity:"rw", 	name:"Brand ­ ­ - ­ ­ Hydra Bow", sup:15, req_level:65, ctc:[[35,14,"Amplify Damage","when struck"],[100,18,"Bone Spear","on striking"]], oskill_CTC_Bone_Spear_Proc:18, e_damage:340, itd:1, ar_bonus:20, damage_vs_demons:330, dstrike:20, pmh:1, knockback:1, explosive_attack:15, twoHanded:1, type:"bow", base:"Hydra Bow"},
 	{only:"amazon", rarity:"rw", 	name:"Faith ­ ­ - ­ ­ Grand Matron Bow", sup:15, req_level:65, twoHanded:1, aura:"Fanaticism", aura_lvl:15, all_skills:2, skills_bows:3, e_damage:330, itd:1, ar_bonus:300, damage_vs_undead:75, ar_vs_undead:50, fDamage_min:120, fDamage_max:120, all_res:15, gf:75, type:"bow", base:"Grand Matron Bow", reanimate:4},
 	{not:["amazon"], rarity:"rw", 	name:"Faith ­ ­ - ­ ­ Hydra Bow", sup:15, req_level:65, twoHanded:1, aura:"Fanaticism", aura_lvl:15, all_skills:2, e_damage:330, itd:1, ar_bonus:300, damage_vs_undead:75, ar_vs_undead:50, fDamage_min:120, fDamage_max:120, all_res:15, gf:75, type:"bow", base:"Hydra Bow", reanimate:4},
 	{only:"amazon", rarity:"rw", 	name:"Ice ­ ­ - ­ ­ Matriarchal Bow", sup:15, req_level:65, ctc:[[100,40,"Blizzard","when you level-up"],[25,22,"Frost Nova","on striking"]], aura:"Holy Freeze", aura_lvl:18, skills_bows:3, e_damage:210, ias:20, itd:1, cDamage:30, life_leech:7, enemy_cRes:-20, dstrike:20, gf_per_level:3.125, twoHanded:1, type:"bow", base:"Matriarchal Bow"},
@@ -677,7 +677,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 		{only:"none", rarity:"rw", name:"Fortitude ­ ­ - ­ ­ Scourge", sup:15, req_level:59, ctc:[[20,15,"Chilling Armor","when struck"]], e_damage:300, defense_bonus:200, fcr:25, life_per_level:1.5, all_res:30, damage_to_mana:12, light_radius:1, damage_min:9, ar:50, dstrike:20, half_freeze:1, type:"mace", base:"Scourge"},
 		{only:"none", rarity:"rw", name:"Spirit ­ ­ - ­ ­ Long Sword", type:"mace", req_level:25, all_skills:2, fcr_per_level:0.375, fhr:55, life_leech:7, mana_per_level:1, missile_defense:75, mAbsorb_flat:8, pDamage_all:75, pDamage_duration:5, lDamage_min:1, lDamage_max:50, cDamage_min:3, cDamage_max:14, base:"Long Sword", pod_changes:1},
 	// Special
-	{name:"Special-----------------------------"},
+	{name:"Special-----------------------------", img:"Wirt's_Leg"},
 	{name:"Horadric Malus", type:"hammer", req_strength:15, req_dexterity:15, special:1, damage_vs_undead:150, base_damage_min:6, base_damage_max:15, durability:83, max_sockets:2, img:"Horadric_Malus", tier:0},
 	{name:"Staff of Kings", type:"staff", twoHanded:1, req_strength:25, special:1, damage_vs_undead:50, base_damage_min:10, base_damage_max:15, durability:0, ias:50, all_res:10, max_sockets:2, img:"Staff_of_Kings", tier:0},
 	{name:"Horadric Staff", type:"staff", twoHanded:1, req_strength:30, special:1, damage_vs_undead:50, base_damage_min:12, base_damage_max:20, durability:0, ias:50, all_res:10, pRes:25, life:10, mana:10, max_sockets:3, img:"Horadric_Staff", tier:0},
@@ -688,7 +688,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{rarity:"common", name:"Wirt's Leg", type:"mace", special:2, damage_vs_undead:50, base_damage_min:2, base_damage_max:8, durability:0, max_sockets:3, sockets:3, img:"Wirt's_Leg"},
 	{rarity:"rw", name:"Plague ­ ­ - ­ ­ Wirt's Leg", req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"mace", base:"Wirts Leg", img:"Wirt's_Leg", pod_changes:1},
 	// Staves
-	{name:"Staves------------------------------"},
+	{name:"Staves------------------------------", img:"Wirt's_Leg"},
 	{name:"Bane Ash", req_level:5, e_damage:60, ias:20, mana:30, fRes:50, fDamage_min:4, fDamage_max:6, skill_Fire_Bolt:5, skill_Warmth:2, twoHanded:1, type:"staff", base:"Short Staff", img:"Bane_Ash"},
 	{name:"Serpent Lord", req_level:9, e_damage:40, pDamage_all:12, pDamage_duration:3, mana_leech:100, target_defense:-50, mana:10, pRes:50, light_radius:-1, twoHanded:1, type:"staff", base:"Long Staff", img:"Serpent_Lord"},
 	{name:"Spire of Lazarus", req_level:18, skills_sorceress:1, lDamage_min:1, lDamage_max:28, skill_Lightning_Surge:2, skill_Chain_Lightning:1, skill_Static_Field:3, mana_regen:43, energy:15, damage_reduced:5, lRes:75, twoHanded:1, type:"staff", base:"Gnarled Staff", img:"Spire_of_Lazarus"},
@@ -702,7 +702,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Ondal's Wisdom", req_level:66, all_skills:4, fcr:45, defense:550, energy:50, mDamage_reduced:8, oskill_Ball_Lightning:20, type:"staff", twoHanded:1, base:"Elder Staff", pod_changes:1, img:"Spire_of_Lazarus"},
 	{name:"Mang Song's Lesson", req_level:82, all_skills:5, fcr:30, enemy_lRes:-15, enemy_cRes:-15, enemy_fRes:-15, mana_regen:10, twoHanded:1, type:"staff", base:"Archon Staff", img:"Mang_Song's_Lesson"},
 	// Wands
-	{name:"Wands-------------------------------"},
+	{name:"Wands-------------------------------", img:"Wirt's_Leg"},
 	{name:"Torch of Iro", req_level:5, skills_necromancer:1, fDamage_min:5, fDamage_max:9, energy:10, mana_regen:5, life_leech:6, light_radius:3, type:"wand", base:"Wand", img:"Torch_of_Iro"},
 	{name:"Maelstrom", req_level:14, lDamage_min:1, lDamage_max:9, mana:13, fcr:30, lRes:40, skill_Iron_Maiden:3, skill_Amplify_Damage:3, skill_Terror:3, skill_Corpse_Explosion:3, type:"wand", base:"Yew Wand", img:"Maelstrom"},
 	{name:"Gravenspine", req_level:20, skills_necromancer:2, cDamage_min:4, cDamage_max:8, mana_leech:5, mana:50, dexterity:10, strength:10, type:"wand", base:"Bone Wand", img:"Gravenspine"},
@@ -725,7 +725,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"The Redeemer", req_level:72, skills_paladin:2, e_damage:300, damage_min:120, damage_max:120, damage_vs_demons:250, target_defense:-33, skill_Redemption:4, skill_Holy_Bolt:4, light_radius:3, req:-60, type:"scepter", base:"Mighty Scepter", pod_changes:1},	// TOCHECK: what was changed in PoD?
 	{name:"Astreon's Iron Ward", type:"scepter", req_level:66, skills_combat_paladin:4, e_damage:290, damage_min:85, damage_max:85, mDamage_min:80, mDamage_max:240, cblow:33, slows_target:25, damage_reduced:7, ias:10, bonus_ar:200, base:"Caduceus"},
 	// Maces
-	{name:"Maces-------------------------------"},
+	{name:"Maces-------------------------------", img:"Wirt's_Leg"},
 	{name:"Felloak", req_level:3, e_damage:80, fDamage_min:6, fDamage_max:8, knockback:1, lRes:60, fRes:20, type:"club", base:"Club", img:"Felloak"},
 	{name:"Stoutnail", req_level:5, e_damage:100, vitality:7, thorns:10, mDamage_reduced:2, type:"club", base:"Spiked Club", img:"Stoutnail"},
 	{name:"Crushflange", req_level:9, e_damage:60, cblow:33, knockback:1, fRes:50, strength:15, light_radius:2, type:"mace", base:"Mace", img:"Crushflange"},
@@ -750,10 +750,10 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Stone Crusher", req_level:68, e_damage:320, damage_min:30, damage_max:30, target_defense:-25, cblow:40, monster_defense_per_hit:-100, strength:30, type:"hammer", base:"Legendary Mallet"},
 	{name:"Schaefer's Hammer", req_level:79, ctc:[[15,26,"Ball Lightning","on striking"]], e_damage:130, max_damage_per_level:2, lDamage_min:50, lDamage_max:200, ar_per_level:8, ias:20, lRes:75, life:50, light_radius:1, indestructible:1, ethereal:0, type:"hammer", base:"Legendary Mallet", pod_changes:1, img:"Ironstone"},
 	{name:"Windhammer", req_level:68, ctc:[[33,22,"Twister","on striking"]], e_damage:230, cblow:50, ias:60, type:"hammer", twoHanded:1, base:"Ogre Maul", img:"Windhammer"},
-	{name:"Earth Shifter", req_level:69, ctc:[[25,19,"Fissure","on striking"]], skills_elemental:7, ias:10, e_damage:300, cblow:33, fcr:10, type:"hammer", twoHanded:1, base:"Thunder Maul", cskill:[[14,"Volcano",30]]},
+	{name:"Earth Shifter", req_level:69, oskill_CTC_Fissure_Proc:19, ctc:[[25,19,"Fissure","on striking"]], skills_elemental:7, ias:10, e_damage:300, cblow:33, fcr:10, type:"hammer", twoHanded:1, base:"Thunder Maul", cskill:[[14,"Volcano",30]]},
 	{name:"The Cranium Basher", twoHanded:1, req_level:87, ctc:[[4,1,"Amplify Damage","on striking"]], e_damage:240, damage_min:20, damage_max:20, ias:20, cblow:75, all_res:25, strength:25, ethereal:0, indestructible:1, type:"hammer", base:"Thunder Maul"},
 	// Axes
-	{name:"Axes--------------------------------"},
+	{name:"Axes--------------------------------", img:"Wirt's_Leg"},
 	{name:"The Gnasher", req_level:5, e_damage:70, cblow:20, owounds:50, strength:8, type:"axe", base:"Hand Axe", img:"The_Gnasher"},
 	{name:"Deathspade", req_level:9, e_damage:70, damage_min:8, ar_bonus:15, blind_on_hit:1, mana_per_kill:4, type:"axe", base:"Axe", img:"Deathspade"},
 	{name:"Bladebone", req_level:15, e_damage:50, damage_vs_undead:100, fDamage_min:8, fDamage_max:12, ias:20, ar_vs_undead:40, defense:20, type:"axe", base:"Double Axe", img:"Bladebone"},
@@ -783,7 +783,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Messerschmidt's Reaver", req_level:70, e_damage:200, e_max_damage_per_level:2.5, fDamage_min:20, fDamage_max:240, ar_bonus:100, all_attributes:15, durability_extra:25, twoHanded:1, type:"axe", base:"Champion Axe", img:"Messerschmidt's_Reaver"},
 	{name:"Executioner's Justice", req_level:75, ctc:[[50,6,"Decrepify","when you kill an enemy"]], e_damage:290, cblow:25, ias:30, target_defense:-33, twoHanded:1, type:"axe", base:"Glorious Axe", img:"Humongous"},
 	// Swords
-	{name:"Swords------------------------------"},
+	{name:"Swords------------------------------", img:"Wirt's_Leg"},
 	{name:"Rixot's Keen", req_level:2, e_damage:100, damage_min:5, cblow:25, ar_bonus:20, defense:25, light_radius:2, type:"sword", base:"Short Sword", img:"Rixot's_Keen"},
 	{name:"Blood Crescent", req_level:7, e_damage:80, owounds:33, ias:15, life_leech:15, all_res:15, life:15, light_radius:4, type:"sword", base:"Scimitar", img:"Blood_Crescent"},
 	{name:"Skewer of Krintiz", req_level:10, e_damage:50, damage_min:3, damage_max:7, itd:1, mana_leech:7, dexterity:10, strength:10, type:"sword", base:"Saber", img:"Skewer_of_Krintiz"},
@@ -820,7 +820,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Lightsabre", req_level:58, ctc:[[5,20,"Chain Lightning","on attack"]], e_damage:200, mana_leech:7, ias:20, itd:1, lAbsorb:15, light_radius:7, damage_min:10, damage_max:30, mDamage_min:60, mDamage_max:120, lDamage_min:1, lDamage_max:200, type:"sword", ethereal:0, base:"Phase Blade", pod_changes:1, img:"Lightsabre"},
 	{name:"Azurewrath", req_level:85, aura:"Sanctuary", aura_lvl:13, all_skills:1, e_damage:270, ias:30, mDamage_min:250, mDamage_max:500, cDamage_min:250, cDamage_max:500, all_attributes:10, light_radius:3, type:"sword", ethereal:0, base:"Phase Blade"},
 	// Daggers
-	{name:"Daggers-----------------------------"},
+	{name:"Daggers-----------------------------", img:"Wirt's_Leg"},
 	{name:"Gull", req_level:4, damage_min:1, damage_max:15, mf:100, mana:-5, type:"dagger", base:"Dagger"},
 	{name:"The Diggler", req_level:11, e_damage:50, itd:1, ias:30, cRes:25, fRes:25, dexterity:10, type:"dagger", base:"Dirk", img:"The_Diggler"},
 	{name:"The Jade Tan Do", req_level:19, ar:150, pDamage_all:180, pDamage_duration:4, pDamage:15, pRes:95, pRes_max:20, cbf:1, type:"dagger", base:"Kris", img:"The_Jade_Tan_Do"},
@@ -833,7 +833,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Fleshripper", req_level:68, e_damage:300, target_defense:-50, cblow:25, dstrike:33, owounds:50, pmh:1, slows_target:20, type:"dagger", base:"Fanged Knife", img:"The_Jade_Tan_Do"},
 	{name:"Ghostflame", req_level:66, e_damage:240, itd:1, mDamage_min:108, mDamage_max:108, mana_leech:15, light_radius:2, type:"dagger", indestructible:1, ethereal:1, base:"Legend Spike", img:"Ghostflame"},
 	// Polearms
-	{name:"Polearms----------------------------"},
+	{name:"Polearms----------------------------", img:"Wirt's_Leg"},
 	{name:"Dimoak's Hew", req_level:8, e_damage:100, ias:20, dexterity:15, defense:-8, twoHanded:1, type:"polearm", base:"Bardiche"},
 	{name:"Steelgoad", req_level:14, e_damage:80, dstrike:30, ar:30, all_res:5, flee_on_hit:75, durability_extra:40, twoHanded:1, type:"polearm", base:"Voulge", img:"Steelgoad"},
 	{name:"Soul Harvest", req_level:19, e_damage:90, owounds:30, mana_leech:10, ar:45, energy:5, all_res:20, twoHanded:1, type:"polearm", base:"Scythe", img:"Soul_Harvest"},
@@ -846,12 +846,12 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Pierre Tombale Couant", req_level:43, skills_barbarian:3, e_damage:220, damage_min:12, damage_max:20, dstrike:55, ar:200, mana_leech:6, fhr:30, twoHanded:1, type:"polearm", base:"Partizan"},
 	{name:"Husoldal Evo", req_level:44, e_damage:200, damage_min:20, damage_max:32, ias:20, ar:250, pmh:1, life_replenish:20, twoHanded:1, type:"polearm", base:"Bec-de-Corbin"},
 	{name:"Grim's Burning Dead", req_level:45, skills_necromancer:3, e_damage:180, fDamage_min:131, fDamage_max:232, target_defense:-50, defense_bonus:20, ar:250, fRes:45, thorns:8, req:-50, twoHanded:1, type:"polearm", base:"Grim Scythe"},
-	{name:"Bonehew", req_level:64, ctc:[[50,16,"Bone Spear","on attack"]], e_damage:320, pmh:1, ias:30, max_energy:20, extra_Bone_Spears:2, sockets:3, twoHanded:1, type:"polearm", base:"Ogre Axe", pod_changes:1, img:"Bonehew"},
+	{name:"Bonehew", req_level:64, oskill_CTC_Bone_Spear_Proc:16, ctc:[[50,16,"Bone Spear","on attack"]], e_damage:320, pmh:1, ias:30, max_energy:20, extra_Bone_Spears:2, sockets:3, twoHanded:1, type:"polearm", base:"Ogre Axe", pod_changes:1, img:"Bonehew"},
 	{name:"Stormspire", req_level:70, ctc:[[9,20,"Charged Bolt","when struck"],[30,24,"Ball Lightning","on attack"]], e_damage:250, lDamage_min:1, lDamage_max:237, ias:30, lRes:50, strength:10, thorns_lightning:27, indestructible:1, ethereal:0, twoHanded:1, type:"polearm", base:"Giant Thresher", pod_changes:1},
 	{name:"The Reaper's Toll", req_level:75, ctc:[[33,1,"Decrepify","on striking"]], e_damage:240, itd:1, cDamage_min:4, cDamage_max:44, life_leech:15, dstrike:33, req:-25, type:"polearm", twoHanded:1, base:"Thresher"},
 	{name:"Tomb Reaver", req_level:84, e_damage:280, damage_vs_undead:230, ias:60, ar_vs_undead:350, all_res:50, life_per_kill:14, mf:80, light_radius:4, sockets:3, twoHanded:1, type:"polearm", base:"Cryptic Axe", reanimate:10},
 	// Spears
-	{name:"Spears------------------------------"},
+	{name:"Spears------------------------------", img:"Wirt's_Leg"},
 	{name:"The Dragon Chang", req_level:8, damage_vs_undead:100, damage_min:10, fDamage_min:3, fDamage_max:6, ar:35, light_radius:2, twoHanded:1, type:"spear", base:"Spear", img:"The_Dragon_Chang"},
 	{name:"Razortine", req_level:12, e_damage:50, slows_target:25, ias:30, target_defense:-50, dexterity:8, strength:15, twoHanded:1, type:"spear", base:"Trident", img:"Razortine"},
 	{name:"Bloodthief", req_level:17, e_damage:70, owounds:35, life_leech:12, life:26, strength:10, twoHanded:1, type:"spear", base:"Brandistock", img:"Bloodthief"},
@@ -867,7 +867,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Steel Pillar", req_level:69, e_damage:310, cblow:25, target_defense:-50, defense_bonus:80, damage_reduced:40, indestructible:1, ethereal:0, twoHanded:1, type:"spear", base:"War Pike"},
 //	{name:"Steel Pillar", req_level:69, e_damage:270, cblow:25, target_defense:-50, ias:25, defense_bonus:80, damage_reduced:32, indestructible:1, ethereal:0, twoHanded:1, type:"spear", base:"War Pike"},
 	// Javelins
-	{name:"Thrown------------------------------"},
+	{name:"Thrown------------------------------", img:"Wirt's_Leg"},
 	{name:"Demon's Arch", req_level:68, e_damage:210, fDamage_min:232, fDamage_max:323, lDamage_min:23, lDamage_max:333, ias:30, life_leech:12, autoreplenish:1, type:"javelin", base:"Balrog Spear", img:"Demon's_Arch"},
 	{name:"Wraith Flight", req_level:76, e_damage:190, life_leech:13, mana_per_kill:15, autoreplenish:1, ethereal:1, type:"javelin", base:"Ghost Glaive", img:"Wraith_Flight"},
 	{name:"Gargoyle's Bite", req_level:70, e_damage:230, pDamage_all:293, pDamage_duration:10, life_leech:15, owounds:30, owounds_dps:100, autoreplenish:1, type:"javelin", base:"Winged Harpoon", img:"Gargoyle's_Bite", cskill:[[11,"Plague Javelin",60]]},
@@ -903,7 +903,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{set_Berserker:1, name:"Berserker's Hatchet", req_level:3, ar_bonus:30, mana_leech:5, type:"axe", base:"Double Axe", rarity:"set", set_bonuses:["set_Berserker",{},{e_damage:50},{}], img:"Berserker's_Hatchet"},
 	{set_Arctic:1, name:"Arctic Horn", twoHanded:1, req_level:2, e_damage:50, ar_bonus:20, extra_arrows_Cold_Arrow:2, type:"bow", base:"Short War Bow", rarity:"set", set_bonuses:["set_Arctic",{},{ar_per_level:8},{cDamage_min:20, cDamage_max:30},{}], pod_changes:1, img:"Arctic_Horn"},
 	// Bows
-	{name:"Bows--------------------------------"},
+	{name:"Bows--------------------------------", img:"Wirt's_Leg"},
 	{name:"Pluckeye", req_level:7, e_damage:100, ar:28, mana_leech:3, life:10, mana_per_kill:2, light_radius:2, twoHanded:1, type:"bow", base:"Short Bow", img:"Pluckeye"},
 	{name:"Witherstring", req_level:13, e_damage:50, damage_min:1, damage_max:3, ias:30, ar:50, oskill_Magic_Arrow:3, twoHanded:1, type:"bow", base:"Hunter's Bow", pod_changes:1, img:"Witherstring"},
 	{name:"Raven Claw", req_level:15, e_damage:70, ar_bonus:50, dexterity:3, strength:3, explosive_attack:3, twoHanded:1, type:"bow", base:"Long Bow", img:"Raven_Claw"},
@@ -924,7 +924,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Widowmaker", req_level:65, e_damage:200, itd:1, dstrike:33, oskill_Guided_Arrow:5, oskill_Magic_Arrow:11, twoHanded:1, type:"bow", base:"Ward Bow", pod_changes:1, img:"Widowmaker"},
 	{name:"Windforce", req_level:73, type:"bow", ias:20, mana_leech:8, strength:10, dexterity:5, knockback:1, e_damage:250, max_damage_per_level:3.125, heal_stam:30, twoHanded:1, base:"Hydra Bow", img:"Windforce"},
 	// Crossbows
-	{name:"Crossbows---------------------------"},
+	{name:"Crossbows---------------------------", img:"Wirt's_Leg"},
 	{name:"Leadcrow", req_level:9, e_damage:70, dstrike:25, ar:40, pRes:30, life:10, dexterity:10, twoHanded:1, type:"crossbow", base:"Light Crossbow", img:"Leadcrow"},
 	{name:"Ichorsting", req_level:18, e_damage:50, pDamage_all:30, pDamage_duration:3, ias:20, pierce:50, ar:50, dexterity:20, twoHanded:1, type:"crossbow", base:"Crossbow", img:"Ichorsting"},
 	{name:"Hellcast", req_level:27, e_damage:80, fDamage_min:15, fDamage_max:35, ias:20, ar:70, fRes_max:15, fRes:15, explosive_attack:5, twoHanded:1, type:"crossbow", base:"Heavy Crossbow", img:"Hellcast"},
@@ -936,15 +936,16 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Hellrack", req_level:76, oskill_Immolation_Arrow:18, e_damage:230, ar_bonus:150, fDamage_min:63, fDamage_max:324, cDamage_min:63, cDamage_max:324, lDamage_min:63, lDamage_max:324, ias:20, sockets:2, twoHanded:1, type:"crossbow", base:"Colossus Crossbow", img:"Hellcast"},
 	{name:"Gut Siphon", req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},
 	// Non-Unique
-	{name:"Rare/Craft/Synth--------------------"},
+	{name:"Rare/Craft/Synth--------------------", img:"Wirt's_Leg"},
 	{rarity:"rare", name:"Heavenly Blade", req_level:54, ctc:[[10,1,"Amplify Damage","on striking"]], ias:40, e_damage:450, ar:250, ar_per_level:16.5, max_damage_per_level:0.5, req:-30, type:"sword", base:"Phase Blade"},
 	{rarity:"craft", name:"Cruel Master's Blood Axe", req_level:64, ctc:[[10,1,"Amplify Damage","on striking"]], ias:40, e_damage:510, ar:250, ar_per_level:16.5, max_damage_per_level:0.5, life_leech:4, life:20, req:-30, type:"axe", base:"Berserker Axe"},
 	{rarity:"craft", name:"Grandmaster's Hitpower Maul", req_level:65, ctc:[[5,4,"Frost Nova","when hit"]], ias:40, e_damage:510, ar:250, ar_per_level:16.5, max_damage_per_level:0.5, damage_max:20, thorns:7, req:-30, twoHanded:1, type:"hammer", base:"Thunder Maul"},
 	// User found synth items
 //	{synth:"true", name:"Testeroo",req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},
-	{synth:"true", name:"Zardoz's Synth Hexfire", req_level:33, ctc:[[25,19,"fissure","on striking"]], skills_fire_all:3, skills_elemental:7, explosive_attack:6, e_damage:467, itd:1, dexterity:38, energy:10, fres:25, type:"sword", base:"Shamshir", pod_changes:1, img:"Hexfire"},
-	{synth:"true", name:"Kg's Synth Fleshripper", req_level:68, all_skills:4, fcr:45, e_damage:276, cblow:25, owounds:50, oskill_Ball_Lightning:20, type:"dagger", base:"Fanged Knife", img:"The_Jade_Tan_Do"},
-	{synth:"true", name:"Aramex's Synth Gargoyle's Bite", req_level:70, damage_min:15, damage_max:45, pDamage_all:1039, pDamage_duration:10, pDamage:14, owounds:30, skill_Desecrate:4, skill_Deadly_Poison:5, slows_target:50, cRes:5, lRes:5, fRes:5, pRes:100, autoreplenish:1, type:"javelin", base:"Winged Harpoon", img:"Gargoyle's_Bite", cskill:[[11,"Plague Javelin",60]]},
+	{synth:"true", name:"Synth Zardoz's Hexfire", req_level:33, ctc:[[25,19,"fissure","on striking"]], skills_fire_all:3, skills_elemental:7, explosive_attack:6, e_damage:467, itd:1, dexterity:38, energy:10, fres:25, type:"sword", base:"Shamshir", pod_changes:1, img:"Hexfire"},
+	{synth:"true", name:"Synth Kg's Fleshripper", req_level:68, all_skills:4, fcr:45, e_damage:276, cblow:25, owounds:50, oskill_Ball_Lightning:20, type:"dagger", base:"Fanged Knife", img:"The_Jade_Tan_Do"},
+	{synth:"true", name:"Synth Aramex's Gargoyle's Bite", req_level:70, damage_min:15, damage_max:45, pDamage_all:1039, pDamage_duration:10, pDamage:14, owounds:30, skill_Desecrate:4, skill_Deadly_Poison:5, slows_target:50, cRes:5, lRes:5, fRes:5, pRes:100, autoreplenish:1, type:"javelin", base:"Winged Harpoon", img:"Gargoyle's_Bite", cskill:[[11,"Plague Javelin",60]]},
+	{synth:"true", name:"Synth Chaos' Bloodrise", req_level:15, all_skills:2, skills_fire:3, ias:10, e_damage:175, ar_bonus:50, owounds:25, skill_Sacrifice:3, skill_Teleport:3, defense:450, melee_defense:200, all_res:16, damage_to_mana:30, type:"mace", base:"Morning Star", img:"Bloodrise"},
 
 		],
 

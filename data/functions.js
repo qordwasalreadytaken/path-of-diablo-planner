@@ -4000,11 +4000,11 @@ function updatePrimaryStats() {
 	if (basic_min > 0 || basic_max > 0) { document.getElementById("basic_attack").innerHTML = basic_min + "-" + basic_max + " {"+Math.ceil((basic_min+basic_max)/2)+"}";
 		var breakdown = "Damage Breakdown- "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
 		if (Math.floor(physDamage[0]*physDamage[2]) > 0) {breakdown += "\nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
-		if (dmg.fMin > 0) {breakdown += "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax};
-		if (dmg.cMin > 0) {breakdown += "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax};
-		if (dmg.lMin > 0) {breakdown += "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax};
-		if (dmg.mMin > 0) {breakdown += "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
-		if (dmg.pMin > 0) {breakdown += "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+		if (dmg.fMin > 0) {breakdown += "\nFire Damage: " + Math.floor(dmg.fMin) + "-" + Math.floor(dmg.fMax)};
+		if (dmg.cMin > 0) {breakdown += "\nCold Damage: " + Math.floor(dmg.cMin) + "-" + Math.floor(dmg.cMax)};
+		if (dmg.lMin > 0) {breakdown += "\nLight Damage: " + Math.floor(dmg.lMin) + "-" + Math.floor(dmg.lMax)};
+		if (dmg.mMin > 0) {breakdown += "\nMagic Damage: " + Math.floor(dmg.mMin) + "-" + Math.floor(dmg.mMax)};
+		if (dmg.pMin > 0) {breakdown += "\nPoison Damage: " + Math.floor(dmg.pMin) + "-" + Math.floor(dmg.pMax)};
 		var TooltipElement = document.getElementById("basic_attack");
 		TooltipElement.title = breakdown;
 	}
@@ -4019,11 +4019,11 @@ function updatePrimaryStats() {
 			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("offhand_basic_damage").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"
 				var ohdbreakdown = "Damage Breakdown- "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
 				if (Math.floor(physDamage_offhand[0]*physDamage_offhand[2]) > 0) {ohdbreakdown += "\nPhys Damage: " + Math.floor(physDamage_offhand[0]*physDamage_offhand[2]) + "-" + Math.floor(physDamage_offhand[1]*physDamage_offhand[2])};
-				if (ohd.fMin > 0) {ohdbreakdown += "\nFire Damage: " + ohd.fMin + "-" + ohd.fMax};
-				if (ohd.cMin > 0) {ohdbreakdown += "\nCold Damage: " + ohd.cMin + "-" + ohd.cMax};
-				if (ohd.lMin > 0) {ohdbreakdown += "\nLight Damage: " + ohd.lMin + "-" + ohd.lMax};
-				if (ohd.mMin > 0) {ohdbreakdown += "\nMagic Damage: " + ohd.mMin + "-" + ohd.mMax};
-				if (ohd.pMin > 0) {ohdbreakdown += "\nPoison Damage: " + ohd.pMin + "-" + ohd.pMax};
+				if (ohd.fMin > 0) {ohdbreakdown += "\nFire Damage: " + Math.floor(ohd.fMin) + "-" + Math.floor(ohd.fMax)};
+				if (ohd.cMin > 0) {ohdbreakdown += "\nCold Damage: " + Math.floor(ohd.cMin) + "-" + Math.floor(ohd.cMax)};
+				if (ohd.lMin > 0) {ohdbreakdown += "\nLight Damage: " + Math.floor(ohd.lMin) + "-" + Math.floor(ohd.lMax)};
+				if (ohd.mMin > 0) {ohdbreakdown += "\nMagic Damage: " + Math.floor(ohd.mMin) + "-" + oMath.floor(hd.mMax)};
+				if (ohd.pMin > 0) {ohdbreakdown += "\nPoison Damage: " + Math.floor(ohd.pMin) + "-" + Math.floor(ohd.pMax)};
 				var TooltipElement = document.getElementById("offhand_basic_damage");
 				TooltipElement.title = ohdbreakdown;
 			}
@@ -4662,6 +4662,7 @@ function updateSkills() {
 //	num: 1 or 2 (for skill1 or skill2)
 // ---------------------------------
 function checkSkill(skillName, num) {
+	skill2Breakdown = ""
 	if (skillName == " ­ ­ ­ ­ Skill "+num) { document.getElementById("dropdown_skill"+num).selectedIndex = 0 }
 	if (document.getElementById("dropdown_skill"+num).selectedIndex == 0) { skillName = " ­ ­ ­ ­ Skill "+num }
 	selectedSkill[num-1] = skillName
@@ -4709,11 +4710,18 @@ function checkSkill(skillName, num) {
 		if (addmore == "yes") {
 //			addSomemore(this)
 //			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nWPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
-			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + dmg.fMin + "-" + dmg.fMax};
-			if (dmg.cMin > 0) {skill2Breakdown += "\nWCold Damage: " + dmg.cMin + "-" + dmg.cMax};
-			if (dmg.lMin > 0) {skill2Breakdown += "\nWLight Damage: " + dmg.lMin + "-" + dmg.lMax};
-			if (dmg.mMin > 0) {skill2Breakdown += "\nWMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
-			if (dmg.pMin > 0) {skill2Breakdown += "\nWPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+			if (dmg.fMin > 0) {skill2Breakdown += "\nWpnFire Damage: " + dmg.fMin + "-" + dmg.fMax};
+			if (dmg.cMin > 0) {skill2Breakdown += "\nWpnCold Damage: " + dmg.cMin + "-" + dmg.cMax};
+			if (dmg.lMin > 0) {skill2Breakdown += "\nWpnLight Damage: " + dmg.lMin + "-" + dmg.lMax};
+			if (dmg.mMin > 0) {skill2Breakdown += "\nWpnMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
+			if (dmg.pMin > 0) {skill2Breakdown += "\nWpnPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+
+//			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + nonPhys_min};
+//			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + (dmg.fMin+fDamage_min) + "-" + (dmg.fMax+fDamage_max)};
+//			if (dmg.cMin > 0) {skill2Breakdown += "\nWCold Damage: " + dmg.cMin + "-" + dmg.cMax};
+//			if (dmg.lMin > 0) {skill2Breakdown += "\nWLight Damage: " + dmg.lMin + "-" + dmg.lMax};
+//			if (dmg.mMin > 0) {skill2Breakdown += "\nWMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
+//			if (dmg.pMin > 0) {skill2Breakdown += "\nWPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
 			
 		}
 		TooltipElement = document.getElementById("skill2_info");

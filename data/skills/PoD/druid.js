@@ -187,14 +187,14 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		if (spell == 0) { skillAr = Math.floor(ar*(1+ar_bonus/100)); }
 
 	// Get breakdown of sources of skill damage
-		var skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
+		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
 		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
 		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
 		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
 		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
 		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
 		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		if (attack == 1){
+		if (attack != 0){
 			addmore = "yes"
 		}
 //		TooltipElement = document.getElementById("skill2_info");

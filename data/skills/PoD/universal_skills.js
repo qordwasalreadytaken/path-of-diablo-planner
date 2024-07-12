@@ -306,8 +306,8 @@ var character_any = {
 		if (attack == 1){
 			addmore = "yes"
 		}
-//		TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
+		TooltipElement = document.getElementById("skill2_info");
+		TooltipElement.title = skill2Breakdown;
 	
 	//		if (selectedSkill.num == 1) {
 //		var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;

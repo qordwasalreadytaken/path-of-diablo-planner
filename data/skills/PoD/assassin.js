@@ -166,9 +166,10 @@ var character_assassin = {class_name:"Assassin", strength:20, dexterity:20, vita
 		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
 		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
 		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		if (attack != 0){
+		if (attack == 1){
 			addmore = "yes"
 		}
+
 //			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
 //			if (dmg.fMin > 0) {skill2Breakdown += "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax};
 //			if (dmg.cMin > 0) {skill2Breakdown += "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax};

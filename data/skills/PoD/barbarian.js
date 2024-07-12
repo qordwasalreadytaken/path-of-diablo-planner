@@ -97,7 +97,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		var e_damage_offhand = 0; if (offhandType == "weapon") { e_damage_offhand = (~~(equipped["offhand"].e_damage) + ~~(socketed["offhand"].totals.e_damage) + ~~(corruptsEquipped["offhand"].e_damage)); };
 		var damage_enhanced = character.damage_bonus + character.e_damage - e_damage_offhand;
 
-		if (skill.name == "War Cry") {				damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
+		if (skill.name == "War Cry") {				attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Double Swing") { 	damage_bonus = character.getSkillData(skill,lvl,0); ar_bonus = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Frenzy") { 			weapon_damage = 115; mDamage_min = phys_min*character.getSkillData(skill,lvl,0)/100; mDamage_max = phys_max*character.getSkillData(skill,lvl,0)/100; damage_bonus = character.getSkillData(skill,lvl,1); ar_bonus = character.getSkillData(skill,lvl,2); }
 		else if (skill.name == "Concentrate") {		weapon_damage = 160; ar_bonus = character.getSkillData(skill,lvl,1); damage_bonus = character.getSkillData(skill,lvl,2); }
@@ -132,6 +132,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 
 		// Get breakdown of sources of skill damage
 		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
+		if (damage_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(damage_min) + "-" + Math.floor(damage_max)};
 		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
 		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
 		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
@@ -167,7 +168,8 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 //		TooltipElement.title = skill2Breakdown;
 //		}		
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
-		return result
+		return result; 
+		return skill2Breakdown; 
 	},
 	
 	// setSkillAmounts - helps update class-related skill levels, called by calculateSkillAmounts()

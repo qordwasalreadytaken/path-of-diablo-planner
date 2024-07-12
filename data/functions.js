@@ -414,7 +414,7 @@ function toggleSynthwep(synthwep) {
 	if (synthwep.checked) { settings.synthwep = 1 } else { settings.synthwep = 0 }
 //	if (settings.synthwep == 1) 
 	update()
-//	updateURL()
+	updateURL()
 //	setCharacterInfo()
 	getCharacterInfo()
 //	loadItems(equipmentGroups[i], equipmentDropdowns[i], className) 
@@ -690,6 +690,11 @@ function loadParams() {
 			document.getElementById("autocast").checked = false
 			//toggleAutocast(param_autocast)	// TODO: fix toggleAutocast parameter to take a boolean rather than the UI element
 			settings.autocast = param_autocast
+		}
+		if (param_synthwep == 0) {
+			document.getElementById("synthwep").checked = false
+			//toggleAutocast(param_autocast)	// TODO: fix toggleAutocast parameter to take a boolean rather than the UI element
+			settings.autocast = param_synthwep
 		}
 	//}
 	updateSkills()
@@ -4710,11 +4715,11 @@ function checkSkill(skillName, num) {
 		if (addmore == "yes") {
 //			addSomemore(this)
 //			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nWPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
-			if (dmg.fMin > 0) {skill2Breakdown += "\nWpnFire Damage: " + dmg.fMin + "-" + dmg.fMax};
-			if (dmg.cMin > 0) {skill2Breakdown += "\nWpnCold Damage: " + dmg.cMin + "-" + dmg.cMax};
-			if (dmg.lMin > 0) {skill2Breakdown += "\nWpnLight Damage: " + dmg.lMin + "-" + dmg.lMax};
-			if (dmg.mMin > 0) {skill2Breakdown += "\nWpnMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
-			if (dmg.pMin > 0) {skill2Breakdown += "\nWpnPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
+			if (dmg.fMin > 0) {skill2Breakdown += "\nAdded Fire Damage: " + Math.floor(dmg.fMin) + "-" + Math.floor(dmg.fMax)};
+			if (dmg.cMin > 0) {skill2Breakdown += "\nAdded Cold Damage: " + Math.floor(dmg.cMin) + "-" + Math.floor(dmg.cMax)};
+			if (dmg.lMin > 0) {skill2Breakdown += "\nAdded Light Damage: " + Math.floor(dmg.lMin) + "-" + Math.floor(dmg.lMax)};
+			if (dmg.mMin > 0) {skill2Breakdown += "\nAdded Magic Damage: " + Math.floor(dmg.mMin) + "-" + Math.floor(dmg.mMax)};
+			if (dmg.pMin > 0) {skill2Breakdown += "\nAdded Poison Damage: " + Math.floor(dmg.pMin) + "-" + Math.floor(dmg.pMax)};
 
 //			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + nonPhys_min};
 //			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + (dmg.fMin+fDamage_min) + "-" + (dmg.fMax+fDamage_max)};

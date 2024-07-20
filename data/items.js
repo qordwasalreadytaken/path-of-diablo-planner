@@ -1203,6 +1203,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{synth:"true", only:"barbarian", debug:1, name:"Aramex Special (Barbarian Only)", req_level:100, oskill_Blizzard:20},
 	{debug:1, name:"Enflame sorc in party", fDamage_min:837, fDamage_max:1113},
 	{debug:1, name:"Frigerate sorc in party", cDamage_min:552, cDamage_max:758},
+	{debug:1, only:"assassin", name:"Dual plague on swap", all_skills:4, skill_Blade_Shield:6, skill_Venom:6},
 
 	
 	

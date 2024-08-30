@@ -82,10 +82,18 @@ var character_paladin = {class_name:"Paladin", strength:25, dexterity:20, vitali
 			result.life_replenish = Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]);
 			result.poison_length_reduced = skill.data.values[2][lvl]; result.curse_length_reduced = skill.data.values[2][lvl]; result.radius = 24;
 		}
+		if ((skill.name == "Cleansing")&&(character.doubleprayerheal ==1)) {
+			result.life_replenish = (Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]))*2;
+			result.poison_length_reduced = skill.data.values[2][lvl]; result.curse_length_reduced = skill.data.values[2][lvl]; result.radius = 24;
+		}
 		if (skill.name == "Resist Lightning") { result.lRes = skill.data.values[1][lvl]; result.lRes_max = skill.data.values[2][lvl]; result.radius = 28; }
 		if (skill.name == "Vigor") { result.velocity = skill.data.values[0][lvl]; result.max_stamina = skill.data.values[1][lvl]; result.heal_stam = skill.data.values[2][lvl]; result.radius = 21.3; }
 		if (skill.name == "Meditation") {
 			result.life_replenish = Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]);
+			result.mana_regen = skill.data.values[1][lvl]; result.radius = 24;
+		}
+		if ((skill.name == "Meditation")&&(character.doubleprayerheal ==1)) {
+			result.life_replenish = (Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels])*2);
 			result.mana_regen = skill.data.values[1][lvl]; result.radius = 24;
 		}
 		if (skill.name == "Redemption") { result.redeem_chance = skill.data.values[0][lvl]; result.redeem_amount = skill.data.values[1][lvl]; result.radius = 16; }

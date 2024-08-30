@@ -1005,7 +1005,7 @@ extra_arrows_Ice_Arrow:{index:["extra_arrows_Ice_Arrow"], format:["Ice Arrow Fir
 extra_conversion_Magic_Arrow:{index:["extra_conversion_Magic_Arrow"], format:["+","% Magic Arrow Damage Converted to Magic"]},
 additionalfirebolt:{index:[], format:["+2 Fire Bolt projectiles per 20 Fire Bolt levels"]},
 fireballlife:{index:[], format:["+5 Life gained per Fireball cast"]},
-doubleprayerheal:{index:[], format:["Double Prayer Healing"]},
+doubleprayerheal:{index:[], format:["Prayer's Healing Affects Doubled"]},
 
 
 flamme:{index:["flamme"], format:["","% of Life dealt per second as fire"]},

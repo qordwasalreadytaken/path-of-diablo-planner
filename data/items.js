@@ -44,7 +44,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	var equipment = {
 		helm: [
 	{name:"Helm"},
-	{rarity:"craft", name:"Qords Diadem of Socket Testing", req_level:64, sockets:3, base:"Diadem"},
+	{rarity:"craft", name:"Qords Diadem of Socket Testing", req_level:64, sockets:3, physicalDamage:5, base:"Diadem"},
 	{not:["amazon","assassin","druid","necromancer","paladin","sorceress","Rogue Scout","Desert Guard","Iron Wolf"], name:"Arreat's Face", req_level:42, skills_combat_barbarian:2, skills_barbarian:2, fhr:30, ar_bonus:20, life_leech:6, e_def:200, strength:20, dexterity:20, all_res:30, base:"Slayer Guard"},
 	{not:["amazon","assassin","druid","necromancer","paladin","sorceress","Rogue Scout","Desert Guard","Iron Wolf"], name:"Wolfhowl", req_level:79, skills_warcries:3, oskill_Lycanthropy:6, oskill_Werewolf:6, oskill_Feral_Rage:6, e_def:150, strength:15, dexterity:15, vitality:15, base:"Fury Visor", cskill:[[15,"Summon Dire Wolf",18]]},	// TODO: something goes wrong when trying to switch to a Druid while Wolfhowl is equipped on the current character
 	{not:["amazon","assassin","druid","necromancer","paladin","sorceress","Rogue Scout","Desert Guard","Iron Wolf"], name:"Demonhorn's Edge", req_level:61, skills_warcries:3, skills_masteries:3, skills_combat_barbarian:3, e_def:160, ias:10, life_leech:6, thorns:77, base:"Destroyer Helm"},
@@ -279,8 +279,8 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{only:"sorceress", name:"Ormus' Robes (Fire Wall)", req_level:75, skill_Fire_Wall:3, fcr:20, cDamage:15, lDamage:15, fDamage:15, defense:20, mana_regen:15, base:"Dusk Shroud", img:"Ormus'_Robes"},
 	{only:"sorceress", name:"Ormus' Robes (Enflame)", req_level:75, skill_Enflame:3, fcr:20, cDamage:15, lDamage:15, fDamage:15, defense:20, mana_regen:15, base:"Dusk Shroud", img:"Ormus'_Robes"},
 	{only:"sorceress", name:"Ormus' Robes (Meteor)", req_level:75, skill_Meteor:3, fcr:20, cDamage:15, lDamage:15, fDamage:15, defense:20, mana_regen:15, base:"Dusk Shroud", img:"Ormus'_Robes"},
-	{name:"Theorycrafting----------------------", img:"../../../portal"},
-	{name:"Ara-Corpsemourn", req_level:55, ctc:[[15,16,"Bone Armor","when struck"]], e_def:180, fDamage:10, strength:8, vitality:10, bonus_corpse_explosion:12, base:"Ornate Plate", pod_changes:1, img:"Corpsemourn", cskill:[[5,"Desecrate",50]]},
+	{debug:1, name:"Theorycrafting----------------------", img:"../../../portal"},
+	{debug:1, name:"Ara-Corpsemourn", req_level:55, ctc:[[15,16,"Bone Armor","when struck"]], e_def:180, fDamage:10, strength:8, vitality:10, bonus_corpse_explosion:12, base:"Ornate Plate", pod_changes:1, img:"Corpsemourn", cskill:[[5,"Desecrate",50]]},
 
 		],
 		gloves: [
@@ -457,7 +457,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Weapon"},
 	// Mercenary Runewords
 //	{synth:"true", name:"Testeroo",req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},
-	{rarity:"craft", name:"Qord's Leg of Testing", type:"mace", special:2, damage_vs_undead:50, base_damage_min:100, base_damage_max:100, durability:0, max_sockets:3, sockets:3, img:"Wirt's_Leg"},
+	{rarity:"craft", name:"Qord's Leg of Testing", type:"mace", special:2, damage_vs_undead:50, base_damage_min:100, base_damage_max:100, physicalDamage:5, durability:0, max_sockets:3, sockets:3, img:"Wirt's_Leg"},
 	{only:"Rogue Scout",	rarity:"rw", name:"Plague ­ ­ - ­ ­ Hydra Bow", sup:15, twoHanded:1, req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"bow", base:"Hydra Bow", pod_changes:1},
 	{only:"Desert Guard",	rarity:"rw", name:"Plague ­ ­ - ­ ­ Giant Thresher", ethereal:1, twoHanded:1, req_level:68, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"polearm", base:"Giant Thresher", pod_changes:1},
 	{only:"Iron Wolf",		rarity:"rw", name:"Plague ­ ­ - ­ ­ Cryptic Sword", ethereal:1, req_level:67, ctc:[[15,17,"Poison Nova","on striking"],[20,12,"Lower Resist","when struck"]], aura:"Cleansing", aura_lvl:17, all_skills:2, damage_vs_demons:380, enemy_pRes:-23, dstrike_per_level:0.375, owounds:25, freezes_target:3, strength:10, type:"sword", base:"Cryptic Sword", pod_changes:1},
@@ -957,10 +957,10 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{synth:"true", name:"Synth Chaos' Bloodrise", req_level:15, all_skills:2, skills_fire:3, ias:10, e_damage:175, ar_bonus:50, owounds:25, skill_Sacrifice:3, skill_Teleport:3, defense:450, melee_defense:200, all_res:16, damage_to_mana:30, type:"mace", base:"Morning Star", img:"Bloodrise"},
 	{synth:"true", name:"Synth Kg's Fleshripper", req_level:68, all_skills:4, fcr:45, e_damage:276, cblow:25, owounds:50, oskill_Ball_Lightning:20, type:"dagger", base:"Fanged Knife", img:"The_Jade_Tan_Do"},
 	{synth:"true", name:"Synth Zardoz's Hexfire", req_level:33, ctc:[[25,19,"fissure","on striking"]], skills_fire_all:3, skills_elemental:7, explosive_attack:6, e_damage:467, itd:1, dexterity:38, energy:10, fres:25, type:"sword", base:"Shamshir", pod_changes:1, img:"Hexfire"},
-	{name:"Theorycrafting----------------------", img:"../../../portal"},
-	{name:"Ara-Bane Ash", req_level:5, fcr:20, ias:20, mana:30, fRes:50, fDamage:6, skill_Fire_Bolt:5, skill_Warmth:2, additionalfirebolt:1, twoHanded:1, type:"staff", base:"Short Staff", img:"Bane_Ash"},
-	{name:"Ara-The Salamander", req_level:21, skills_fire_all:2, fcr:25, fRes:30, skill_Warmth:3, skill_Fire_Ball:2, fireballlife:1, twoHanded:1, type:"staff", base:"Battle Staff", img:"The_Salamander"},
-	{name:"Ara-The Redeemer", req_level:72, skills_paladin:2, fcr:20, peace:1, skill_Prayer:4, skill_Holy_Bolt:5, light_radius:3, req:-60, doubleprayerheal:1, type:"scepter", base:"Mighty Scepter", pod_changes:1},	// TOCHECK: what was changed in PoD?
+	{debug:1, name:"Theorycrafting----------------------", img:"../../../portal"},
+	{debug:1, name:"Ara-Bane Ash", req_level:5, fcr:20, ias:20, mana:30, fRes:50, fDamage:6, skill_Fire_Bolt:5, skill_Warmth:2, additionalfirebolt:1, twoHanded:1, type:"staff", base:"Short Staff", img:"Bane_Ash"},
+	{debug:1, name:"Ara-The Salamander", req_level:21, skills_fire_all:2, fcr:25, fRes:30, skill_Warmth:3, skill_Fire_Ball:2, fireballlife:1, twoHanded:1, type:"staff", base:"Battle Staff", img:"The_Salamander"},
+	{debug:1, name:"Ara-The Redeemer", req_level:72, skills_paladin:2, fcr:20, peace:1, skill_Prayer:4, skill_Holy_Bolt:5, light_radius:3, req:-60, doubleprayerheal:1, type:"scepter", base:"Mighty Scepter", pod_changes:1},	// TOCHECK: what was changed in PoD?
 
 		],
 

@@ -16,7 +16,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 	getSkillData : function(skill, lvl, elem) {
 		var result = skill.data.values[elem][lvl];
 		
-		if (skill.name == "War Cry" && elem < 2) { 			result *= ((1 + (0.17*skills[2].level + 0.17*skills[5].level))) }
+		if (skill.name == "War Cry" && elem < 2) { 			result *= ((1 + (0.17*skills[2].level + 0.17*skills[5].level)) * (1+character.physicalDamage/100)) }
 		//if (skill.name == "War Cry" && elem == 2) { 		result = Math.floor((1+result/100)*8) }	// TOCHECK: replace 8 with actual radius (show total radius instead of radius bonus?)
 		if (skill.name == "Battle Command" && elem == 0) { 	result = 1+Math.floor(skill.level/10) }
 		if (skill.name == "Double Swing" && elem == 0) { 	result += (5*skills[28].level) }
@@ -27,7 +27,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		if (skill.name == "Frenzy" && elem == 1) { 			result *= (1 + (0.10*skills[28].level)) }
 		
 		if (skill.name == "Concentrate" && elem == 2) { 	result += (5*skills[28].level + 10*skills[2].level + 10*skills[6].level) }
-		if (skill.name == "Cleave" && elem < 2) { 			result *= (1 + (0.15*skills[21].level)) }
+		if (skill.name == "Cleave" && elem < 2) { 			result *= (1 + (0.15*skills[21].level)) * (1+character.physicalDamage/100) }
 		//if (skill.name == "Pulverize" && elem < 2) { 			result *= (1 + (0.15*skills[31].level)) }
 		if (skill.name == "Stun" && elem < 2) { 			result *= ((1 + (0.10*skills[28].level + 0.10*skills[8].level)) * (1+character.mDamage/100)) }
 		if (skill.name == "Stun" && elem == 2) { 			result += (5*skills[23].level) }
@@ -36,11 +36,10 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		if (skill.name == "Leap Attack" && elem == 0) { 	result += (20*skills[22].level) }
 		if (skill.name == "Ethereal Throw" && elem < 2) { 	result *= ((1 + (0.04*skills[27].level + 0.04*skills[28].level)) * (1+character.mDamage/100)) }
 //		if (skill.name == "Whirling Axes" && elem < 2) { 	result *= ((1 + (0.14*skills[8].level + 0.14*skills[21].level + 0.01*Math.floor(character.dexterity + character.all_attributes)))) }
-		if (skill.name == "Whirling Axes" && elem < 2) { 	result *= ((1 + 0.14*skills[8].level + 0.14*skills[21].level + 0.01*(Math.floor(character.dexterity + character.all_attributes)*(1+character.max_energy/100)))) }
+		if (skill.name == "Whirling Axes" && elem < 2) { 	result *= ((1 + 0.14*skills[8].level + 0.14*skills[21].level + 0.01*((character.dexterity + character.all_attributes)))) }
 //		if (skill.name == "Flame Dash" && elem < 3 && elem > 0) { result *= ((1 + 0.10*skills[1].level + 0.01*((character.energy + character.all_attributes)*(1+character.max_energy/100))) * (1+character.fDamage/100)) }
 //		if (skill.name == "Discharge" && elem < 3 && elem > 0) { result *= ((1 + 0.03*sk[12].level + 0.03*sk[14].level + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
-
-		return result
+	return result
 	},
 	
 	// getBuffData - gets a list of stats corresponding to a persisting buff
@@ -97,7 +96,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		var e_damage_offhand = 0; if (offhandType == "weapon") { e_damage_offhand = (~~(equipped["offhand"].e_damage) + ~~(socketed["offhand"].totals.e_damage) + ~~(corruptsEquipped["offhand"].e_damage)); };
 		var damage_enhanced = character.damage_bonus + character.e_damage - e_damage_offhand;
 
-		if (skill.name == "War Cry") {				attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
+		if (skill.name == "War Cry") {				damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Double Swing") { 	damage_bonus = character.getSkillData(skill,lvl,0); ar_bonus = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Frenzy") { 			weapon_damage = 115; mDamage_min = phys_min*character.getSkillData(skill,lvl,0)/100; mDamage_max = phys_max*character.getSkillData(skill,lvl,0)/100; damage_bonus = character.getSkillData(skill,lvl,1); ar_bonus = character.getSkillData(skill,lvl,2); }
 		else if (skill.name == "Concentrate") {		weapon_damage = 160; ar_bonus = character.getSkillData(skill,lvl,1); damage_bonus = character.getSkillData(skill,lvl,2); }
@@ -132,43 +131,25 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 
 		// Get breakdown of sources of skill damage
 		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-		if (damage_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(damage_min) + "-" + Math.floor(damage_max)};
-		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
-		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
-		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
-		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
-		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
-		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		if (attack != 0){
-			addmore = "yes"
+		if (damage_min > 0) {skill2Breakdown += "\nSkill Damage: " + Math.floor(damage_min) + "-" + Math.floor(damage_max)};
+		if (phys_min > 0) {skill2Breakdown += "\nSkill Phys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
+		if (fDamage_min > 0) {skill2Breakdown += "\nSkill Fire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
+		if (cDamage_min > 0) {skill2Breakdown += "\nSkill Cold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
+		if (lDamage_min > 0) {skill2Breakdown += "\nSkill Light Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
+		if (mDamage_min > 0) {skill2Breakdown += "\nSkill Magic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
+		if (pDamage_min > 0) {skill2Breakdown += "\nSkill Poison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
+		if (skill.i = 8){
+		addmore = "no"
+		}		if (attack != 0){
+		addmore = "yes"
 		}
-//		TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
-	
-//		if (selectedSkill.num == 1) {
-//		var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//		if (phys_min > 0) {skillBreakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//		if (fDamage_min > 0) {skillBreakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//		if (cDamage_min > 0) {skillBreakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//		if (lDamage_min > 0) {skillBreakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//		if (mDamage_min > 0) {skillBreakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//		if (pDamage_min > 0) {skillBreakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//		TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = skillBreakdown;
+
+//		else{
+//		addmore = "yes"
 //		}
-//		if (selectedSkill.num == 2) {
-//		var skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//		TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
-//		}		
+
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
-		return result; 
+		return result
 		return skill2Breakdown; 
 	},
 	
@@ -366,7 +347,7 @@ var skills_barbarian = [
 {data:d243, key:"243", code:143, name:"Iron Skin", i:16, req:[], reqlvl:18, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves defense rating", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["+"," percent",""]},
 {data:d251, key:"251", code:144, name:"Increased Speed", i:17, req:[14], reqlvl:24, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases walk and run speed", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Walk/Run Speed: +"," percent",""]},
 {data:d252, key:"252", code:311, name:"Puncture", i:18, req:[], reqlvl:24, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Opens a deep wound in the flesh of enemies", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:[""," percent chance to Open Wounds<br>Wounds Bleed Damage: "," per second"]},
-{data:d262, key:"262", code:312, name:"Whirling Axes", i:19, req:[], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:5, bindable:2, damaging:{attack:2,spell:0}, description:"Passive - Attacks release multiple whirling axes", syn_title:"<br>Whirling Axes Receives Bonuses From:<br>", syn_text:"War Cry: +14% Damage per Level<br>Double Swing: 14% Damage per Level<br>+1% Increased Damage per Dexterity<br>"+'<span style="color:red; font-size:12px">'+"Damage displayed from Dex synergy is reported<br>to be much higher here than in game"+'</span>' , graytext:"", index:[0,""], text:["Damage: ","-","<br>"," percent chance to release axes on melee hit"]},
+{data:d262, key:"262", code:312, name:"Whirling Axes", i:19, req:[], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:5, bindable:2, damaging:{attack:2,spell:0}, description:"Passive - Attacks release multiple whirling axes", syn_title:"<br>Whirling Axes Receives Bonuses From:<br>", syn_text:"War Cry: +14% Damage per Level<br>Double Swing: 14% Damage per Level<br>+1% Increased Damage per Dexterity", graytext:"", index:[0,""], text:["Damage: ","-","<br>"," percent chance to release axes on melee hit"]},
 {data:d263, key:"263", code:145, name:"Natural Resistance", i:20, req:[16], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases natural resistances<br>to elemental and poison damage", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Resistances: +"," percent",""]},
 
 {data:d312, key:"312", code:146, name:"Double Swing", i:21, req:[], reqlvl:1, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"When two weapon are equipped<br>attacks two targets if possible,<br>or one target twice<br><br>Deals 100% of Weapon Damage", syn_title:"<br>Double Swing Receives Bonuses From:<br>", syn_text:"Bash: +5% Damage per Level", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>Mana Cost: ",""]},
@@ -382,31 +363,4 @@ var skills_barbarian = [
 {data:d361, key:"361", code:154, name:"Ethereal Throw", i:30, req:[22,23,25,27,28], reqlvl:30, reqWeapon:["thrown","javelin"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:2,spell:0}, description:"Throw your weapon with tremendous force,<br>converting it into a burst of energy<br>that explodes upon impact<br><br>Deals 60% of Weapon Damage", syn_title:"<br>Ethereal Throw Receives Bonuses From:<br>", syn_text:"Power Throw: +4% Magic Damage per Level<br>Bash: +4% Magic Damage per Level", graytext:"", index:[0,""], text:["Magic Damage: ","-","<br>Mana Cost: ",""]},
 {data:d362, key:"362", code:155, name:"Whirlwind", i:31, req:[22,25,28], reqlvl:30, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm","claw"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"A whirling dance of death<br>that cuts a path through the<br>legions of your enemies<br><br>Deals 100% of Weapon Damage", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>Mana Cost: ",""]},
 ];
-
-
-//{data:d211, key:"211", code:138, name:"Edged Weapon Mastery", i:10, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves sword, axe & dagger fighting skill", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>"," percent chance of Critical Strike",""]},
-//{data:d212, key:"212", code:139, name:"Pole Weapon Mastery", i:11, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves polearm & spear fighting skill", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>"," percent chance of Critical Strike",""]},
-//{data:d213, key:"213", code:140, name:"Blunt Weapon Mastery", i:12, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves mace, scepter & staff fighting skill", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>"," percent chance of Critical Strike",""]},
-//{data:d222, key:"222", code:141, name:"Thrown Weapon Mastery", i:13, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves thrown weapon fighting skill", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>+","% Piercing Attack with Ranged Weapons<br>"," percent chance of Critical Strike",""]},
-//{data:d231, key:"231", code:142, name:"Increased Stamina", i:14, req:[], reqlvl:12, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases your stamina", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Stamina Bonus: +"," percent",""]},
-//{data:d232, key:"232", code:310, name:"Counter Attack", i:29, req:[], reqlvl:12, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Hit back your attackers with main hand weapon<br><br>Deals 100% of Weapon Damage", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Chance to counter attack: "," percent"], incomplete:1},
-//{data:d243, key:"243", code:143, name:"Iron Skin", i:15, req:[], reqlvl:18, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Improves defense rating", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["+"," percent",""]},
-//{data:d251, key:"251", code:144, name:"Increased Speed", i:16, req:[14], reqlvl:24, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases walk and run speed", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Walk/Run Speed: +"," percent",""]},
-//{data:d263, key:"263", code:145, name:"Natural Resistance", i:17, req:[15], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases natural resistances<br>to elemental and poison damage", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Resistances: +"," percent",""]},
-//{data:d252, key:"252", code:311, name:"Puncture", i:30, req:[], reqlvl:24, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Opens a deep wound in the flesh of enemies", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:[""," percent chance to Open Wounds<br>Wounds Bleed Damage: "," per second"]},
-//{data:d262, key:"262", code:312, name:"Whirling Axes", i:31, req:[], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:1, bindable:3, damaging:{attack:2,spell:0}, description:"Passive - Attacks release multiple whirling axes", syn_title:"<br>Whirling Axes Receives Bonuses From:<br>", syn_text:"War Cry: +14% Damage per Level<br>Double Swing: 14% Damage per Level<br>+1% Increased Damage per Dexterity", graytext:"", index:[0,""], text:["Damage: ","-","<br>"," percent chance to release axes on melee hit"]},
-
-//{data:d312, key:"312", code:146, name:"Double Swing", i:28, req:[], reqlvl:1, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"When two weapon are equipped<br>attacks two targets if possible,<br>or one target twice<br><br>Deals 100% of Weapon Damage", syn_title:"<br>Double Swing Receives Bonuses From:<br>", syn_text:"Bash: +5% Damage per Level", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>Mana Cost: ",""]},
-//{data:d323, key:"323", code:146, name:"Frenzy", i:18, req:[28], reqlvl:6, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand"], level:0, extra_levels:0, force_levels:0, effect:4, bindable:2, damaging:{attack:1,spell:0}, description:"Allows you to swing two weapons at once<br>East successful attack increases your overall speed<br>Requires you to equip two weapons", syn_title:"<br>Frenzy Receives Bonuses From:<br>", syn_text:"Double Swing: +10% Damage per Level<br>Bash: +1% Magic Damage per Level<br>Concentrate: +8% Attack Rating per Level", graytext:"", index:[1," percent<br>Duration: 7.5 seconds"], text:["Deals 115% of Weapon Damage<br>Magic Damage: +","Damage: +"," percent<br>Attack Rating: +"," percent<br>Attack Speed: +","-"," percent<br>Walk/Run Speed: +","-"," percent<br>Mana Cost: ",""]},
-//{data:d321, key:"321", code:147, name:"Concentrate", i:19, req:[], reqlvl:6, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"Attack that is not interruptible and<br>improves attack and defense rating<br><br>Deals 160% of Weapon Damage", syn_title:"<br>Concentrate Receives Bonuses From:<br>", syn_text:"Bash: +5% Damage per Level<br>Battle Orders: +10% Damage per Level<br>Taunt: +10% Damage per Level", graytext:"", index:[0,""], text:["Defense Bonus: +"," percent<br>Attack Rating: +"," percent<br>Damage: +"," percent<br>Mana Cost: 2",""]},
-//{data:d322, key:"322", code:148, name:"Cleave", i:20, req:[28], reqlvl:6, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:1}, description:"Attacks in an arc, dealing damage<br>to all enemies caught in the swing<br><br>Deals 60% of Weapon Damage", syn_title:"<br>Cleave Receives Bonuses From:<br>", syn_text:"Double Swing: +15% Damage per Level", graytext:"", index:[0,""], text:["Damage: ","-","<br>Mana Cost: ",""]},
-//{data:d332, key:"332", code:149, name:"Stun", i:21, req:[20,28], reqlvl:12, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"An attack that stuns your target<br>and deals magic damage around it<br><br>Deals 100% of Weapon Damage", syn_title:"<br>Stun Receives Bonuses From:<br>", syn_text:"Bash: +10% Magic Damage per Level<br>Concentrate: +5% Attack Rating per Level<br>War Cry +10% Magic Damage per Level", graytext:"", index:[0,""], text:["Magic Damage: ","-","<br>Attack Rating: +"," percent<br>Duration: "," seconds<br>Mana Cost: 2",""]},
-//{data:d333, key:"333", code:150, name:"Leap", i:22, req:[18,28], reqlvl:12, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"Leaps away from danger<br>or into the fray", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Deals ","% of Weapon Damage<br>Radius: "," yards",""]},
-//{data:d341, key:"341", code:151, name:"Power Throw", i:23, req:[19], reqlvl:18, reqWeapon:["thrown","javelin"], level:0, extra_levels:0, force_levels:0, effect:3, bindable:2, damaging:{attack:2,spell:0}, description:"Gathers momentum to unleash a powerful throw<br>that deals damage to the target and nearby enemies<br><br>Deals 120% of Weapon Damage<br><br>Increases Physical Damage for 2.2 seconds", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>To Attack Rating: +"," percent<br>Damage: ","-","<br>Mana Cost: ",""]},
-//{data:d342, key:"342", code:152, name:"Bash", i:24, req:[21,20,28], reqlvl:18, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"Powerful blow that converts physical damage to<br>magic and knocks back enemies", syn_title:"<br>Bash Receives Bonuses From:<br>", syn_text:"Stun: +10% Damage per Level<br>Concentrate: +5% Attack Rating per Level", graytext:"", index:[1,"% Physical Damage converted to Magic"], text:["Deals 110% of Weapon Damage<br>","Magic Damage: "," percent<br>Attack Rating: +"," percent<br>Damage: +"," percent<br>Mana Cost: 2",""]},
-////{data:d353, key:"353", code:153, name:"Leap Attack", i:25, req:[22,18,28], reqlvl:24, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm"], level:0, extra_levels:0, force_levels:0, bindable:1, damaging:{attack:1,spell:0}, description:"Leaps to and attacks target enemy<br>in one swift assault<br><br>Deals 175% of Weapon Damage", syn_title:"<br>Leap Attack Receives Bonuses From:<br>", syn_text:"Leap: +20% Damage per Level", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>Mana Cost: 4",""], incomplete:1}, 
-///*TODO: remove*///{data:d361, key:"361", code:153, name:"None", i:2, req:[], reqlvl:100, level:0, extra_levels:0, force_levels:0, bindable:0, description:"", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:[""]},
-//{data:d361, key:"361", code:154, name:"Ethereal Throw", i:26, req:[23,24,19,21,20,28], reqlvl:30, reqWeapon:["thrown","javelin"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:2,spell:0}, description:"Throw your weapon with tremendous force,<br>converting it into a burst of energy<br>that explodes upon impact<br><br>Deals 60% of Weapon Damage", syn_title:"<br>Ethereal Throw Receives Bonuses From:<br>", syn_text:"Power Throw: +4% Magic Damage per Level<br>Bash: +4% Magic Damage per Level", graytext:"", index:[0,""], text:["Magic Damage: ","-","<br>Mana Cost: ",""]},
-//{data:d362, key:"362", code:155, name:"Whirlwind", i:27, req:[24,21,20,28], reqlvl:30, reqWeapon:["axe","mace","club","hammer","sword","dagger","thrown","javelin","scepter","wand","staff","spear","polearm","claw"], level:0, extra_levels:0, force_levels:0, bindable:2, damaging:{attack:1,spell:0}, description:"A whirling dance of death<br>that cuts a path through the<br>legions of your enemies<br><br>Deals 100% of Weapon Damage", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Damage: +"," percent<br>Attack Rating: +"," percent<br>Mana Cost: ",""]},
-//];
 

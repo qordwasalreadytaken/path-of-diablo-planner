@@ -114,7 +114,7 @@ var character_assassin = {class_name:"Assassin", strength:20, dexterity:20, vita
 		var kick_damage_min = 0; var kick_damage_max = 0; var kick_bonus = 0;
 		var strTotal = (character.strength + character.all_attributes + character.level*character.strength_per_level);	// used in Kick calculations
 		var e_damage_offhand = 0; if (offhandType == "weapon") { e_damage_offhand = (~~(equipped["offhand"].e_damage) + ~~(socketed["offhand"].totals.e_damage) + ~~(corruptsEquipped["offhand"].e_damage)) };
-		var damage_enhanced = character.damage_bonus + character.e_damage - e_damage_offhand;
+		var damage_enhanced = character.damage_bonus + character.e_damage - e_damage_offhand + character.physicalDamage;
 
 		if (skill.name == "Dragon Claw") { 				damage_bonus = character.getSkillData(skill,lvl,0); ar_bonus = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Fists of Fire") { 		ar_bonus = character.getSkillData(skill,lvl,8); }
@@ -158,50 +158,25 @@ var character_assassin = {class_name:"Assassin", strength:20, dexterity:20, vita
 		if (spell != 2) { skillMin = Math.floor(phys_min+nonPhys_min); skillMax = Math.floor(phys_max+nonPhys_max); }
 		if (spell == 0) { skillAr = Math.floor(ar*(1+ar_bonus/100)); }
 
+				// Get breakdown of sources of skill damage
 		// Get breakdown of sources of skill damage
 		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
-		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
-		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
-		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
-		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
-		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		if (attack == 1){
+		if (damage_min > 0) {skill2Breakdown += "\nSkill Damage: " + Math.floor(damage_min) + "-" + Math.floor(damage_max)};
+		if (phys_min > 0) {skill2Breakdown += "\nSkill Phys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
+		if (fDamage_min > 0) {skill2Breakdown += "\nSkill Fire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
+		if (cDamage_min > 0) {skill2Breakdown += "\nSkill Cold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
+		if (lDamage_min > 0) {skill2Breakdown += "\nSkill Light Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
+		if (mDamage_min > 0) {skill2Breakdown += "\nSkill Magic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
+		if (pDamage_min > 0) {skill2Breakdown += "\nSkill Poison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
+		if (skill.i > 19){
+//		if (skill.i > 19 && skill.i !=22 && skill.i != 25 && skill.i != 29){
+			addmore = "no"
+		}
+		else{addmore = "yes"}
+		if ((skill.i = 22) || (skill.i = 25) || (skill.i = 29)){
 			addmore = "yes"
 		}
 
-//			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
-//			if (dmg.fMin > 0) {skill2Breakdown += "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax};
-//			if (dmg.cMin > 0) {skill2Breakdown += "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax};
-//			if (dmg.lMin > 0) {skill2Breakdown += "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax};
-//			if (dmg.mMin > 0) {skill2Breakdown += "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
-//			if (dmg.pMin > 0) {skill2Breakdown += "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
-//		}
-//		TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
-
-		//		if (selectedSkill.num == 1) {
-//			var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//			if (phys_min > 0) {skillBreakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//			if (fDamage_min > 0) {skillBreakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//			if (cDamage_min > 0) {skillBreakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//			if (lDamage_min > 0) {skillBreakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//			if (mDamage_min > 0) {skillBreakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//			if (pDamage_min > 0) {skillBreakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//			TooltipElement = document.getElementById("skill1_info");
-//			TooltipElement.title = skillBreakdown;
-	//		}
-	//		if (selectedSkill.num == 2) {
-//			var skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//			if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//			if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//			if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//			if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//			if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//			if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//			TooltipElement = document.getElementById("skill2_info");
-//			TooltipElement.title = skill2Breakdown;
-	//		}
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
 		return result
 	},

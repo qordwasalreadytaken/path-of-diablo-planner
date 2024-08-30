@@ -410,20 +410,13 @@ function toggleAutocast(autocast) {
 // togglesynthwep - Changes whether adding/removing skill points can affect character level
 //	coupling: name identifier for 'Skill Level Coupling' checkbox element
 // ---------------------------------
+
 function toggleSynthwep(synthwep) {
 	if (synthwep.checked) { settings.synthwep = 1 } else { settings.synthwep = 0 }
-//	if (settings.synthwep == 1) 
 	update()
-	updateURL()
-//	setCharacterInfo()
 	getCharacterInfo()
-//	loadItems(equipmentGroups[i], equipmentDropdowns[i], className) 
 	loadEquipment(chioce)
-//	loadEquipment()
-	
 	loadItems(choice)
-//	loadItems()
-//	update()	
 }
 
 // toggleParameters - Changes whether parameters are shown in the address bar
@@ -690,11 +683,6 @@ function loadParams() {
 			document.getElementById("autocast").checked = false
 			//toggleAutocast(param_autocast)	// TODO: fix toggleAutocast parameter to take a boolean rather than the UI element
 			settings.autocast = param_autocast
-		}
-		if (param_synthwep == 0) {
-			document.getElementById("synthwep").checked = false
-			//toggleAutocast(param_autocast)	// TODO: fix toggleAutocast parameter to take a boolean rather than the UI element
-			settings.autocast = param_synthwep
 		}
 	//}
 	updateSkills()
@@ -1429,6 +1417,7 @@ function loadItems(group, dropdown, className) {
 		document.getElementById(dropdown).innerHTML = choices
 	}
 }
+
 
 // loadMisc - Loads non-item effects to the 'Miscellaneous' dropdown menu
 // ---------------------------------
@@ -4027,7 +4016,7 @@ function updatePrimaryStats() {
 				if (ohd.fMin > 0) {ohdbreakdown += "\nFire Damage: " + Math.floor(ohd.fMin) + "-" + Math.floor(ohd.fMax)};
 				if (ohd.cMin > 0) {ohdbreakdown += "\nCold Damage: " + Math.floor(ohd.cMin) + "-" + Math.floor(ohd.cMax)};
 				if (ohd.lMin > 0) {ohdbreakdown += "\nLight Damage: " + Math.floor(ohd.lMin) + "-" + Math.floor(ohd.lMax)};
-				if (ohd.mMin > 0) {ohdbreakdown += "\nMagic Damage: " + Math.floor(ohd.mMin) + "-" + oMath.floor(hd.mMax)};
+				if (ohd.mMin > 0) {ohdbreakdown += "\nMagic Damage: " + Math.floor(ohd.mMin) + "-" + Math.floor(ohd.mMax)};
 				if (ohd.pMin > 0) {ohdbreakdown += "\nPoison Damage: " + Math.floor(ohd.pMin) + "-" + Math.floor(ohd.pMax)};
 				var TooltipElement = document.getElementById("offhand_basic_damage");
 				TooltipElement.title = ohdbreakdown;
@@ -4037,11 +4026,7 @@ function updatePrimaryStats() {
 			if (basic_min_offhand > 0 || basic_max_offhand > 0) { document.getElementById("basic_attack").innerHTML = basic_min_offhand + "-" + basic_max_offhand + " {"+Math.ceil((basic_min_offhand+basic_max_offhand)/2)+"}"; document.getElementById("offhand_basic").style.display = "none"; }
 		}
 	}
-//	var breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax 
-//	var TooltipElement = document.getElementById("basic_attack");
-//	TooltipElement.title = breakdown;
 	
-
 	var block_shield = c.block;
 	if (c.class_name == "Amazon" || c.class_name == "Assassin" || c.class_name == "Barbarian") { block_shield -= 5 }
 	if (c.class_name == "Druid" || (c.class_name == "Necromancer" && equipped.offhand.only != "necromancer") || c.class_name == "Sorceress") { block_shield -= 10 }
@@ -4079,7 +4064,8 @@ function updatePrimaryStats() {
 	else { document.getElementById("defense").style.color = "gray" }
 	document.getElementById("ar").innerHTML = Math.floor(ar)+" ("+hit_chance+"%)"
 	document.getElementById("stamina").innerHTML = Math.floor((c.stamina + c.level*c.stamina_per_level + stamina_addon) * (1+c.stamina_skillup/100) * (1+c.max_stamina/100))
-	var lifeTotal = Math.floor((c.life + c.level*c.life_per_level + life_addon) * (1 + c.max_life/100));
+//	var lifeTotal = Math.floor((c.life + c.level*c.life_per_level + life_addon) * (1 + c.max_life/100));
+	lifeTotal = Math.floor((c.life + c.level*c.life_per_level + life_addon) * (1 + c.max_life/100));
 	document.getElementById("life").innerHTML = lifeTotal
 	document.getElementById("mana").innerHTML = Math.floor((c.mana + c.level*c.mana_per_level + mana_addon) * (1 + c.max_mana/100))
 	document.getElementById("level").innerHTML = c.level
@@ -4195,6 +4181,21 @@ function updateSecondaryStats() {
 	if (c.lAbsorb == 0 && c.lAbsorb_flat == 0) { lAbs = 0 }
 	document.getElementById("labsorb").innerHTML = lAbs
 	document.getElementById("mabsorb").innerHTML = c.mAbsorb_flat
+
+	if (eseff > 0) {
+		document.getElementById("eseff_label").style.visibility = "visible"
+		document.getElementById("eseff").innerHTML = eseff
+	} else {
+		document.getElementById("eseff_label").style.visibility = "hidden"
+		document.getElementById("eseff").innerHTML = ""
+	}	
+	if (esprcnt > 0) {
+		document.getElementById("esprcnt_label").style.visibility = "visible"
+		document.getElementById("esprcnt").innerHTML = esprcnt
+	} else {
+		document.getElementById("esprcnt_label").style.visibility = "hidden"
+		document.getElementById("esprcnt").innerHTML = ""
+	}	
 	
 	document.getElementById("cdr").innerHTML = c.cdr; if (c.cdr > 0) { document.getElementById("cdr").innerHTML += "%" }
 	var fcrTotal = c.fcr + Math.floor(c.level*c.fcr_per_level);
@@ -4282,6 +4283,10 @@ function updateSecondaryStats() {
 	document.getElementById("cblow").innerHTML = c.cblow; if (c.cblow > 0) { document.getElementById("cblow").innerHTML += "%" }
 	document.getElementById("dstrike").innerHTML = c.dstrike + Math.floor(c.level*c.dstrike_per_level); if (c.dstrike > 0 || c.dstrike_per_level > 0) { document.getElementById("dstrike").innerHTML += "%" }
 	document.getElementById("cstrike").innerHTML = c.cstrike + c.cstrike_skillup; if (c.cstrike > 0 || c.cstrike_skillup > 0) { document.getElementById("cstrike").innerHTML += "%" }
+	var cstriketotal = c.cstrike + c.cstrike_skillup
+	var doubled = (cstriketotal + c.dstrike * (100 - cstriketotal)/100) ;
+	TooltipElementdoubled = document.getElementById("dstrike");
+	TooltipElementdoubled.title = doubled + "% chance of double damage from " + cstriketotal + "% CS and " + c.dstrike + "% DS chances" ; // \nFormula is Critical Strike + Deadly Strike * (100 - Critical Strike)/100";
 	document.getElementById("owounds").innerHTML = c.owounds; if (c.owounds > 0) { document.getElementById("owounds").innerHTML += "%" }
 
 //	document.getElementById("damage_reduced").innerHTML = c.damage_reduced; if (c.damage_reduced > 0) { document.getElementById("damage_reduced")}
@@ -4300,7 +4305,7 @@ function updateSecondaryStats() {
 	if (c.life_per_demon_kill > 0) { document.getElementById("life_per_kill").innerHTML = c.life_per_kill + " , " + c.life_per_demon_kill + " (demons)" } else { document.getElementById("life_per_kill").innerHTML = c.life_per_kill }
 	document.getElementById("mana_per_kill").innerHTML = c.mana_per_kill
 	var lifeRegen = "";
-	if (c.life_regen > 0) { lifeRegen = c.life_regen+"% " }; if (c.life_replenish > 0) { lifeRegen += ("+"+c.life_replenish) }; if (c.life_regen == 0 && c.life_replenish == 0) { lifeRegen = 0 }
+	if (c.life_regen > 0) { lifeRegen = c.life_regen+"% "}; if (c.life_replenish > 0) { lifeRegen += ("+"+c.life_replenish); lifeRegen += " (" + (Math.floor(lifeTotal * (c.life_regen/100))+ c.life_replenish) +")"  }; if (c.life_regen == 0 && c.life_replenish == 0) { lifeRegen = 0 }
 	document.getElementById("life_regen").innerHTML = lifeRegen
 	document.getElementById("mana_regen").innerHTML = Math.round(c.mana_regen,1)+"%"	// TODO: mana_regen should multiply base regen (1.66%) instead of being additive? Or is the 1.66 value meant to be 166%?
 	//var manaTotal = Math.floor((c.mana + c.level*c.mana_per_level + mana_addon) * (1 + c.max_mana/100));
@@ -4334,8 +4339,13 @@ function updateSecondaryStats() {
 	if (character.class_name != "Druid"){document.getElementById("fhr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fhr_bp}
 	else if (character.class_name == "Druid") {document.getElementById("fhr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1-hand swing: " + c.fhr_bp_alt + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All other weapon: " + c.fhr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werebear: " + c.fhr_bp_werebear + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werewolf: " + c.fhr_bp_werewolf}
 	if (character.class_name == "Amazon"||"Assassin"||"Barbarian"||"Paladin"||"Necromancer"){document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp}
-	if (character.class_name == "Druid") {document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werebear: " + c.fcr_bp_werebear + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werewolf: " + c.fcr_bp_werewolf}
+	if (character.class_name == "Druid") {document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unchanged: " + c.fcr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werebear: " + c.fcr_bp_werebear + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werewolf: " + c.fcr_bp_werewolf}
 	if (character.class_name == "Sorceress") {document.getElementById("fcr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fcr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Light/Chain Light: " + c.fcr_bp_alt}
+	if (character.class_name == "Sorceress"||"Assassin"||"Barbarian"||"Necromancer"){document.getElementById("fbr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + c.fbr_bp}
+	if (character.class_name == "Amazon") {document.getElementById("fbr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1-hand swing: " + c.fbr_bp_alt + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All other weapon: " + c.fbr_bp}
+	if (character.class_name == "Paladin") {document.getElementById("fbr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Holy Sheild active: " + c.fbr_bp_alt + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No Holy Sheild: " + c.fbr_bp}
+	if (character.class_name == "Druid") {document.getElementById("fbr_bp").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unchanged: " + c.fbr_bp + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werebear: " + c.fbr_bp_werebear + "<br>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Werewolf: " + c.fbr_bp_werewolf}
+
 
 
 //	document.write("<a href='" + link + "'>" + text + "</a>");
@@ -4678,13 +4688,13 @@ function checkSkill(skillName, num) {
 		native_skill = 1
 		skill = skills[s]
 	} }
-//	var skill2Breakdown = ""
+	
 	var c = character;
 	var strTotal = (c.strength + c.all_attributes + c.level*c.strength_per_level);
 	var dexTotal = (c.dexterity + c.all_attributes + c.level*c.dexterity_per_level);
 	var energyTotal = Math.floor((c.energy + c.all_attributes)*(1+c.max_energy/100));
 	var ar = ((dexTotal - 7) * 5 + c.ar + c.level*c.ar_per_level + c.ar_const) * (1+(c.ar_skillup + c.ar_skillup2 + c.ar_bonus + c.level*c.ar_bonus_per_level)/100) * (1+c.ar_shrine_bonus/100);
-	
+
 	var physDamage = [0,0,1];
 	if (skillName == "Poison Javelin" || skillName == "Lightning Bolt" || skillName == "Plague Javelin" || skillName == "Lightning Fury" || skillName == "Power Throw" || skillName == "Ethereal Throw") {
 		physDamage = getWeaponDamage(strTotal,dexTotal,"weapon",1);
@@ -4712,30 +4722,17 @@ function checkSkill(skillName, num) {
 		if (~~outcome.min != 0 && ~~outcome.max != 0) { document.getElementById("skill"+num+"_info").innerHTML = output } else { document.getElementById("skill"+num+"_info").innerHTML = ":" }
 		if (outcome.ar != 0) { document.getElementById("ar_skill"+num).innerHTML = "AR: " + outcome.ar + " ("+hit_chance+"%)" } else { document.getElementById("ar_skill"+num).innerHTML = "" }
 
+//		if (addmore == "yes" && skill.name != "War Cry") {
 		if (addmore == "yes") {
-//			addSomemore(this)
-//			if (Math.floor(physDamage[0]*physDamage[2]) > 0) {skill2Breakdown += "\nWPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2])};
 			if (dmg.fMin > 0) {skill2Breakdown += "\nAdded Fire Damage: " + Math.floor(dmg.fMin) + "-" + Math.floor(dmg.fMax)};
 			if (dmg.cMin > 0) {skill2Breakdown += "\nAdded Cold Damage: " + Math.floor(dmg.cMin) + "-" + Math.floor(dmg.cMax)};
 			if (dmg.lMin > 0) {skill2Breakdown += "\nAdded Light Damage: " + Math.floor(dmg.lMin) + "-" + Math.floor(dmg.lMax)};
 			if (dmg.mMin > 0) {skill2Breakdown += "\nAdded Magic Damage: " + Math.floor(dmg.mMin) + "-" + Math.floor(dmg.mMax)};
 			if (dmg.pMin > 0) {skill2Breakdown += "\nAdded Poison Damage: " + Math.floor(dmg.pMin) + "-" + Math.floor(dmg.pMax)};
-
-//			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + nonPhys_min};
-//			if (dmg.fMin > 0) {skill2Breakdown += "\nWFire Damage: " + (dmg.fMin+fDamage_min) + "-" + (dmg.fMax+fDamage_max)};
-//			if (dmg.cMin > 0) {skill2Breakdown += "\nWCold Damage: " + dmg.cMin + "-" + dmg.cMax};
-//			if (dmg.lMin > 0) {skill2Breakdown += "\nWLight Damage: " + dmg.lMin + "-" + dmg.lMax};
-//			if (dmg.mMin > 0) {skill2Breakdown += "\nWMagic Damage: " + dmg.mMin + "-" + dmg.mMax};
-//			if (dmg.pMin > 0) {skill2Breakdown += "\nWPoison Damage: " + dmg.pMin + "-" + dmg.pMax};
-			
 		}
 		TooltipElement = document.getElementById("skill2_info");
 		TooltipElement.title = skill2Breakdown;
-
-//		var skill1Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
-//		var TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = skill1Breakdown;
-
+		
 	}
 	if (offhandType == "weapon" && (skillName == "Dual Strike" || skillName == "Double Swing" || skillName == "Frenzy" || skillName == "Whirlwind") && equipped.weapon.name != "none") {
 		document.getElementById("offhand_skill"+num).style.display = "inline"
@@ -4758,33 +4755,7 @@ function checkSkill(skillName, num) {
 		for (let i = 1; i < c.fcr_bp_alt.length; i++) { if (fcrTotal >= c.fcr_bp_alt[i]) { fcr_f -= 1 } }
 		document.getElementById("ar_skill"+num).innerHTML = "Cast Rate: "+fcr_f+" frames"
 	}
-//		var skill1Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
-//		var TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = physDamage;
-//		var skill2Breakdown = "Damage Breakdown \nPhys Damage: " + Math.floor(physDamage[0]*physDamage[2]) + "-" + Math.floor(physDamage[1]*physDamage[2]) + "\nFire Damage: " + dmg.fMin + "-" + dmg.fMax + "\nCold Damage: " + dmg.cMin + "-" + dmg.cMax  + "\nLight Damage: " + dmg.lMin + "-" + dmg.lMax  + "\nMagic Damage: " + dmg.mMin + "-" + dmg.mMax  + "\nPoison Damage: " + dmg.pMin + "-" + dmg.pMax 
-//		var TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
-
-//skillBreakdown = "Damage Breakdown \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//		skillBreakdown = "Damage Breakdown \nFire Damage: " + fDamage_min + "-" + fDamage_max ;
-//		TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = skillBreakdown;
-
-//if (selectedSkill.num = 1) {
-//		var skill1Breakdown = "Damage Breakdown "; // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_maz  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max
-//		if (phys_min > 1) {skill1Breakdown += "\nPhys Damage: " + phys_min + "-" + phys_max}
-//		if (fDamage_min > 1) {skill1Breakdown += + "\nFire Damage: " + fDamage_min + "-" + fDamage_max}
-//		if (cDamage_min > 1) {skill1Breakdown += + "\nCold Damage: " + cDamage_min + "-" + cDamage_max}
-//		if (lDamage_min > 1) {skill1Breakdown += + "\nLight Damage: " + lDamage_min + "-" + lDamage_max}
-//		if (mDamage_min > 1) {skill1Breakdown += + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max}
-//		if (pDamage_min > 1) {skill1Breakdown += + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max}
-//		var TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = skill1Breakdown;
-//}
-//	skillBrkdn(skillName)
-//	var TooltipElement = document.getElementById("skill1_info");
-//	TooltipElement.title = skillBreakdown;
-
+	 
 	updateSkills()
 }
 
@@ -4943,11 +4914,18 @@ function getmmmpld() {
 //	get ias for url
 	iasurl = null
 	try{
-		thisias = offwepias + wias;
+		thisias = offwepias; // + wias;
 		iasurl = "&io=" + thisias;
 	}
 	catch(error){
 		iasurl = "&io=0";
+	}
+	try{
+		onwepias = wias
+		iasurl2 = "&i1=" + wias;
+	}
+	catch(error){
+		iasurl2 = "&i1=0";
 	}
 //	get weapon id for url
 	thisiasindex = equipped.weapon.iasindex
@@ -4969,6 +4947,7 @@ function getmmmpld() {
 	if (wereurl != null) {ias_link += wereurl}
 	if (iasurl != null) {ias_link += iasurl}
 	if (wepindex != null) {ias_link += wepindex}
+	if (iasurl2 != null) {ias_link += iasurl2}
 //	go to the url
 	window.open(ias_link);
 

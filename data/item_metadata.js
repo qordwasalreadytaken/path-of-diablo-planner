@@ -1003,6 +1003,10 @@ extra_arrows_Magic_Arrow:{index:["extra_arrows_Magic_Arrow"], format:["Magic Arr
 extra_arrows_Fire_Arrow:{index:["extra_arrows_Fire_Arrow"], format:["Fire Arrow Fires "," Additional Arrows"]},
 extra_arrows_Ice_Arrow:{index:["extra_arrows_Ice_Arrow"], format:["Ice Arrow Fires "," Additional Arrows"]},
 extra_conversion_Magic_Arrow:{index:["extra_conversion_Magic_Arrow"], format:["+","% Magic Arrow Damage Converted to Magic"]},
+additionalfirebolt:{index:[], format:["+2 Fire Bolt projectiles per 20 Fire Bolt levels"]},
+fireballlife:{index:[], format:["+5 Life gained per Fireball cast"]},
+doubleprayerheal:{index:[], format:["Double Prayer Healing"]},
+
 
 flamme:{index:["flamme"], format:["","% of Life dealt per second as fire"]},
 ias_skill:{index:["ias_skill"], format:["+","% Increased Attack Speed"]},
@@ -1332,6 +1336,7 @@ oskill_CTC_Discharge_Proc:{index:["oskill_CTC_Discharge_Proc"], format:["CTC lev
 oskill_CTC_Chain_Light_Proc:{index:["oskill_CTC_Chain_Light_Proc"], format:["CTC level "," Chain Light Proc"]},
 oskill_CTC_Fissure_Proc:{index:["oskill_CTC_Fissure_Proc"], format:["CTC level "," Fissure Proc"]},
 oskill_CTC_Bone_Spear_Proc:{index:["oskill_CTC_Bone_Spear_Proc"], format:["CTC level "," Bone Spear Proc"]},
+oskill_CTC_Poison_Nova_Proc:{index:["oskill_CTC_Poison_Nova_Proc"], format:["CTC level "," Poison Nova Proc"]},
 
 oskill_Inner_Sight:{index:["oskill_Inner_Sight"], format:["+"," to Inner Sight"]},
 oskill_Evade:{index:["oskill_Evade"], format:["+"," to Evade"]},
@@ -1372,8 +1377,6 @@ oskill_Fire_Ball:{index:["oskill_Fire_Ball"], format:["+"," to Fire Ball"]},
 oskill_Fire_Wall:{index:["oskill_Fire_Wall"], format:["+"," to Fire Wall"]},
 oskill_Meteor:{index:["oskill_Meteor"], format:["+"," to Meteor"]},
 oskill_Fire_Mastery:{index:["oskill_Fire_Mastery"], format:["+"," to Fire Mastery"]},
-oskill_Blizzard:{index:["oskill_Blizzard"], format:["+"," to Blizzard"]},
-
 
 skills_class:{index:["skills_class"], format:["+"," to Class Skills"]},		// unneeded once item customization gets implemented
 skills_tree1:{index:["skills_tree1"], format:["+"," to Tree #1 Skills"]},	// unused
@@ -1458,7 +1461,6 @@ charge_bonus_icicles:{index:[], format:["Attacks release enemy-seeking icicles"]
 charge_bonus_accuracy:{index:[], format:["Attacks have increased accuracy"]},
 charge_bonus_reduce:{index:[], format:["Attacks reduce enemy defenses"]},
 charge_bonus_leech:{index:[], format:["Attacks regenerate life and mana"]},
-//noexist:{index:[],format:["Charm does not exist in game,<br>only exists here for testing"]},
 };
 
 var stats_alternate = {

@@ -2,7 +2,7 @@
 // TODO/TOCHECK: Does Fire Ball work as a synergy for Meteor (and vice versa) if both are oskills?
 
 var character_any = {
-	 
+	
 	// getSkillData - gets skill info from the appropriate skills data table
 	//	skillName: name of skill
 	//	lvl: level of the skill
@@ -91,6 +91,11 @@ var character_any = {
 			["damage max",58,79,100,121,141,163,183,205,236,268,301,333,364,396,429,461,507,554,602,649,695,743,798,854,910,966,1022,1079,1148,1217,1286,1354,1423,1493,1562,1631,1700,1769,1838,1907,1976,2045,2114,2183,2252,2321,2390,2459,2528,2597,2666,2735,2804,2873,2942,3011,3080,3149,3218,3287,]]}}; 
 		if (skillName == "CTC Bone Spear Proc") { skill = sk_CTC_Bone_Spear_Proc }
 
+		var sk_CTC_Poison_Nova_Proc = {data:{values:[
+			["poison min",65,81,96,112,128,144,159,175,200,225,250,275,300,325,350,375,412,450,487,525,562,600,659,719,778,837,897,956,1022,1087,1153,1219,1284,1350,1415,1481,1547,1612,1678,1744,1809,1875,1941,2006,2072,2137,2203,2269,2334,2400,2465,2531,2597,2662,2728,2794,2859,2925,2990,3056,], 
+			["poison max",121,137,152,168,184,199,215,231,256,281,306,331,356,381,406,431,468,506,543,581,619,656,715,775,834,894,953,1012,1078,1144,1209,1275,1340,1406,1472,1537,1603,1669,1734,1800,1866,1931,1997,2063,2128,2194,2259,2325,2391,2456,2522,2587,2653,2719,2784,2850,2916,2981,3047,3112,]]}}; 
+		if (skillName == "CTC Poison Nova Proc") { skill = sk_CTC_Poison_Nova_Proc }
+
 		var result = skill.data.values[elem][lvl];
 		var lycan_lvl = ~~character["oskill_Lycanthropy"] + character.all_skills + Math.ceil(character.all_skills_per_level*character.level);
 		var phys_min = ((1+(character.e_damage+character.damage_bonus)/100)*((character.level-1)*character.min_damage_per_level+character.base_damage_min))+character.damage_min;
@@ -104,7 +109,6 @@ var character_any = {
 	// Barbarian
 		if (skillName == "Battle Command" && elem == 0) {			result = 1 }
 		if (skillName == "Whirling Axes" && elem == 2) {			result = skill.data.values[2][lvl] }
-		if (skillName == "Whirling Axes" && elem < 2) { 			result *= ((0.01*Math.floor(character.dexterity + character.all_attributes))) }
 
 		// Druid
 		if (skillName == "Flame Dash" && elem == 0) {				result = 8 }
@@ -129,7 +133,9 @@ var character_any = {
 		// Necromancer
 		if (skillName == "Desecrate" && elem > 0 && elem < 3) { 	result *= (1+character.pDamage/100) }
 		if (skillName == "CTC Bone Spear Proc" && elem < 2) { 		result *= ((1 + (0.07*skills[12].level + 0.07*skills[18].level)) * (1+character.mDamage/100)) }
-	// Paladin
+		if (skillName == "CTC Poison Nova Proc" && elem < 2) { 		result *= ((1 + (0.13*skills[11].level + 0.13*skills[15].level)) * (1+character.pDamage/100)) }
+
+		// Paladin
 		var phys_min = 0;
 		var phys_max = 0;
 		if (skillName == "Vengeance" && equipped.weapon.name != "none" && elem < 8) {
@@ -253,10 +259,11 @@ var character_any = {
 //		else if (skillName == "DestructionVolcano Proc") { 			attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
 //		else if (skillName == "DestructionNova Proc") {			attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC MBoulder Proc") { 		attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
-		else if (skillName == "CTC Volcano Proc") { 		attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
+		else if (skillName == "CTC Volcano Proc") { 			attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
 		else if (skillName == "CTC Nova Proc") {			attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC Fissure Proc") {			attack = 0; spell = 1; fDamage_min = character_any.getSkillData(skillName,lvl,0); fDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC Bone Spear Proc") {		attack = 0; spell = 1; mDamage_min = character_any.getSkillData(skillName,lvl,0); mDamage_max = character_any.getSkillData(skillName,lvl,1); }
+		else if (skillName == "CTC Poison Nova Proc") {		attack = 0; spell = 1; lvl += character.skills_poison_all; pDamage_min = character_any.getSkillData(skillName,lvl,0); pDamage_max = character_any.getSkillData(skillName,lvl,1); pDamage_duration = 2; }
 
 		// else if (skillName == "Valkyrie") {		attack = 0; spell = 1; }
 		else if (skillName == "Magic Arrow") {		attack = 1; spell = 0; mDamage_min = character_any.getSkillData(skillName,lvl,1); mDamage_max = character_any.getSkillData(skillName,lvl,2); }
@@ -275,7 +282,6 @@ var character_any = {
 		else if (skillName == "Fire Wall") {		attack = 0; spell = 1; lvl += character.skills_fire_all; fDamage_min = character_any.getSkillData(skillName,lvl,0); fDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "Meteor") {			attack = 0; spell = 1; lvl += character.skills_fire_all; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
 		else if (skillName == "Hydra") {			attack = 0; spell = 1; lvl += character.skills_fire_all; fDamage_min = character_any.getSkillData(skillName,lvl,1); fDamage_max = character_any.getSkillData(skillName,lvl,2); }
-		else if (skillName == "Blizzard") {			attack = 0; spell = 1; lvl += character.skills_cold_all; cDamage_min = character_any.getSkillData(skillName,lvl,0); cDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "Whirlwind") {		attack = 1; spell = 0; ar_bonus = character_any.getSkillData(skillName,lvl,1); damage_bonus = character_any.getSkillData(skillName,lvl,0); }
 		else if (skillName == "Whirling Axes") {	attack = 1; spell = 0; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); }
 		
@@ -297,40 +303,17 @@ var character_any = {
 
 		// Get breakdown of sources of skill damage
 		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
-		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
-		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
-		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
-		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
-		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		if (attack == 1){
+		if (damage_min > 0) {skill2Breakdown += "\nSkill Damage: " + Math.floor(damage_min) + "-" + Math.floor(damage_max)};
+		if (phys_min > 0) {skill2Breakdown += "\nSkill Phys Damage: " + Math.floor(phys_min) + "-" + Math.floor(phys_max)};
+		if (fDamage_min > 0) {skill2Breakdown += "\nSkill Fire Damage: " + Math.floor(fDamage_min) + "-" + Math.floor(fDamage_max)};
+		if (cDamage_min > 0) {skill2Breakdown += "\nSkill Cold Damage: " + Math.floor(cDamage_min) + "-" + Math.floor(cDamage_max)};
+		if (lDamage_min > 0) {skill2Breakdown += "\nSkill Light Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
+		if (mDamage_min > 0) {skill2Breakdown += "\nSkill Magic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
+		if (pDamage_min > 0) {skill2Breakdown += "\nSkill Poison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
+		if (attack != 0){
 			addmore = "yes"
 		}
-		TooltipElement = document.getElementById("skill2_info");
-		TooltipElement.title = skill2Breakdown;
-	
-	//		if (selectedSkill.num == 1) {
-//		var skillBreakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//		if (phys_min > 0) {skillBreakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//		if (fDamage_min > 0) {skillBreakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//		if (cDamage_min > 0) {skillBreakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//		if (lDamage_min > 0) {skillBreakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//		if (mDamage_min > 0) {skillBreakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//		if (pDamage_min > 0) {skillBreakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//		TooltipElement = document.getElementById("skill1_info");
-//		TooltipElement.title = skillBreakdown;
-//		}
-//		if (selectedSkill.num == 2) {
-//		var skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
-//		if (phys_min > 0) {skill2Breakdown += "\nPhys Damage: " + phys_min + "-" + phys_max};
-//		if (fDamage_min > 0) {skill2Breakdown += "\nFire Damage: " + fDamage_min + "-" + fDamage_max};
-//		if (cDamage_min > 0) {skill2Breakdown += "\nCold Damage: " + cDamage_min + "-" + cDamage_max};
-//		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + lDamage_min + "-" + lDamage_max};
-//		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + mDamage_min + "-" + mDamage_max};
-//		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + pDamage_min + "-" + pDamage_max};
-//		TooltipElement = document.getElementById("skill2_info");
-//		TooltipElement.title = skill2Breakdown;
-//		}	
+
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
 		return result
 	}

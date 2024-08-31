@@ -4271,6 +4271,8 @@ function updateSecondaryStats() {
 	document.getElementById("ldamage").innerHTML = c.lDamage; if (c.lDamage > 0) { document.getElementById("ldamage").innerHTML += "%" }
 	document.getElementById("pdamage").innerHTML = c.pDamage; if (c.pDamage > 0) { document.getElementById("pdamage").innerHTML += "%" }
 	document.getElementById("mdamage").innerHTML = c.mDamage; if (c.mDamage > 0) { document.getElementById("mdamage").innerHTML += "%" }
+	document.getElementById("physicalDamage").innerHTML = c.physicalDamage; if (c.physicalDamage > 0) { document.getElementById("physicalDamage").innerHTML += "%" }
+	
 	document.getElementById("fpierce").innerHTML = c.fPierce; if (c.fPierce > 0) { document.getElementById("fpierce").innerHTML += "%" }
 	document.getElementById("cpierce").innerHTML = c.cPierce; if (c.cPierce > 0) { document.getElementById("cpierce").innerHTML += "%" }
 	document.getElementById("lpierce").innerHTML = c.lPierce; if (c.lPierce > 0) { document.getElementById("lpierce").innerHTML += "%" }

@@ -4319,6 +4319,7 @@ function updateSecondaryStats() {
 	document.getElementById("enemy_lres").innerHTML = c.enemy_lRes; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
 	document.getElementById("enemy_pres").innerHTML = c.enemy_pRes; if (c.enemy_pRes < 0) { document.getElementById("enemy_pres").innerHTML += "%" }
 	document.getElementById("enemy_mres").innerHTML = c.enemy_mRes; if (c.enemy_mRes < 0) { document.getElementById("enemy_mres").innerHTML += "%" }
+	document.getElementById("enemy_physRes").innerHTML = c.enemy_physRes; if (c.enemy_physRes < 0) { document.getElementById("enemy_physRes").innerHTML += "%" }
 
 //	document.getElementById("totalwhirly").innerHTML = totalwhirly
 //	document.getElementById("whirlychance").innerHTML = whirlychance

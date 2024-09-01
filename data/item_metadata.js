@@ -1006,6 +1006,9 @@ extra_conversion_Magic_Arrow:{index:["extra_conversion_Magic_Arrow"], format:["+
 additionalfirebolt:{index:[], format:["+2 Fire Bolt projectiles per 20 Fire Bolt levels"]},
 fireballlife:{index:[], format:["+5 Life gained per Fireball cast"]},
 doubleprayerheal:{index:[], format:["Prayer's Healing Affects Doubled"]},
+tc_charbasedenemyfire:{index:[], format:["-100 to -1 Enemy fire resist (based on character fire resist)"]},
+tc_charbasedenemycold:{index:[], format:["-100 to -1 Enemy cold resist (based on character cold resist)"]},
+tc_charbasedenemylightning:{index:[], format:["-100 to -1 Enemy lightning resist (based on character lightning resist)"]},
 
 
 flamme:{index:["flamme"], format:["","% of Life dealt per second as fire"]},

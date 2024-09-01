@@ -4316,9 +4316,19 @@ function updateSecondaryStats() {
 	document.getElementById("damage_to_mana").innerHTML = c.damage_to_mana; if (c.damage_to_mana > 0) { document.getElementById("damage_to_mana").innerHTML += "%" }
 	
 //	document.getElementById("enemy_fres").innerHTML = c.enemy_fRes; if (c.enemy_fRes < 0) { document.getElementById("enemy_fres").innerHTML += "%" } ; elseif (c.enemy_fRes < 0); {document.getElementById("enemy_fres").style.visibility = "hidden"}
-	document.getElementById("enemy_fres").innerHTML = c.enemy_fRes; if (c.enemy_fRes < 0) { document.getElementById("enemy_fres").innerHTML += "%" }
-	document.getElementById("enemy_cres").innerHTML = c.enemy_cRes; if (c.enemy_cRes < 0) { document.getElementById("enemy_cres").innerHTML += "%" }
-	document.getElementById("enemy_lres").innerHTML = c.enemy_lRes; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
+	var curfres = c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup + c.enemy_fRes
+//	if ((c.tc_charbasedenemyfire == 1) && (fres.split("/")[0] < 0)) { c.enemy_fRes += fres.split("/")[0]}
+	if (c.tc_charbasedenemyfire == 1) { document.getElementById("enemy_fres").innerHTML = curfres };  if (curfres < 0) { document.getElementById("enemy_fres").innerHTML += "%" } //; if (curfres < -100) { document.getElementById("enemy_fres").innerHTML += "%" }
+//	if (tc_charbasedenemyfire != 1) {document.getElementById("enemy_fres").innerHTML = c.enemy_fRes; if (c.enemy_fRes < 0) { document.getElementById("enemy_fres").innerHTML += "%" }}
+	if (c.tc_charbasedenemyfire == 0) { document.getElementById("enemy_fres").innerHTML = c.enemy_fRes}; if (c.enemy_fRes < 0) { document.getElementById("enemy_fres").innerHTML += "%" }
+	var curcres = c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup + c.enemy_cRes
+	if (c.tc_charbasedenemycold == 1) { document.getElementById("enemy_cres").innerHTML = curcres };  if (curcres < 0) { document.getElementById("enemy_cres").innerHTML += "%" } //; if (curfres < -100) { document.getElementById("enemy_fres").innerHTML += "%" }
+	if (c.tc_charbasedenemycold == 0) { document.getElementById("enemy_cres").innerHTML = c.enemy_cRes}; if (c.enemy_cRes < 0) { document.getElementById("enemy_cres").innerHTML += "%" }
+	//	document.getElementById("enemy_cres").innerHTML = c.enemy_cRes; if (c.enemy_cRes < 0) { document.getElementById("enemy_cres").innerHTML += "%" }
+	var curlres = c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup + c.enemy_lRes
+	if (c.tc_charbasedenemylightning == 1) { document.getElementById("enemy_lres").innerHTML = curlres };  if (curlres < 0) { document.getElementById("enemy_lres").innerHTML += "%" } //; if (curlres < -100) { document.getElementById("enemy_lres").innerHTML += "%" }
+	if (c.tc_charbasedenemylightning == 0) { document.getElementById("enemy_lres").innerHTML = c.enemy_lRes}; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
+//	document.getElementById("enemy_lres").innerHTML = c.enemy_lRes; if (c.enemy_lRes < 0) { document.getElementById("enemy_lres").innerHTML += "%" }
 	document.getElementById("enemy_pres").innerHTML = c.enemy_pRes; if (c.enemy_pRes < 0) { document.getElementById("enemy_pres").innerHTML += "%" }
 	document.getElementById("enemy_mres").innerHTML = c.enemy_mRes; if (c.enemy_mRes < 0) { document.getElementById("enemy_mres").innerHTML += "%" }
 	document.getElementById("enemy_physRes").innerHTML = c.enemy_physRes; if (c.enemy_physRes < 0) { document.getElementById("enemy_physRes").innerHTML += "%" }

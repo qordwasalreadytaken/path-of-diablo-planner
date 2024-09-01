@@ -1054,6 +1054,10 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Moonfire", type:"quiver", req_level:21, ar_bonus:15, mDamage_reduced:4, extra_conversion_Magic_Arrow:10, extra_arrows_Magic_Arrow:2, pod_changes:1},
 //	{only:"barbarian", rarity:"rare", name:"Weapons++++++++++++++++", type:"mace", special:2, img:"portal"} ,
 	{name:"Theorycrafting----------------------", img:"../../../portal"},
+//	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Arrows", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, max_life:5, base:"Arrows"},
+	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Arrows", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, e_def:30, defense:220, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, life:50, base:"Arrows", pod_changes:1},
+	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Bolts", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, e_def:30, defense:220, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, life:50, base:"Bolts", pod_changes:1},
+
 	{only:"barbarian", rarity:"rare", name:"Weapons++++++++++++++++", img:"../../../portal"} ,
 		],
 		charms: [
@@ -1229,7 +1233,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{debug:1, only:"sorceress", name:"Memory on Swap", skill_Energy_Shield:9},
 	{debug:1, only:"sorceress", name:"Mang Song/ES Plague on Swap", skill_Energy_Shield:5},
 	{debug:1, only:"druid", name:"Mang Song Snapshot", req_level:100, skill_Werebear:5, skill_Lycanthropy:5, skill_Werewolf:5},
-	{debug:1, only:"assassin", name:"BS/Venom Plague on swap", req_level:100, skill_Blade_Shield:5, skill_Venom:5, skill_Werewolf:5},
+	{debug:1, only:"assassin", name:"BS/Venom Plague on swap", req_level:100, skill_Blade_Shield:5, skill_Venom:5},
 	{debug:1, name:"Beast on Swap", oskill_Werebear:3, oskill_Lycanthropy:3},
 	{debug:1, name:"CTA on Swap", oskill_Battle_Cry:4, oskill_Battle_Orders:6, oskill_Battle_Command:6},
 	{debug:1, name:"BO buff lvl 20", oskill_Battle_Orders:20},

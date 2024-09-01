@@ -1057,6 +1057,8 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 //	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Arrows", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, max_life:5, base:"Arrows"},
 	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Arrows", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, e_def:30, defense:220, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, life:50, base:"Arrows", pod_changes:1},
 	{debug:1, rarity:"rw", name:"Dream ­ ­ - ­ ­ Bolts", type:"quiver", req_level:65, aura:"Holy Shock", aura_lvl:13, e_def:30, defense:220, fhr:30, vitality:10, mana_per_level:0.625, all_res:20, mf:25, life:50, base:"Bolts", pod_changes:1},
+	{debug:1, rarity:"rw", name:"Dragon ­ ­ - ­ ­ Arrows", type:"quiver", req_level:61, ctc:[[20,18,"Venom","when struck"],[12,15,"Hydra","on striking"]], aura:"Holy Fire", aura_lvl:14, defense:360, missile_defense:230, strength_per_level:0.375, lRes_max:5, damage_reduced:7, max_mana:5, base:"Arrows"},
+	{debug:1, rarity:"rw", name:"Dragon ­ ­ - ­ ­ Bolts", type:"quiver", req_level:61, ctc:[[20,18,"Venom","when struck"],[12,15,"Hydra","on striking"]], aura:"Holy Fire", aura_lvl:14, defense:360, missile_defense:230, strength_per_level:0.375, lRes_max:5, damage_reduced:7, max_mana:5, base:"Bolts"},
 
 	{only:"barbarian", rarity:"rare", name:"Weapons++++++++++++++++", img:"../../../portal"} ,
 		],

@@ -103,6 +103,8 @@ var character_paladin = {class_name:"Paladin", strength:25, dexterity:20, vitali
 		if (skill.name == "Holy Fire") {
 			result.fDamage_min = skill.data.values[0][lvl] * (1 + 0.08*skills[1].level + 0.08*skills[9].level) * (1+character.fDamage/100);
 			result.fDamage_max = skill.data.values[1][lvl] * (1 + 0.08*skills[1].level + 0.08*skills[9].level) * (1+character.fDamage/100);
+//			result.ftick_min = skill.data.values[2][lvl] * (1 + 0.08*skills[1].level + 0.08*skills[9].level) * (1+character.fDamage/100);
+//			result.ftick_max = skill.data.values[3][lvl] * (1 + 0.08*skills[1].level + 0.08*skills[9].level) * (1+character.fDamage/100);
 			result.radius = 12;
 		}
 		if (skill.name == "Precision") { result.pierce = skill.data.values[0][lvl]; result.cstrike = skill.data.values[2][lvl]; result.ar_bonus = skill.data.values[3][lvl]; result.radius = 16; }

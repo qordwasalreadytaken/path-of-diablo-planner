@@ -855,7 +855,7 @@ function equip(group, val) {
 	// if replacing an item, previous item's affixes are removed from character
 	for (old_affix in equipped[group]) {
 		if (typeof(character[old_affix]) != 'undefined') { character[old_affix] -= equipped[group][old_affix] }
-		if (old_affix == "aura") { removeEffect(equipped[group][old_affix].split(' ').join('_')+"-"+group) }
+		if (old_affix == "aura") { removeEffect(equipped[group][old_affix].split(' ').join('_')+"-"+group) ; setEffectData}
 		if (old_affix == "cskill") {
 			for (let i = 0; i < equipped[group].cskill.length; i++) {
 				var cskill_name = equipped[group].cskill[i][1];
@@ -1685,7 +1685,8 @@ function rightClickEffect(event, id, direct) {
 	if (event != null) { if (event.ctrlKey) { mod = 1 } }
 	if (mod > 0) {
 		var idName = id.split("-")[0];
-		if ((effects[id].info.origin == "skill" && skills[effects[id].info.index].effect > 3) || (effects[id].info.origin == "oskill" && (id == "Battle_Orders" || id == "Battle_Command" || id == "Shiver_Armor" || id == "Werebear" || id == "Werewolf")) || (effects[id].info.origin == "cskill" && (idName != "Inner_Sight" && idName != "Heart_of_Wolverine" && idName != "Oak_Sage" && idName != "Spirit_of_Barbs" && idName != "Blood_Golem" && idName != "Iron_Golem")) || effects[id].info.origin == "ctcskill") {
+//		if ((effects[id].info.origin == "skill" && skills[effects[id].info.index].effect > 3) || (effects[id].info.origin == "oskill" && (id == "Battle_Orders" || id == "Battle_Command" || id == "Shiver_Armor" || id == "Werebear" || id == "Werewolf")) || (effects[id].info.origin == "cskill" && (idName != "Inner_Sight" && idName != "Heart_of_Wolverine" && idName != "Oak_Sage" && idName != "Spirit_of_Barbs" && idName != "Blood_Golem" && idName != "Iron_Golem")) || effects[id].info.origin == "ctcskill") {
+		if ((effects[id].info.origin == "skill" && skills[effects[id].info.index].effect > 3) || (effects[id].info.origin == "oskill" && (id == "Battle_Orders" || id == "Battle_Command" || id == "Shiver_Armor" || id == "Werebear" || id == "Werewolf")) || (effects[id].info.origin == "cskill" && (idName != "Inner_Sight" && idName != "Heart_of_Wolverine" && idName != "Oak_Sage" && idName != "Spirit_of_Barbs" && idName != "Blood_Golem" && idName != "Iron_Golem")) || effects[id].info.origin == "ctcskill" || effects[id].info.origin == "aura") {
 			effects[id].info.snapshot = 0
 			document.getElementById(id+"_ss").src = "./images/skills/none.png"
 			updateAllEffects()
@@ -2091,6 +2092,11 @@ function getAuraData(aura, lvl, source) {
 	for (let u = 0; u < auras_extra.length; u++) {
 		if (auras_extra[u].name == aura) { auras = auras_extra; a = u; }
 	}
+//	document.getElementById("ftick_dmg").innerHTML = 0;
+//	document.getElementById("ctick").style.visibility = "visible";
+//	document.getElementById("ctick_dmg").innerHTML = 0;
+//	document.getElementById("ltick_dmg").innerHTML = 0;
+//	document.getElementById("mtick_dmg").innerHTML = 0;
 	// Defensive Auras
 	if (aura == "Prayer") { result.life_regen = 1; result.life_replenish = auras[a].data.values[0][lvl]; result.radius = 24; }
 	else if (aura == "Resist Fire") { result.fRes = auras[a].data.values[1][lvl]; result.fRes_max = auras[a].data.values[2][lvl]; result.radius = 28; }
@@ -2104,15 +2110,74 @@ function getAuraData(aura, lvl, source) {
 	else if (aura == "Salvation") { result.fDamage = auras[a].data.values[0][lvl]; result.cDamage = auras[a].data.values[0][lvl]; result.lDamage = auras[a].data.values[0][lvl]; result.all_res = auras[a].data.values[1][lvl]; result.radius = 28; }
 	// Offensive Auras
 	else if (aura == "Might") { result.damage_bonus = auras[a].data.values[0][lvl]; result.radius = 16; }
-	else if (aura == "Holy Fire") { result.fDamage_min = auras[a].data.values[0][lvl]; result.fDamage_max = auras[a].data.values[1][lvl]; result.radius = 12; }
+	else if (aura == "Holy Fire") { result.fDamage_min = auras[a].data.values[0][lvl]; result.fDamage_max = auras[a].data.values[1][lvl]; result.ftick_min = auras[a].data.values[2][lvl]; result.ftick_max = auras[a].data.values[3][lvl]; result.radius = 12; //document.getElementById("ftick_dmg").innerHTML = result.ftick_min + "-" + result.ftick_max;}
+		if (character.class_name == "Sorceress") {
+			result.ftick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[30].level+skills[30].force_levels))*(~~skills[30].data.values[1][skills[30].level+skills[30].extra_levels])/100)* (1+character.fDamage/100)) ; 
+			result.ftick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[30].level+skills[30].force_levels))*(~~skills[30].data.values[1][skills[30].level+skills[30].extra_levels])/100)* (1+character.fDamage/100)) ; 
+		} //* skill.data.values[30][lvl]; }
+		if (character.class_name != "Sorceress"){ // && character.class_name != "Paladin") {
+			result.ftick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.fDamage/100)) ; 
+			result.ftick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.fDamage/100)) ; 
+		} //* skill.data.values[30][lvl]; }
+	
+//			result.ftick_min *= (1+character.fdamage/100) 	
+//			result.ftick_max *= (1+character.fdamage/100) 	
+			
+//		document.getElementById("ftick").style.visibility = "visible";
+//		document.getElementById("ftick_dmg").innerHTML = result.ftick_min + "-" + result.ftick_max;
+//		if (result.ftick_min > 0) {document.getElementById("ftick_dmg").innerHTML = "Holy Fire does "+ result.ftick_min + "-" + result.ftick_max + " damage per second<br>" } else { document.getElementById("ftick_dmg").innerHTML = "" }
+	}
+//	else if (aura == "Holy Fire") { result.fDamage_min = auras[a].data.values[0][lvl]; result.fDamage_max = auras[a].data.values[1][lvl]; result.radius = 12; }
 	else if (aura == "Precision") { result.cstrike = auras[a].data.values[2][lvl]; result.ar_bonus = auras[a].data.values[3][lvl]; result.radius = 16; if (source == "mercenary" || source == "golem") { result.pierce = auras[a].data.values[1][lvl] } else { result.pierce = auras[a].data.values[0][lvl] }}
 	else if (aura == "Blessed Aim") { result.ar_bonus = auras[a].data.values[2][lvl]; result.hammer_on_hit = auras[a].data.values[1][lvl]; result.radius = 16; }
 	else if (aura == "Concentration") { result.ar = auras[a].data.values[0][lvl]; result.damage_bonus = auras[a].data.values[1][lvl]; result.hammer_bonus = auras[a].data.values[2][lvl]; result.radius = 16; }
-	else if (aura == "Holy Freeze") { result.cDamage_min = auras[a].data.values[0][lvl]; result.cDamage_max = auras[a].data.values[1][lvl]; result.slow_enemies = auras[a].data.values[4][lvl]; result.radius = 13.3; }
-	else if (aura == "Holy Shock") { result.lDamage_min = auras[a].data.values[0][lvl]; result.lDamage_max = auras[a].data.values[1][lvl]; result.radius = 18.6; }
-	else if (aura == "Sanctuary") { result.damage_vs_undead = auras[a].data.values[0][lvl]; result.radius = 12.6; }
+//	else if (aura == "Holy Freeze") { result.cDamage_min = auras[a].data.values[0][lvl]; result.cDamage_max = auras[a].data.values[1][lvl]; result.slow_enemies = auras[a].data.values[4][lvl]; result.radius = 13.3; }
+//	else if (aura == "Holy Shock") { result.lDamage_min = auras[a].data.values[0][lvl]; result.lDamage_max = auras[a].data.values[1][lvl]; result.radius = 18.6; }
+	else if (aura == "Holy Freeze") { result.cDamage_min = auras[a].data.values[0][lvl]; result.cDamage_max = auras[a].data.values[1][lvl]; result.slow_enemies = auras[a].data.values[4][lvl]; result.ctick_min = auras[a].data.values[2][lvl]; result.ctick_max = auras[a].data.values[3][lvl]; result.radius = 13.3; 
+		if (character.class_name == "Sorceress") {
+			result.ctick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[10].level+skills[10].force_levels))*(~~skills[10].data.values[1][skills[10].level+skills[10].extra_levels])/100)* (1+character.cDamage/100)) ; 
+			result.ctick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[10].level+skills[10].force_levels))*(~~skills[10].data.values[1][skills[10].level+skills[10].extra_levels])/100)* (1+character.cDamage/100)) ; }//* skill.data.values[30][lvl]; }
+		if (character.class_name != "Sorceress"){ // && character.class_name != "Paladin") {
+			result.ctick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.cDamage/100)) ; 
+			result.ctick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.cDamage/100)) ; 
+		} //* skill.data.values[30][lvl]; }
+//		document.getElementById("ctick").style.visibility = "visible";
+//		document.getElementById("ctick_dmg").innerHTML = result.ctick_min + "-" + result.ctick_max;
+//		if (result.ctick_min > 0) {document.getElementById("ctick_dmg").innerHTML = "Holy Freeze does "+ result.ctick_min + "-" + result.ctick_max + " damage per second<br>" } else { document.getElementById("ctick_dmg").innerHTML = "" }
+}
+//	else if (aura != "Holy Freeze") { document.getElementById("ctick").style.visibility = "hidden"; document.getElementById("ctick_dmg").innerHTML = ""}
+	else if (aura == "Holy Shock") { result.lDamage_min = auras[a].data.values[0][lvl]; result.lDamage_max = auras[a].data.values[1][lvl]; result.ltick_min = auras[a].data.values[2][lvl]; result.ltick_max = auras[a].data.values[3][lvl]; result.radius = 18.6; 
+		if (character.class_name == "Sorceress") {
+			result.ltick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100)* (1+character.lDamage/100)) ; 
+			result.ltick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100)* (1+character.lDamage/100)) ; }//* skill.data.values[30][lvl]; }
+		if (character.class_name != "Sorceress"){ //&& character.class_name != "Paladin") {
+			result.ltick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.lDamage/100)) ; 
+			result.ltick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.lDamage/100)) ; 
+		} //* skill.data.values[30][lvl]; }
+//		document.getElementById("ltick").style.visibility = "visible";
+//		document.getElementById("ltick_dmg").innerHTML = result.ltick_min + "-" + result.ltick_max;
+//		if (result.ltick_min > 0) {document.getElementById("ltick_dmg").innerHTML = "Holy Shock does "+ result.ltick_min + "-" + result.ltick_max + " damage per second<br>" } else { document.getElementById("ltick_dmg").innerHTML = "" }
+}
+	else if (aura == "Sanctuary") { result.damage_vs_undead = auras[a].data.values[0][lvl]; result.mtick_min = auras[a].data.values[1][lvl]; result.mtick_max = auras[a].data.values[2][lvl]; result.radius = 12.6; 
+		if (character.class_name != "Paladin") {
+			result.mtick_min = Math.floor(auras[a].data.values[1][lvl] * (1+character.mDamage/100));
+			result.mtick_max = Math.floor(auras[a].data.values[2][lvl] * (1+character.mDamage/100)) ; }//* skill.data.values[30][lvl]; }
+		//		document.getElementById("mtick").style.visibility = "visible";
+//		document.getElementById("mtick_dmg").innerHTML = result.mtick_min + "-" + result.mtick_max;
+//		if (result.mtick_min > 0) {document.getElementById("mtick_dmg").innerHTML = "Sanctuary does "+ result.mtick_min + "-" + result.mtick_max + " damage per second<br>" } else { document.getElementById("mtick_dmg").innerHTML = "" }
+}
 	else if (aura == "Fanaticism") { result.radius = 12; if (source == "mercenary" || source == "golem") { result.damage_bonus = auras[a].data.values[0][lvl] } else { result.damage_bonus = auras[a].data.values[1][lvl]; result.ias_skill = auras[a].data.values[2][lvl]; result.ar_bonus = auras[a].data.values[3][lvl]; }}
 	else if (aura == "Conviction") { result.enemy_defense = auras[a].data.values[0][lvl]; result.enemy_fRes = auras[a].data.values[1][lvl]; result.enemy_cRes = auras[a].data.values[1][lvl]; result.enemy_lRes = auras[a].data.values[1][lvl]; result.enemy_pRes = auras[a].data.values[1][lvl]; result.radius = 24; }
+//	if ((aura != "Holy Fire") && (aura != "Holy Freeze") && (aura != "Holy Shock")){
+//		document.getElementById("ftick").style.visibility = "hidden"
+//		document.getElementById("ftick_dmg").innerHTML = ""
+//		document.getElementById("ctick").style.visibility = "hidden"
+//		document.getElementById("ctick_dmg").innerHTML = ""
+//		document.getElementById("ltick").style.visibility = "hidden"
+//		document.getElementById("ltick_dmg").innerHTML = ""
+//		document.getElementById("mtick").style.visibility = "hidden"
+//		document.getElementById("mtick_dmg").innerHTML = ""
+//	}
 	// Others
 	else if (aura == "Thorns") { result.thorns_reflect = auras[a].values[0][lvl]; result.radius = 16; }	// TOCHECK: radius is a guess - get confirmation
 	else if (aura == "Inner Sight") { result.enemy_defense_flat = auras[a].values[0][lvl]; result.radius = auras[a].values[1][lvl]; }
@@ -2124,14 +2189,31 @@ function getAuraData(aura, lvl, source) {
 		else if (aura == "Meditation") { result.life_replenish = Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]); }
 		else if (aura == "Holy Fire") { 
 			result.fDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
-			result.fDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); }
+			result.fDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); 
+			result.ftick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
+			result.ftick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); }
 		else if (aura == "Holy Freeze") { 
 			result.cDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
-			result.cDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); }
+			result.cDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); 
+			result.ctick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
+			result.ctick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); }
 		else if (aura == "Holy Shock") { 
 			result.lDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
-			result.lDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); }
+			result.lDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); 
+			result.ltick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
+			result.ltick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); }
 	}
+//	if (character.class_name == "Sorceress") {
+//		if (aura == "Holy Fire") { 
+//			result.ftick_min = auras[a].data.values[2][lvl] * skill.data.values[1][lvl]; 
+//			result.ftick_max = auras[a].data.values[3][lvl] * skill.data.values[1][lvl]; }
+//		else if (aura == "Holy Freeze") { 
+//			result.ctick_min = auras[a].data.values[2][lvl] * skill.data.values[1][lvl];
+//			result.ctick_max = auras[a].data.values[3][lvl] * skill.data.values[1][lvl];}
+//		else if (aura == "Holy Shock") { 
+//			result.ltick_min = auras[a].data.values[0][lvl] * skill.data.values[1][lvl];
+//			result.ltick_max = auras[a].data.values[1][lvl] * skill.data.values[1][lvl]; }
+//	}	
 	return result;
 }
 

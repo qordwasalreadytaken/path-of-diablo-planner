@@ -507,6 +507,7 @@ function loadParams() {
 		//params_string = params_string.split("~").join("%C2%AD")
 		//params = new URLSearchParams(params_string);
 //		var build1 = window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone"); 		 
+		checkShorturl()
 		var spent_skillpoints = 0;
 		var param_level = Math.floor(Math.max(1,Math.min(99,~~params.get('level'))));
 		var param_diff = ~~params.get('difficulty');
@@ -518,7 +519,6 @@ function loadParams() {
 		var param_ene = Math.max(0,Math.min(505,~~params.get('energy')));
 		var param_url = ~~params.get('url');
 		var param_coupling = 1;
-		checkShorturl()
 //		if (params.has('Build1') == true) { window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone") }
 		if (params.has('coupling') == true) { param_coupling = params.get('coupling') }
 		var param_synthwep = 1;

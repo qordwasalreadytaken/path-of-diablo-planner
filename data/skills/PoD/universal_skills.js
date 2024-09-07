@@ -96,6 +96,13 @@ var character_any = {
 			["poison max",121,137,152,168,184,199,215,231,256,281,306,331,356,381,406,431,468,506,543,581,619,656,715,775,834,894,953,1012,1078,1144,1209,1275,1340,1406,1472,1537,1603,1669,1734,1800,1866,1931,1997,2063,2128,2194,2259,2325,2391,2456,2522,2587,2653,2719,2784,2850,2916,2981,3047,3112,]]}}; 
 		if (skillName == "CTC Poison Nova Proc") { skill = sk_CTC_Poison_Nova_Proc }
 
+		var sk_CTC_Glacial_Spike_Proc = {data:{values:[
+			["cold min",16,22,29,36,44,51,58,65,78,91,103,116,129,142,155,169,183,197,210,225,239,253,268,283,298,313,328,343,359,375,391,407,423,439,455,471,487,503,519,535,551,567,583,599,615,631,647,663,679,695,711,727,743,759,775,791,807,823,839,855,], 
+			["cold max",24,31,39,46,53,61,69,76,90,103,116,130,144,157,171,184,198,213,228,242,257,271,287,302,318,333,348,364,381,397,414,430,447,463,480,496,513,529,546,562,579,595,612,628,645,661,678,694,711,727,744,760,777,793,810,826,843,859,876,892,]]}}; 
+		if (skillName == "CTC Glacial Spike Proc") { skill = sk_CTC_Glacial_Spike_Proc }
+
+
+				
 		var result = skill.data.values[elem][lvl];
 		var lycan_lvl = ~~character["oskill_Lycanthropy"] + character.all_skills + Math.ceil(character.all_skills_per_level*character.level);
 		var phys_min = ((1+(character.e_damage+character.damage_bonus)/100)*((character.level-1)*character.min_damage_per_level+character.base_damage_min))+character.damage_min;
@@ -164,11 +171,12 @@ var character_any = {
 //		if (skillName == "Dangoon Discharge Proc" && elem == 1) { 	result = ((1 + 0.03*skills_all["sorceress"][12].level + 0.03*skills_all["sorceress"][14].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
  
 //		if (skillName == "Dangoon Chain Proc" && elem == 0) { 		result = ((1 + 0.03*skills_all["sorceress"][11].level + 0.03*skills_all["sorceress"][15].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
-//	if (skillName == "DangoonChain Proc" && elem < 2) { 		result *= ((1 + 0.03*skills_all["sorceress"][11].level + 0.03*skills_all["sorceress"][15].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
-	if (skillName == "CTC Chain Light Proc" && elem < 2) { 		result *= ((1 + 0.03*skills_all["sorceress"][11].level + 0.03*skills_all["sorceress"][15].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
-	if (skillName == "CTC Nova Proc" && elem < 2) { 		result *= ((1 + (0.03*skills_all["sorceress"][18].level)) * (1+character.lDamage/100)) }
+//		if (skillName == "DangoonChain Proc" && elem < 2) { 		result *= ((1 + 0.03*skills_all["sorceress"][11].level + 0.03*skills_all["sorceress"][15].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
+		if (skillName == "CTC Chain Light Proc" && elem < 2) { 		result *= ((1 + 0.03*skills_all["sorceress"][11].level + 0.03*skills_all["sorceress"][15].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
+		if (skillName == "CTC Nova Proc" && elem < 2) { 		result *= ((1 + (0.03*skills_all["sorceress"][18].level)) * (1+character.lDamage/100)) }
+		if (skillName == "CTC Glacial Spike Proc" && elem < 2) { 		result *= ((1 + (0.08*skills_all["sorceress"][0].level + 0.08*skills_all["sorceress"][3].level + 0.08*skills_all["sorceress"][7].level + 0.08*skills_all["sorceress"][9].level)) * (1+character.cDamage/100)) }
 
-	if (skillName == "Discharge") {		attack = 0; spell = 1; lDamage_min = character.getSkillData(skill,lvl,1); lDamage_max = character.getSkillData(skill,lvl,2); }
+		if (skillName == "Discharge") {		attack = 0; spell = 1; lDamage_min = character.getSkillData(skill,lvl,1); lDamage_max = character.getSkillData(skill,lvl,2); }
 	
 	return result
 	},
@@ -261,11 +269,12 @@ var character_any = {
 //		else if (skillName == "DestructionVolcano Proc") { 			attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
 //		else if (skillName == "DestructionNova Proc") {			attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC MBoulder Proc") { 		attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }
-		else if (skillName == "CTC Volcano Proc") { 			attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
+		else if (skillName == "CTC Volcano Proc") { 		attack = 0; spell = 1; damage_min = character_any.getSkillData(skillName,lvl,0); damage_max = character_any.getSkillData(skillName,lvl,1); fDamage_min = character_any.getSkillData(skillName,lvl,2); fDamage_max = character_any.getSkillData(skillName,lvl,3); }		
 		else if (skillName == "CTC Nova Proc") {			attack = 0; spell = 1; lDamage_min = character_any.getSkillData(skillName,lvl,0); lDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC Fissure Proc") {			attack = 0; spell = 1; fDamage_min = character_any.getSkillData(skillName,lvl,0); fDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC Bone Spear Proc") {		attack = 0; spell = 1; mDamage_min = character_any.getSkillData(skillName,lvl,0); mDamage_max = character_any.getSkillData(skillName,lvl,1); }
 		else if (skillName == "CTC Poison Nova Proc") {		attack = 0; spell = 1; lvl += character.skills_poison_all; pDamage_min = character_any.getSkillData(skillName,lvl,0); pDamage_max = character_any.getSkillData(skillName,lvl,1); pDamage_duration = 2; }
+		else if (skillName == "CTC Glacial Spike Proc") {	attack = 0; spell = 1; cDamage_min = character_any.getSkillData(skillName,lvl,0); cDamage_max = character_any.getSkillData(skillName,lvl,1); }
 
 		// else if (skillName == "Valkyrie") {		attack = 0; spell = 1; }
 		else if (skillName == "Magic Arrow") {		attack = 1; spell = 0; mDamage_min = character_any.getSkillData(skillName,lvl,1); mDamage_max = character_any.getSkillData(skillName,lvl,2); }

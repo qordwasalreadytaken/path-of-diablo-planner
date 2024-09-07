@@ -24,7 +24,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		if (skill.name == "Frenzy" && elem == 1) { 			result += (10*skills[21].level) }
 		if (skill.name == "Frenzy" && elem == 1) { 			result += (10*skills[14].level) }
 		if (skill.name == "Frenzy" && elem == 2) { 			result += (8*skills[23].level) }
-		if (skill.name == "Frenzy" && elem == 1) { 			result *= (1 + (0.10*skills[28].level)) }
+		if (skill.name == "Frenzy" && elem == 1) { 			result *= (0 + (0.01*skills[28].level)) }
 		
 		if (skill.name == "Concentrate" && elem == 2) { 	result += (5*skills[28].level + 10*skills[2].level + 10*skills[6].level) }
 		if (skill.name == "Cleave" && elem < 2) { 			result *= (1 + (0.15*skills[21].level)) * (1+character.physicalDamage/100) }
@@ -99,6 +99,7 @@ var character_barbarian = {class_name:"Barbarian", strength:30, dexterity:20, vi
 		if (skill.name == "War Cry") {				damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Double Swing") { 	damage_bonus = character.getSkillData(skill,lvl,0); ar_bonus = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Frenzy") { 			weapon_damage = 115; mDamage_min = phys_min*character.getSkillData(skill,lvl,0)/100; mDamage_max = phys_max*character.getSkillData(skill,lvl,0)/100; damage_bonus = character.getSkillData(skill,lvl,1); ar_bonus = character.getSkillData(skill,lvl,2); }
+//		else if (skill.name == "Frenzy") { 			weapon_damage = 115; mDamage_min = phys_min*character.getSkillData(skill,lvl,0)/100; mDamage_max = phys_max*character.getSkillData(skill,lvl,0)/100; damage_bonus = character.getSkillData(skill,lvl,1); ar_bonus = character.getSkillData(skill,lvl,2); phys_min -= mDamage_min; phys_max -= mDamage_max}
 		else if (skill.name == "Concentrate") {		weapon_damage = 160; ar_bonus = character.getSkillData(skill,lvl,1); damage_bonus = character.getSkillData(skill,lvl,2); }
 		else if (skill.name == "Cleave") { 			weapon_damage = 60; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Pulveroze") { 		weapon_damage = 60; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }

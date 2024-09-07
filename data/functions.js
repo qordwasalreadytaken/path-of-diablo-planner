@@ -506,7 +506,7 @@ function loadParams() {
 		//params_string = params_string.split(",").join("%2C")
 		//params_string = params_string.split("~").join("%C2%AD")
 		//params = new URLSearchParams(params_string);
-		
+//		var build1 = window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone"); 		 
 		var spent_skillpoints = 0;
 		var param_level = Math.floor(Math.max(1,Math.min(99,~~params.get('level'))));
 		var param_diff = ~~params.get('difficulty');
@@ -518,6 +518,8 @@ function loadParams() {
 		var param_ene = Math.max(0,Math.min(505,~~params.get('energy')));
 		var param_url = ~~params.get('url');
 		var param_coupling = 1;
+		checkShorturl()
+//		if (params.has('Build1') == true) { window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone") }
 		if (params.has('coupling') == true) { param_coupling = params.get('coupling') }
 		var param_synthwep = 1;
 		if (params.has('synthwep') == true) { param_synthwep = params.get('synthwep') }
@@ -960,10 +962,11 @@ function equip(group, val) {
 								for (cskill in effect_cskills) { if (cskill.split('_').join(' ') == cskill_name) { cskillName[i] = cskill_name; cskillLevel[i] = cskill_level; } }
 							}
 						}
-						if (affix == "ctc") {
+						if (affix == "ctc") {ctcskill
 							for (let i = 0; i < equipped[group].ctc.length; i++) {
 								var ctcskill_level = equipped[group].ctc[i][1];
-								var ctcskill_name = equipped[group].ctc[i][2];
+//								var ctcskill_name = equipped[group].ctc[i][2];
+								ctcskill_name = equipped[group].ctc[i][2];
 								for (ctcskill in effect_ctcskills) { if (ctcskill.split('_').join(' ') == ctcskill_name) { ctcskillName[i] = ctcskill_name; ctcskillLevel[i] = ctcskill_level; } }
 							}
 						}
@@ -2314,6 +2317,7 @@ function getCTCSkillData(name, lvl, group) {
 			result.lDamage_min = skill.data.values[1][lvl] + (1 + 0.03*sk[12].level + 0.03*sk[14].level); // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100))));
 			result.lDamage_max = skill.data.values[2][lvl] + (1 + 0.03*sk[12].level + 0.03*sk[14].level); // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100))));
 			}
+		dischargetext = "(" + result.lDamage_min + "-" + result.lDamage_max + ")"
 	}
 
 	// Necromancer
@@ -4528,6 +4532,9 @@ function updateTertiaryStats() {
 	if (c.experience > 0) { statlines += "+"+c.experience+"% Experience Gained<br>" }
 	if (c.ctc_temp1 > 0) { statlines += "10% chance to cast level 15 Nova on striking<br>" }
 	if (c.ctc_temp2 > 0) { statlines += "25% chance to cast level 5 Static Field when struck<br>" }
+//	if (c.dischargetext != 0) {statlines += "Discharge proc does " + c.dischargetext + "<br>"}
+//	if (c.ctcdischarge > 0) {statlines += "Discharge proc does " + c.dischargetext + "<br>"}
+//	if (c.ctcdischarge > 0) { statlines += "25% chance to cast level 5 Taco Field when struck<br>" }
 	document.getElementById("statlines").innerHTML = statlines
 	updateCTC()
 	updateChargeSkills()
@@ -4543,18 +4550,23 @@ function updateCTC() {
 				for (let i = 0; i < equipped[group].ctc.length; i++) {
 //					var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 //					if (equipped[group].ctc[i][2] == "Discharge") {	
-//						var stat = equipped[group].ctc[i][0]+"% chance "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] ;
-//						var dam = {getCTCSkillData}.result.lDamage_min ;
-//						var stat = "level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+ " Proc does "; // +getCTCSkillData("Discharge",21).result+" damage";
+//						var stat = (getCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1],equipped[group].ctc[i])).dischargetext
+//						getSkillData("Discharge",21) ;
+//						lresults = c.getSkillDamage("Discharge",21) ;
+//						getSkillDamage(equipped[group].ctc[i][2],equipped[group].ctc[i][1])
+//						var stat = "This is rhe stat"
+//						var stat = equipped[group].ctc[i][0]+"% chance "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + dischargetext ;
+//						var dam = result.lDamage_min ;
+//						var stat = "level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+ " Proc does " + dam; // +getCTCSkillData("Discharge",21).result+" damage";
 //						stats += (stat + "<br>")
 //					}  
 //					else { var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 					var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 					stats += (stat + "<br>")					
-//				}
+				}
 //					var stat = equipped[group].ctc[i][0]+"% chance to taco cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3];
 //					stats += (stat + "<br>")
-				}
+//				}
 			}
 		}
 	}
@@ -5061,7 +5073,12 @@ function addSomemore() {
 }
 
 
-
+//function checkShorturl() {
+//	if (params.has('Build1') == true) { window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone") }
+//	if (params.has('Build2') == true) { window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=amazon&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone") }
+//	if (params.has('Build3') == true) { window.open("file:///home/derek/path-of-diablo-planner/index.html?v=PoD&class=sorceress&level=99&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Lion+Helm%2C2%2Cnone%2C%2C%2C&armor=Dragon+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Battle_Orders%2C1%2C0&effect=Grim_Ward%2C1%2C0&effect=Holy_Fire-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone") }
+//
+//}
 
 
 

@@ -925,6 +925,7 @@ metamorphosis_bear1:{index:[], format:["Gain Attacks cleave during Maul buff (cl
 metamorphosis_bear2:{index:[], format:["Grizzly Bear gains Attacks cleave during Maul buff (cleave level based on Maul charge count)"]},
 glow:1,
 fade:1,
+ctcdischarge:1,
 
 sockets:{index:["sockets"], format:["Socketed (",")"]},
 e_def:{index:["e_def"], format:["+","% Enhanced Defense"]},
@@ -1354,6 +1355,7 @@ oskill_CTC_Chain_Light_Proc:{index:["oskill_CTC_Chain_Light_Proc"], format:["CTC
 oskill_CTC_Fissure_Proc:{index:["oskill_CTC_Fissure_Proc"], format:["CTC level "," Fissure Proc"]},
 oskill_CTC_Bone_Spear_Proc:{index:["oskill_CTC_Bone_Spear_Proc"], format:["CTC level "," Bone Spear Proc"]},
 oskill_CTC_Poison_Nova_Proc:{index:["oskill_CTC_Poison_Nova_Proc"], format:["CTC level "," Poison Nova Proc"]},
+oskill_CTC_Glacial_Spike_Proc:{index:["oskill_CTC_Glacial_Spike_Proc"], format:["CTC level "," Glacial Spike Proc"]},
 
 oskill_Inner_Sight:{index:["oskill_Inner_Sight"], format:["+"," to Inner Sight"]},
 oskill_Evade:{index:["oskill_Evade"], format:["+"," to Evade"]},

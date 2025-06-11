@@ -33,6 +33,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add quicklinks.js
+          git add data/quicklinks.js
           git commit -m "🔗 Add quicklink from issue #${{ github.event.issue.number }}"
           git push

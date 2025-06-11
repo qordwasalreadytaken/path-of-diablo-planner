@@ -2,7 +2,7 @@ name: Add Quicklink
 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited, reopened]
 
 permissions:
   contents: write

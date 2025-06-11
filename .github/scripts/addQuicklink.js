@@ -7,7 +7,7 @@ const issueNumber = process.env.ISSUE_NUMBER;
 const repo = process.env.REPO;
 const token = process.env.GITHUB_TOKEN;
 
-const filePath = path.resolve('quicklinks.js');
+const filePath = path.resolve('data/quicklinks.js');
 const fileContent = fs.readFileSync(filePath, 'utf8');
 
 const urlMatch = issueBody.match(/Long URL:\s*(https?:\/\/\S+)/);

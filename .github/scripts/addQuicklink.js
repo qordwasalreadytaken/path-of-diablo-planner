@@ -55,15 +55,21 @@ const options = {
 };
 
 const req = https.request(options, res => {
-  if (res.statusCode !== 201) {
-    console.error(`❌ Failed to comment on issue: ${res.statusCode}`);
-  } else {
-    console.log(`💬 Commented on issue #${issueNumber}`);
-  }
+  let responseBody = '';
+  res.on('data', chunk => responseBody += chunk);
+  res.on('end', () => {
+    if (res.statusCode !== 201) {
+      console.error(`❌ Failed to comment on issue: ${res.statusCode}`);
+      console.error(`Response body: ${responseBody}`);
+    } else {
+      console.log(`💬 Commented on issue #${issueNumber}`);
+    }
+  });
 });
 req.on('error', console.error);
 req.write(postData);
 req.end();
+
 
 // Close the issue
 const closeOptions = {
@@ -79,17 +85,11 @@ const closeOptions = {
 };
 
 const closeReq = https.request(closeOptions, res => {
-let responseBody = '';
-res.on('data', chunk => responseBody += chunk);
-res.on('end', () => {
-  if (res.statusCode !== 201) {
-    console.error(`❌ Failed to comment on issue: ${res.statusCode}`);
-    console.error(`Response body: ${responseBody}`);
+  if (res.statusCode !== 200) {
+    console.error(`❌ Failed to close issue: ${res.statusCode}`);
   } else {
-    console.log(`💬 Commented on issue #${issueNumber}`);
+    console.log(`✅ Issue #${issueNumber} closed`);
   }
-});
-
 });
 closeReq.on('error', console.error);
 closeReq.write(JSON.stringify({ state: 'closed' }));

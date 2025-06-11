@@ -15,6 +15,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" type="text/css" href="./data/style.css">
+<!--<link rel="stylesheet" type="text/css" href="./data/app.css"> -->
 <!--<link rel="shortcut icon" type="image/x-icon" href="./images/portal.ico"> -->
 <link rel="shortcut icon" type="image/x-icon" href="./images/pod.ico">
 <script type="text/javascript" src="./data/monsters.js"></script>
@@ -39,14 +40,50 @@
 <script type="text/javascript" src="./data/skills/vanilla/universal_skills.js"></script>
 <script type="text/javascript" src="./data/functions.js"></script>
 <script type="text/javascript" src="./data/quicklinks.js"></script>
+<script type="text/javascript" src="./data/custom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+
 </head>
-<body class="background" onload="initial_load()">
 
-<div id="main">
+<div class="is-clipped"><nav class="navbar is-fixed-top is-dark" style="height: 50px;">
 
+	<div class="navbar-brand">
+	<a class="" href="https://beta.pathofdiablo.com/"><img src="./images/pod.ico" alt="Path of Diablo: Web Portal" width="48" height="48" class="is-48x48" style="max-height: none;"></a>
+	<div class="navbar-burger burger" data-target="podNavbar"><span></span><span></span><span></span></div></div>
+	<div id="podNavbar" class="navbar-menu">
+	<div class="navbar-start">
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/trade-search">Trade</a>
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/servers">Servers</a>
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/ladder">Ladder</a>
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/public-games">Public Games</a>
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/runewizard">Runewizard</a>
+	<a class="navbar-item" href="https://beta.pathofdiablo.com/armory">Armory</a>
+	<a class="navbar-item" href="https://build.pathofdiablo.com">Build Planner</a>
+	<a class="navbar-item" href="https://pathofdiablo.com/p/?live" style="width: 90px;"><span><img src="https://beta.pathofdiablo.com/images/twitchico.png"></span></a></div>
+	<div class="navbar-end">
+
+	<div class="navbar-start">	
+	<a class="navbar-item-right" href="https://beta.pathofdiablo.com/my-toons">Character Storage</a>
+	</div>
+	<br><br>
+
+	</div></div></nav>
+<!--	<body class="background" onload="initial_load(); populateWeaponDropdown(); populateStatDropdown();"> -->
+	<body class="background" onload="initial_load(); populateStatDropdown();">
+		<body style="
+	background:url('./images/background.png');
+	  background-color: #272b30;
+	height: auto;
+	min-height:100%;
+	background-repeat: repeat;
+	">
+<div id="main" style="width:91%; margin: auto;">
+<div><br><br><br></div>
+<div class="has-text-centered white column"><h2 class="title has-text-white d2-font">Build Planner</h2></div>
+<br>
 <div class="navbar">
 <!--  <img src="./images/portal.ico" class="portal-logo"> -->
-  <a href="https://pathofdiablo.com/" target="blank"><img src="./images/pod.ico" class="portal-logo"></a>
+<!--  <a href="https://pathofdiablo.com/" target="blank"><img src="./images/pod.ico" class="portal-logo"></a> -->
   <div class="nav-dropdown">
     <button class="nav-dropbtn">File</button>
     <div class="nav-dropdown-content">
@@ -56,6 +93,18 @@
       <div class="nav-dropdown-content-item"><div class="nav-text">
         <label>&nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="file" id="fileToLoad" onchange="loadFileAsText()"></input></label>
       </div></div>
+      <div class="nav-dropdown-content-item" onclick="window.location = url='https://build.pathofdiablo.com'"><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;Reload&nbsp;&nbsp;</label>
+      </div></div>
+      <div class="nav-dropdown-content-item" onclick="exportEquippedToCSV()"><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;Export CSV&nbsp;&nbsp;</label>
+      </div></div>
+	  <div class="nav-dropdown-content-item">
+		<div class="nav-text">
+		  <label for="importCSV" style="cursor: pointer;">&nbsp;&nbsp;&nbsp;&nbsp;Import CSV&nbsp;&nbsp;</label>
+		  <input type="file" id="importCSV" accept=".csv" style="display: none;">
+		</div>
+	  </div>
     </div>
   </div>
 <!--  
@@ -75,7 +124,7 @@
     <button class="nav-dropbtn">Preferences</button>
     <div class="nav-dropdown-content">
       <div class="nav-dropdown-content-item"><div class="nav-option">
-        <input id="parameters" type="checkbox" name="parameters" value="0" onclick="return toggleParameters(this);">
+        <input id="parameters" type="checkbox" name="parameters" value="1" onclick="return toggleParameters(this);" checked>
         <label for="parameters">&nbsp;&nbsp;&nbsp;&nbsp;Shareable URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
       </div></div>
       <div class="nav-dropdown-content-item"><div class="nav-option">
@@ -120,186 +169,83 @@
     </div>
   </div>
 -->
-<div class="nav-dropdown">
-    <button class="nav-dropbtn">Prebuilds</button>
-    <div class="nav-dropdown-content">
-      <div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Amazon&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=amazon&level=92&difficulty=3&quests=1&running=0&strength=10&dexterity=60&vitality=400&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=000000000000000000000115010101010100001000011120000020002000&selected=Multiple+Shot%2CImmolation+Arrow&helm=Andariel%27s+Visage%2C3%2C%2B+Sockets%2C%2C%2CRuby+Jewel+of+Fervor&armor=Fortitude+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Laying+of+Hands%2C3%2C%2B+Increased+Attack+Speed&boots=War+Traveler%2C2%2C%2B+All+Resistances&belt=Razortail%2C2%2C%2B+Attack+Rating+per+level&amulet=The+Cat%27s+Eye%2C0%2C%2B+All+Skills&ring1=Raven+Frost%2C0%2C%2B+Faster+Run%2FWalk&ring2=Wisp+Projector%2C0%2C%2B+Faster+Run%2FWalk&weapon=Faith+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Grand+Matron+Bow%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Ballist%E2%80%99s+Arrows+of+Evocation%2C0%2C%2B+All+Skills%2C%2C%2C%2C%2C%2C&effect=Lethal_Strike%2C1%2C0&effect=Penetrate%2C1%2C0&effect=Pierce%2C1%2C0&effect=Dodge%2C1%2C0&effect=Avoid%2C1%2C0&effect=Evade%2C1%2C0&effect=Inner_Sight%2C1%2C0&effect=Phase_Run%2C1%2C0&effect=Venom-helm%2C1%2C0&effect=Chilling_Armor-armor%2C1%2C0&effect=Lifted_Spirit-ring2%2C1%2C0&effect=Heart_of_Wolverine-ring2%2C1%2C0&effect=Fanaticism-weapon%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Fletcher%27s+Grand+Charm&charm=%2B1+Fletcher%27s+Grand+Charm&charm=%2B1+Fletcher%27s+Grand+Charm&charm=%2B1+Fletcher%27s+Grand+Charm';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Bowazon&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=amazon&level=91&difficulty=3&quests=1&running=0&strength=0&dexterity=30&vitality=425&energy=10&url=1&coupling=1&synthwep=0&autocast=0&skills=011101002020010020200101010101010100000100000000000000000000&selected=Lightning+Fury%2CLightning+Strike&helm=Griffon%27s+Eye%2C3%2Cnone%2C%2C%2C&armor=Enigma+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Lancer%27s+Mitts+of+Alacrity%2C3%2Cnone&boots=Silkweave%2C2%2Cnone&belt=Thundergod%27s+Vigor%2C2%2Cnone&amulet=Highlord%27s+Wrath%2C0%2Cnone&ring1=Raven+Frost%2C0%2Cnone&ring2=Wisp+Projector%2C0%2Cnone&weapon=Titan%27s+Revenge%2C2%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Phoenix+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Monarch%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Dodge%2C0%2C0&effect=Avoid%2C0%2C0&effect=Evade%2C0%2C0&effect=Inner_Sight%2C0%2C0&effect=Lethal_Strike%2C0%2C0&effect=Penetrate%2C0%2C0&effect=Pierce%2C0%2C0&effect=Phase_Run%2C0%2C0&effect=Lifted_Spirit-ring2%2C0%2C0&effect=Heart_of_Wolverine-ring2%2C0%2C0&effect=Redemption-offhand%2C0%2C0&effect=Blaze-offhand%2C0%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Javazon&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=amazon&level=70&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=010000200000002000000101010707010701100000000000000000000000&selected=Fend%2CMolten+Strike&helm=Vampire+Gaze%2C3%2C%2B+Sockets%2CScintillating+Jewel+of+Fervor%2CScintillating+Jewel+of+Fervor%2CScintillating+Jewel+of+Fervor&armor=Shaftstop%2C3%2C%2B+Sockets%2CUm+Rune%2CScintillating+Jewel+of+Fervor%2CUm+Rune%2CUm+Rune&gloves=Laying+of+Hands%2C3%2C%2B+Increased+Attack+Speed&boots=War+Traveler%2C2%2C%2B+All+Resistances&belt=Verdungo%27s+Hearty+Cord%2C3%2C%2B+Attack+Rating+per+level&amulet=Atma%27s+Scarab%2C0%2C%2B+All+Skills&ring1=Raven+Frost%2C0%2C%2B+Faster+Run%2FWalk&ring2=Carrion+Wind%2C0%2C%2B+Faster+Run%2FWalk&weapon=Breath+of+the+Dying+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Matriarchal+Pike%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Dodge%2C1%2C0&effect=Avoid%2C1%2C0&effect=Evade%2C1%2C0&effect=Inner_Sight%2C1%2C0&effect=Lethal_Strike%2C1%2C0&effect=Penetrate%2C1%2C0&effect=Phase_Run%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=Fine+Small+Charm+of+Balance&charm=%2B1+Harpoonist%27s+Grand+Charm&charm=%2B1+Acrobat%27s+Grand+Charm&charm=Fine+Small+Charm+of+Balance';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Fend/Molten&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-	</div></div>
-	</div></div>
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Assassin&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-		<div class="nav-dropdown-content2-item"onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=assassin&level=88&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=1&autocast=0&skills=000000000000000000010101000101010000110020000100200100200020&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Natalya%27s+Totem%2C2%2Cnone%2C%2C%2C&armor=Natalya%27s+Shadow%2C3%2Cnone%2C%2C%2C%2C&gloves=Laying+of+Hands%2C3%2Cnone&boots=Natalya%27s+Soul%2C2%2Cnone&belt=Arachnid+Mesh%2C3%2Cnone&amulet=Mara%27s+Kaleidoscope%2C0%2Cnone&ring1=Raven+Frost%2C0%2Cnone&ring2=Wisp+Projector%2C0%2Cnone&weapon=Natalya%27s+Mark%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Phoenix+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Monarch%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Claw_Mastery%2C0%2C0&effect=Weapon_Block%2C0%2C0&effect=Burst_of_Speed%2C0%2C0&effect=Fade%2C0%2C0&effect=Venom%2C0%2C0&effect=Cloak_of_Shadows%2C0%2C0&effect=Venom-belt%2C0%2C0&effect=Lifted_Spirit-ring2%2C0%2C0&effect=Heart_of_Wolverine-ring2%2C0%2C0&effect=Redemption-offhand%2C0%2C0&effect=Blaze-offhand%2C0%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Fire Trapper&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=PoD&class=assassin&level=94&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=012020200001001100010101000101010000200001000100010100000002&selected=Blades+of+Ice%2CClaws+of+Thunder&helm=Natalya%27s+Totem%2C2%2Cnone%2C%2C%2C&armor=Natalya%27s+Shadow%2C3%2Cnone%2C%2C%2C%2C&gloves=Laying+of+Hands%2C3%2Cnone&boots=Natalya%27s+Soul%2C2%2Cnone&belt=String+of+Ears%2C2%2Cnone&amulet=The+Cat%27s+Eye%2C0%2Cnone&ring1=Raven+Frost%2C0%2Cnone&ring2=Bul-Kathos%27+Wedding+Band%2C0%2Cnone&weapon=Natalya%27s+Mark%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Natalya%27s+Mark%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Fists_of_Fire%2C1%2C0&effect=Claws_of_Thunder%2C1%2C0&effect=Blades_of_Ice%2C1%2C0&effect=Claw_Mastery%2C1%2C0&effect=Burst_of_Speed%2C0%2C0&effect=Weapon_Block%2C0%2C0&effect=Fade%2C1%2C0&effect=Venom%2C1%2C0&effect=Cloak_of_Shadows%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Annihilus&charm=Hellfire+Torch&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=%2B1+Shogukusha%27s+Grand+Charm&charm=Dual+plague+on+swap';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Martial Arts&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 3&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-		</div></div>
-	</div></div>
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Barbarian&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=60&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=1&autocast=0&skills=01012001012001012001000000000100010101000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2CWar+Cry&helm=Harlequin+Crest+%28Shako%29%2C3%2Cnone%2C%2C%2C&armor=Enigma+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Magefist%2C1%2Cnone&boots=Aldur%27s+Advance%2C2%2Cnone&belt=Arachnid+Mesh%2C3%2Cnone&amulet=Mara%27s+Kaleidoscope%2C0%2Cnone&ring1=The+Stone+of+Jordan%2C0%2Cnone&ring2=The+Stone+of+Jordan%2C0%2Cnone&weapon=Heart+of+the+Oak+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Flail%2C1%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Heart+of+the+Oak+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Flail%2C1%2Cnone%2C%2C%2C%2C%2C%2C&effect=Shout%2C0%2C0&effect=Battle_Orders%2C0%2C0&effect=Battle_Command%2C0%2C0&effect=Venom-belt%2C0%2C0&effect=Increased_Stamina%2C0%2C0&effect=Increased_Speed%2C0%2C0&effect=Iron_Skin%2C0%2C0&effect=Puncture%2C0%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Annihilus&charm=Hellfire+Torch&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Singer&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=PoD&class=barbarian&level=60&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=1&autocast=0&skills=01012001012001012001000000000100010101000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2CWar+Cry&helm=Harlequin+Crest+%28Shako%29%2C3%2Cnone%2C%2C%2C&armor=Enigma+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Magefist%2C1%2Cnone&boots=Aldur%27s+Advance%2C2%2Cnone&belt=Arachnid+Mesh%2C3%2Cnone&amulet=Mara%27s+Kaleidoscope%2C0%2Cnone&ring1=The+Stone+of+Jordan%2C0%2Cnone&ring2=The+Stone+of+Jordan%2C0%2Cnone&weapon=Heart+of+the+Oak+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Flail%2C1%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Heart+of+the+Oak+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Flail%2C1%2Cnone%2C%2C%2C%2C%2C%2C&effect=Shout%2C0%2C0&effect=Battle_Orders%2C0%2C0&effect=Battle_Command%2C0%2C0&effect=Venom-belt%2C0%2C0&effect=Increased_Stamina%2C0%2C0&effect=Increased_Speed%2C0%2C0&effect=Iron_Skin%2C0%2C0&effect=Puncture%2C0%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Annihilus&charm=Hellfire+Torch&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm&charm=%2B1+Sounding+Grand+Charm';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;WW w/ WA&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=barbarian&level=89&difficulty=3&quests=1&running=0&strength=30&dexterity=80&vitality=0&energy=300&url=1&coupling=1&synthwep=0&autocast=1&skills=01000101000101000120000000000100010101010100000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Griffon%27s+Eye%2C3%2C%2B+Sockets%2C%2C%2C&armor=Ormus%27+Robes%2C3%2C%2B+Sockets%2C%2C%2C%2C&gloves=Dracul%27s+Grasp%2C3%2C%2B+All+Resistances&boots=Silkweave%2C2%2C%2B+All+Resistances&belt=Arachnid+Mesh%2C3%2C%2B+Faster+Cast+Rate&amulet=Mara%27s+Kaleidoscope%2C0%2C%2B+All+Skills&ring1=The+Stone+of+Jordan%2C0%2C%2B+Damage+Reduction&ring2=Wisp+Projector%2C0%2C%2B+Faster+Run%2FWalk&weapon=Synth+Kg%27s+Fleshripper%2C3%2C%2B+Sockets%2C%2C%2C%2C%2C%2C&offhand=Synth+Kg%27s+Fleshripper%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Shout%2C1%2C0&effect=Battle_Orders%2C1%2C0&effect=Battle_Command%2C1%2C0&effect=Increased_Stamina%2C1%2C0&effect=Iron_Skin%2C1%2C0&effect=Increased_Speed%2C1%2C0&effect=Puncture%2C1%2C0&effect=Whirling_Axes%2C1%2C0&effect=Natural_Resistance%2C1%2C0&effect=Venom-belt%2C1%2C0&effect=Lifted_Spirit-ring2%2C1%2C0&effect=Heart_of_Wolverine-ring2%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Ball Light&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-
-	</div></div>
-	</div></div>
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Driud&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 1&nbsp;&nbsp;</label>
-		</div></div>
-		  <div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 2&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 3&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-
-	</div></div>
-	</div></div>
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Necromancer&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-			<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=necromancer&level=85&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=01010001000101010101010000000000000000000101202020010120010101&selected=Hemorrhage%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Harlequin+Crest+%28Shako%29%2C3%2C%2B+Sockets%2C%2C%2C&armor=Chains+of+Honor+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Dracul%27s+Grasp%2C3%2C%2B+All+Resistances&boots=War+Traveler%2C2%2C%2B+All+Resistances&belt=Arachnid+Mesh%2C3%2C%2B+Faster+Cast+Rate&amulet=Mara%27s+Kaleidoscope%2C0%2C%2B+All+Skills&ring1=The+Stone+of+Jordan%2C0%2C%2B+Faster+Run%2FWalk&ring2=Raven+Frost%2C0%2C%2B+Faster+Run%2FWalk&weapon=Hemo+Wand%2C1%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Splendor+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Hierophant+Trophy+-Hemo%2C2%2Cnone%2C%2C%2C%2C%2C%2C&effect=Venom-belt%2C1%2C0&effect=Blood_Golem%2C0%2C0&effect=Iron_Golem%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm&charm=%2B1+Hexing+Grand+Charm';"/><div class="nav-text">
-				<label>&nbsp;&nbsp;&nbsp;&nbsp;Hemo&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Poison Bear&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Bow Necro&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-	</div></div>
-	</div></div>
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Paladin&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 1&nbsp;&nbsp;</label>
-		</div></div>
-		  <div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 2&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 3&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-		<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-	</div></div>
-	</div></div>
-
-	<div class="nav-dropdown-content-item"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Sorceress&nbsp;&nbsp;</label>
-		<div class="nav-dropdown-content2"><div class="nav-text">
-			<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=PoD&class=sorceress&level=89&difficulty=3&quests=1&running=0&strength=100&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=0100010100010100002020000001000000010000000001010000010001002020&selected=Frozen+Orb%2CHydra&helm=Tal+Rasha\'s+Horadric+Crest%2C2%2C%2B+Sockets%2CPerfect+Topaz%2CPerfect+Topaz%2CPerfect+Topaz&armor=Skin+of+the+Vipermagi%2C2%2C%2B+Faster+Cast+Rate%2C%2C%2C%2CUm+Rune&gloves=Frostburn%2C1%2C%2B+All+Resistances&boots=Silkweave%2C2%2C%2B+All+Resistances&belt=Tal+Rasha\'s+Fine-Spun+Cloth%2C2%2C%2B+Faster+Cast+Rate&amulet=Tal+Rasha\'s+Adjudication%2C0%2C%2B+All+Skills&ring1=Nagelring%2C0%2C%2B+Faster+Cast+Rate&ring2=Nagelring%2C0%2C%2B+Faster+Cast+Rate&weapon=Spirit+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Crystal+Sword%2C1%2Cnone%2C%2C%2C%2C%2C%2C&offhand=Rhyme+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Grim+Shield%2C2%2Cnone%2C%2C%2C%2C%2C%2C&effect=Warmth%2C1%2C0&effect=Enflame%2C1%2C0&effect=Cold_Mastery%2C1%2C0&effect=Fire_Mastery%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Orb/Hydra&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=sorceress&level=89&difficulty=3&quests=1&running=0&strength=0&dexterity=0&vitality=0&energy=0&url=1&coupling=1&synthwep=0&autocast=1&skills=0000000000000000000000010020000101010020200000010000000000000000&selected=Ball+Lightning%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Griffon%27s+Eye%2C3%2Cnone%2C%2C%2C&armor=Skin+of+the+Vipermagi%2C2%2Cnone%2C%2C%2C%2C&gloves=Magefist%2C1%2Cnone&boots=Silkweave%2C2%2Cnone&belt=Arachnid+Mesh%2C3%2Cnone&amulet=Mara%27s+Kaleidoscope%2C0%2Cnone&ring1=The+Stone+of+Jordan%2C0%2Cnone&ring2=Raven+Frost%2C0%2Cnone&weapon=Ondal%27s+Wisdom%2C3%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&effect=Venom-belt%2C1%2C0&effect=Lightning_Mastery%2C1%2C0&effect=Warmth%2C1%2C0&effect=Energy_Shield%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Ball lightning&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item" onclick="location.href='https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=sorceress&level=94&difficulty=3&quests=1&running=0&strength=20&dexterity=0&vitality=0&energy=310&url=1&coupling=1&autocast=1&skills=0101000101000000010001012020200101010010200001010000010001000100&synthwep=0&selected=CTC+Discharge+Proc%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=Griffon\'s+Eye%2C3%2C%2B+Sockets%2CRainbow+Facet+(Lightning)%2CRainbow+Facet+(Lightning)%2CRainbow+Facet+(Lightning)&armor=Enigma+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Archon+Plate%2C3%2Cnone%2C%2C%2C%2C&gloves=Dracul\'s+Grasp%2C3%2Cnone&boots=Shadow+Dancer%2C3%2Cnone&belt=Nosferatu\'s+Coil%2C3%2Cnone&amulet=The+Cat\'s+Eye%2C0%2Cnone&ring1=The+Stone+of+Jordan%2C0%2Cnone&ring2=Bul-Kathos\'+Wedding+Band%2C0%2Cnone&weapon=Dangoon\'s+Teaching%2C3%2C%2B+Sockets%2C%2C%2C%2C%2CBrute\'s+Jewel+of+Fervor%2CJah+Rune&offhand=Phoenix+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Monarch%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Frigerate%2C1%2C0&effect=Shiver_Armor%2C1%2C0&effect=Chilling_Armor%2C0%2C0&effect=Cold_Mastery%2C1%2C0&effect=Energy_Shield%2C1%2C0&effect=Lightning_Mastery%2C1%2C0&effect=Warmth%2C1%2C0&effect=Enflame%2C1%2C0&effect=Fire_Mastery%2C1%2C0&effect=Redemption-offhand%2C1%2C0&effect=Blaze-offhand%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=Hellfire+Torch&charm=Annihilus&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=Memory+on+Swap';"/><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Dangoon&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 4&nbsp;&nbsp;</label>
-		</div></div>
-			<div class="nav-dropdown-content2-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build 5&nbsp;&nbsp;</label>
-		</div></div>
-	</div></div>
-	</div></div>
-	
-
-	
-	
-<!--
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Assassin&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Barbarian&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Druid&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Necromancer&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Paladin&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="saveTextAsFile()"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Sorceress&nbsp;&nbsp;</label>
-      </div></div> -->
-
-    </div>
-  </div>
-
   <div class="nav-dropdown">
     <button class="nav-dropbtn" style="cursor:pointer;" onClick="location.href='https://github.com/GreenDude120/path-of-diablo-planner/tree/master?tab=readme-ov-file#contribute'"><a href="https://github.com/GreenDude120/path-of-diablo-planner/tree/master?tab=readme-ov-file#contribute">Contribute</a></button>
   </div>
+
   <div class="nav-dropdown">
-    <button class="nav-dropbtn" style="cursor:pointer;" onClick="location.href='https://build.pathofdiablo.com'"><a href="https://build.pathofdiablo.com">The real build planner</a></button>
+    <button class="nav-dropbtn">Shortcuts</button>
+    <div class="nav-dropdown-content">
+      <div class="nav-dropdown-content-item" ><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;General: Right click to remove an item, including removing from sockets&nbsp;&nbsp;</label>
+      </div></div>
+      <div class="nav-dropdown-content-item" ><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;General: Instead of scrolling to find, start typing the name of an item&nbsp;&nbsp;</label>
+      </div></div>
+      <div class="nav-dropdown-content-item" ><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;General: You can toggle effects on and off by clicking the icon along the right&nbsp;&nbsp;</label>
+      </div></div>
+      <div class="nav-dropdown-content-item" ><div class="nav-text">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;General: If it's underlined, hover over for additional detail&nbsp;&nbsp;</label>
+      </div></div>
+      <div class="nav-dropdown-content-item"><div class="nav-text">
+		<label>&nbsp;&nbsp;&nbsp;&nbsp;Skills: Click to add one point, SHIFT + click to add 10, CTRL + click to add 20&nbsp;&nbsp;</label>
+		</div></div>
+      <div class="nav-dropdown-content-item"><div class="nav-text">
+		<label>&nbsp;&nbsp;&nbsp;&nbsp;Skills: Right click to remove one point, SHIFT + right click to remove 10, CTRL + right click to remove 20&nbsp;&nbsp;</label>
+		</div></div>
+      <div class="nav-dropdown-content-item"><div class="nav-text">
+		<label>&nbsp;&nbsp;&nbsp;&nbsp;Stats: Click to add one point, SHIFT + click to add 10, CTRL + click to add 100&nbsp;&nbsp;</label>
+		</div></div>
+      <div class="nav-dropdown-content-item"><div class="nav-text">
+		<label>&nbsp;&nbsp;&nbsp;&nbsp;Stats: Right click to remove one point, SHIFT + right click to remove 10, CTRL + right click to remove 100&nbsp;&nbsp;</label>
+		</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Charms/Socketables: CTRL + click a charm/socketable in your inventory to duplicate it&nbsp;&nbsp;</label>
+			</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Charms/Socketables: CTRL + right click a charm/socketable in your inventory to remove a group of duplicated items&nbsp;&nbsp;</label>
+			</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Items: CTRL + click an item to upgrade the base&nbsp;&nbsp;</label>
+			</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Items: CTRL + right click an item to downgrade the base&nbsp;&nbsp;</label>
+			</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Items: SHIFT + left click an item to toggle ethereal/not ethereal&nbsp;&nbsp;</label>
+			</div></div>		
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Shortcut to import: https://build.pathofdiablo.com/?import=charactername&nbsp;&nbsp;</label>
+			</div></div>		
+		</div>
+	</div>
+<!--
+	<div class="nav-dropdown">
+		<button class="nav-dropbtn" style="cursor:pointer;">Import Test Alpha</a></button>
+		<div class="nav-dropdown-content">
+			<div class="nav-dropdown-content-item" id="nav_difficulty"><div class="nav-difficulty">&nbsp;&nbsp;&nbsp;Enter Character Name and click OK &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;<input type="text" name="importname" class="nav-dropdown-content-item" value="character name" id="importname"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="OK" onClick="importChar()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>&nbsp;
+	  
+	</div></div></div></div>
+  <div class="nav-dropdown">
+    <button class="nav-dropbtn" style="cursor:pointer;" onClick="importChar()">Import Test</a></button>
   </div>
-  <img src="./images/portal.ico" class="portal-logo" style="float:right" title="PoD Build Planer originally&#10;created by BetweenWalls"> 
+-->
+  <div class="nav-dropdown">
+    <button class="nav-dropbtn">Patch 22 Updates</button>
+    <div class="nav-dropdown-content">
+      <div class="nav-dropdown-content-item" ><div class="nav_difficulty">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;Patch 22 item changes have been added, but some changed skills remain incorrect.&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;If you've got updated skill data (min-max damage, AR, mana cost for each level, etc.) and &nbsp;&nbsp;&nbsp; <br> &nbsp;&nbsp;&nbsp;&nbsp;are willing to share, please let us know and we'll add it here<br>&nbsp;&nbsp;</label>
+      </div></div>	
+	</div></div>
+
+  <div class="nav-dropdown">
+	<button class="nav-dropbtn" style="cursor:pointer;" id="importtest" title="Import has limited support for magic, rare, or crafted items, &#013Synthesized items might spawn missing properties, you can add them on the right ">Character Import</a></button>
+	<div class="nav-dropdown-content">
+		<div class="nav-dropdown-content-item" id="nav_difficulty"><div class="nav-difficulty">&nbsp;&nbsp;&nbsp;Enter Character Name and click the button &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;<input type="text" name="importname" class="nav-dropdown-content-item" id="importname"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br><br>&nbsp;<input type="button" value="Import Whole Character" onClick="importChar()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" value="Just the Synth" onClick="justthesynth()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>&nbsp;
+
+</div><br><br></div></div></div>
+	<img src="./images/portal.ico" class="portal-logo" style="position: absolute; right:6%;" title="PoD Build Planer originally&#10;created by BetweenWalls"> 
 </div>
 
 <div class="inventory_container">
@@ -600,7 +546,7 @@
 	<div id="ar_spacing"><br><br><br><br><br><br><br><br></div>
 	<div class="gray" id="skill_details_active">
 	<div id="skill_details_basic">
-		<div id="disclaimer"><a><font color=red size="2">This is Qords playground, things here might not exist in game or in the officil build planner </font color></a><a id="disclaimer"></a><br></div>
+<!--		<div id="disclaimer"><a><font color=red size="2">Attacks and skills below may include damage from procs; toggle on right to disable </font color></a><a id="disclaimer"></a><br></div> -->
 		<div id="mainhand_basic"><a>Basic Attack: </a><u a title="tooltip text" id="basic_attack"></u></a><br></div>
 		<div id="offhand_basic"> ­ ­ ­ ­ ­ ­ ­ Offhand: <a title="tooltip text" id="offhand_basic_damage"></a><br></div>
 	<a>Attack Rating: </a><a id="ar"></a>
@@ -621,6 +567,7 @@
 		<a style="visibility:hidden">AR: </a><a id="ar_skill2"></a>
 	</div>
 	</div>
+			<div id="disclaimer"><a><font color=red size="2">This is Qords playground, things here might not exist in game or in the officil build planner </font color></a><a id="disclaimer"></a><br></div>
 	<div class="gray" id="skill_details_inactive"></div>
 	</div> <!-- /skill details -->
 
@@ -630,7 +577,10 @@
 <div id="demons_and_undead"> <!-- TODO: Incorporate into calculated damage & attack rating (instead of displaying as separate ED/AR) -->
 <div class="stat-text-wrapper stat-1">
 	<br><br>
+	<input type="number" id="ed_weapon" placeholder="Custom On-Wep ED%" oninput="applyCustomED('weapon')"><br>
+
 	<font size="2">On-weapon ED: </font><font size="2" id="e_damage"></font><br>
+<!--	<font size="2">On-weapon ED: </font><font size="2" id="e_damage"></font><br> -->
 	<font size="2">Damage vs Demons: </font><font size="2" id="damage_vs_demons"></font><br>
 	<font size="2">Damage vs Undead: </font><font size="2" id="damage_vs_undead"></font><br><br>
 
@@ -666,6 +616,40 @@
 	<div class="nav-mmmpld">
     	<button class="nav-mmmpld" style="cursor:pointer;" title="Click for ias details" onClick=getmmmpld()>mmmpld's IAS Calculator</a></button>
  	 </div>
+	  <br><br>	
+	  
+<!--
+	  <br><br>	<br><br>
+
+	  <div id="custom-item-builder">
+		<label for="place-select">Select Item:</label>
+		<select id="place-select">
+			<option value="ring1">ring1</option>
+			<option value="ring2">ring2</option>
+			<option value="amulet">amulet</option>
+		</select>
+
+
+		<label for="value-select">Select Value:</label>
+		<select id="value-select">
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+		</select>
+		
+		<label for="stat-select">Select Stat:</label>
+		<select id="stat-select">
+			// Options live in custom.js
+		</select>
+	
+		<button id="generate-item">Generate Item</button>
+	</div>
+	
+	<div id="output">
+		<h3>Generated Item:</h3>
+		<pre id="item-output">{}</pre>
+	</div>
+-->
 <!--<div class="nav-dropdown">
     	<button class="nav-dropbtn" style="cursor:pointer;" onClick=getmmmpld()>mmmpld's IAS Calculator</a></button>
  	</div> -->
@@ -717,26 +701,14 @@
 	
 	<font size="2">Damage to Mana: </font><font size="2" id="damage_to_mana"></font><br>
 	<font size="2">Thorns: </font><font size="2" id="thorns"></font><br><br>
-<!--
-	<font size="2">Aura tick fire damage: </font><font size="2" id="ftick_dmg"></font><br>
-	<font size="2">Aura tick cold damage: </font><font size="2" id="ctick_dmg"></font><br>
-	<font size="2">Aura tick light damage: </font><font size="2" id="ltick_dmg"></font><br>
-	<font size="2">Aura tick magic damage: </font><font size="2" id="mtick_dmg"></font><br><br>
-	<font size="2" id="ftick">Aura tick fire damage: </font><font size="2" id="ftick_dmg"></font><br>
-	<font size="2" id="ctick">Aura tick cold damage: </font><font size="2" id="ctick_dmg"></font><br>
-	<font size="2" id="ltick">Aura tick light damage: </font><font size="2" id="ltick_dmg"></font><br>
-	<font size="2" id="mtick">Aura tick magic damage: </font><font size="2" id="mtick_dmg"></font><br><br>
--->
+
 	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br><br>
 
 	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
 
 	<!--	<font size="2">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br><br> -->
 	<font size="2" id="wa_label" style="visibility:hidden;">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br><br>
-
-
 	<!--
-
 	<font size="2">Flat DR: </font><font size="2" id="damage_reduced"></font>
 -->	
 	<br>
@@ -758,8 +730,9 @@
 	<font size="3">Defense: </font><font size="3" id="defense"></font><br>
 	<font size="3" id="block_label" style="visibility:hidden;">Block Chance: </font><font size="3" id="block"></font><br><br>
 
-	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br><br>
-	<br>
+	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br>
+
+<br><br>
 	<font size="2">Fire Resist: </font><font size="2" id="fres"></font><br>
 	<font size="2">Cold Resist: </font><font size="2" id="cres"></font><br>
 	<font size="2">Lightning Resist: </font><font size="2" id="lres"></font><br>
@@ -782,7 +755,7 @@
 	<br>
 	<font size="2">Magic Absorb: </font><font size="2" id="mabsorb"></font><br>
 	<br>
-	<font size="2" id="eseff_label" style="visibility:hidden;">ES Absorb: </font><font size="2" id="esprcnt"></font><br>
+	<font size="2" id="eseff_label" style="visibility:hidden;">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
 	<font size="2" id="esprcnt_label" style="visibility:hidden;">ES Efficiency: </font><font size="2" id="eseff"></font><br><br>
 	<br>
 
@@ -800,10 +773,6 @@
 	<div id="mercenary_spacing2"><br></div>
 	<div id="golem_spacing"><br><br><br></div>
 	<div class="flamme"><font size="2" id="flamme"></font></div>
-<!--	<div class="ftick_dmg"><font size="2" id="ftick_dmg"></font></div>
-	<div class="ctick_dmg"><font size="2" id="ctick_dmg"></font></div>
-	<div class="ltick_dmg"><font size="2" id="ltick_dmg"></font></div>
-	<div class="mtick_dmg"><font size="2" id="mtick_dmg"></font></div> -->
 	<font size="2" id="itd"></font>
 	<font size="2" id="pmh"></font>
 	<font size="2" id="cbf"></font>
@@ -832,6 +801,91 @@
 <div id="version_spacing" style="display:none; height:370px; width:869px; color:gray;"></div>
 
 </div>	<!-- /interface -->
+
+<div class="stat-text-wrapper stat-7" id="stats_column_7" >
+	<br>
+<button onclick="createQuicklink()">Create Quicklink</button>
+	<br>
+	<p>Give items custom stats - Beta</p>
+	<br>
+	<label for="slotSelect">Choose Slot:</label>
+	<select class="dropdown" id="slotSelect" onchange="updateSelectedItemSummary()">
+	<option value="weapon">Weapon</option>
+	<option value="helm">Helm</option>
+	<option value="armor">Armor</option>
+	<option value="offhand">Offhand</option>
+	<option value="gloves">Gloves</option>
+	<option value="boots">Boots</option>
+	<option value="belt">Belt</option>
+	<option value="ring1">Ring1</option>
+	<option value="ring2">Ring2</option>
+	<option value="amulet">Amulet</option>
+	</select>
+
+<!--	<select id="weaponSelector" onchange="selectWeapon()">
+		<option value="">-- Choose a Weapon --</option>
+	</select> -->
+	<br>
+	<input class="dropdown" type="text" id="statSearch" placeholder="Search stats..." oninput="filterStatDropdown()">
+	<select class="dropdown" id="statDropdown" style="width: 350px;"></select>
+	<input type="number" id="statValue" placeholder="Value">
+	<button onclick="addCustomStat()">Add Stat</button>
+	<br>
+	<div id="itemSummary" style="margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px;">
+		<strong>Item Summary:</strong>
+		<pre id="itemSummaryContent">(nothing selected)</pre>
+	  </div>
+	<br><br>
+
+	<div id="synthPropertyContainer" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px;">
+		<p>Synth specific stats - Beta</p>
+		<strong>Potential Synth Properties:</strong>
+		<pre id="synthChoices">(nothing selected)</pre>
+	</div>
+	<br><br>
+	<div id="offhandsynthPropertyContainer" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px;">
+		<p>Synth specific stats - Beta</p>
+		<strong>Potential Synth Properties:</strong>
+		<pre id="synthChoices">(nothing selected)</pre>
+	</div>
+	<br><br>
+
+	<!--
+	<div id="synth-maker">
+		<h2>Synth Maker</h2>
+	  
+		<label for="baseItem">Base Item:</label>
+		<select id="baseItem"></select>
+		<br>
+		<label for="donor1">Synthesized From 1:</label>
+		<select id="donor1"></select>
+		<br>
+		<label for="donor2">Synthesized From 2:</label>
+		<select id="donor2"></select>
+		<br>
+		<label for="donor3">Synthesized From 3:</label>
+		<select id="donor3"></select>
+		<br>
+		<label for="donor4">Synthesized From 4:</label>
+		<select id="donor4"></select>
+		<br>
+		<button onclick="synthesize()">Synthesize!</button>
+	  
+		<pre id="synthResult"></pre>
+	  </div>
+	-->
+	<!-- Export button -->
+<!--
+	<button style="margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px;" onclick="exportEquippedToCSV()">Export Equipped Items</button>
+	<br><br><br>
+	<label for="importCSV" style="margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px; display: inline-block; cursor: pointer;">
+		Import Equipped Items
+	</label>
+	<input type="file" id="importCSV" accept=".csv" style="display: none;">
+-->		
+<!--	  <button onclick="resetAllStatsOnItem()">Reset All Stats</button> -->
+
+	  
 </div>	<!-- /full_interface -->
 </div>	<!-- /main -->
 </body>

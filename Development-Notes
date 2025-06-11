@@ -1,0 +1,177 @@
+Development notes
+Trying to get in the habit of verbose note taking 
+
+31 Aug 2024
+Goal: Make the life regen on right side include number of actual replenishment like 1% + 24 (the actual number)
+In functions.js: 
+Change lifetotal variable to global so it can be read by other funtions
+Change life_regen formula to include lifetotal and output accurate number (this is mainly informative if using prayer aura)
+
+Goal: add minus eneby phy resists on right with the other minus resists
+Index.html: add line for enemy_physRes below enemy_mres
+functions: add line for enemy_physRes below enemy_mres
+barbarian.js: add effect:5 to the skills_barbarian definition of grim ward to allow it to be counted in enemy_physRes
+
+Goal: add phys facet type damage where other facet damages show on left
+Index: add line for physicalDamage below mdamage
+functions: add line for physicalDamage below mdamage
+
+Fix evade buff from hustle not showing on right
+Add evade to zon buffdata section of universal_skills
+Add evade 0skill entries in BOTH places of basic_variables
+
+3 Sep 2024
+Goal: show aura tick damage for non-paladin classes (pally's can just hover over the skill to see it, others can't do that)
+Items.js: add min/max properties for tick damage
+item_metadata: add min/max properties, display format for tick damage
+functions: alter aura entries (holy freeze/fire/shock and sanctuary) in getAuradata function to include the newly created min & max tick damage propeties. Need to account for sorc masteries, paladin synergies, and facet-type boosts.
+
+Also added righteous flame damage back in, not sure when it was commented out in index
+
+5 sep
+Added Fortitude in Mat Pike
+
+7 Sep
+Fixing frenzy's bash synergy, it's adding 10% per level instead of 1%?
+Made Oath CB ethereal
+Working on shortlinks; not sure it's sustainable in this fashion
+
+11 Sep
+Added the CTC Ball light as a selectable skill for Stormspire so you can approximate the CTC damage
+Created ball light copycat skill in universal skills
+Added the new skill in item_metadata, items, and basic variables
+Added the new skill to stormspire in items
+
+12 Sep
+Added several synths by request in items.js
+Removed unused code in universal skills
+
+18 Sep
+Added display lines for total all skills (functions.js) and # of projectiles (multiproj var added in items, all skills plus one in functions) fired by Doomslinger
+Added 30 life skiller gc's in items.js
+Added more possible levels to added fire min/max of corpse explosion in necromancer.js
+
+20 Sep
+Added more elegant way to display CTC damage; new skillname "text" variables in items, add skills to list of ctc skills in basic_variables, added code in functions to calculate and show damage and hide icon from top right
+
+21 Sep
+Added CTC Ball Lightning damage as above. Used getSkillData instead of getCTCSkillData to display this, maybe that's the better way moving forward?
+Added Frozen Orb and poison nova ctc
+
+22 Sep
+Added dodge/avoid/evade line
+Added Hydra ctc damage
+
+25 Sep
+Added disclaimer for WA since damage is so far off from game
+Fixed some incorrect barb skill prereqs
+
+27 Sep
+Added visibility for planner shortcuts
+Renamed a few jewels to mmake it easier to see what they are
+
+29 Sep
+Changed "keyboard shortcuts" to "planner shortcuts" in nav bar, changed to just "shortcuts" and added a couple more
+Added damage taken after ES accounted for calculations
+Removed Destruction in crystal and dimensional sword since directions for upgrading/downgradig base can be found in shortcuts
+Added moulten boulder to new CTC display, removed those selectable CTC skills from desctruction runeword
+
+1 Oct
+Updated readme
+
+2 Oct
+Revised damage numbers for Whirling Axes
+
+4 Oct
+Fixed Lightning mastery having wrong icon in top-right
+Fixed deadly strike % calc not including deadly strike per level (ie, highlords)
+Move dodge/evade/avoid to bottom right, moved to updateTertiaryStats in functions, removed dodge/evade/avoid lines from function, removed dodge/evade/avoid line from index
+
+6 Oct
+Added a drop down menu button for "reload", might not do what we want...
+Made shareable links on by default in index, added toggleParameters(parameters) to startup functions to force this to be enabled on page load
+Added more ctc skills in basic_variables, added functions for them, added Qord's leg to use them
+
+9 Oct
+Added Armageddon as oskill, Qords 3rd leg; added the oskill to all 3 legs at different levels
+Fixed spell damage display for barb and universal skills
+
+10-15 Oct
+Fixed forgotten phys damage values for meteor (was still at 25% instead of 35%)
+Added Blizzard oskill
+Added/changed Qords legs
+Added mana regen per second reporting
+Fixed skill shrine (was labeled "Skillu Shrine")
+
+18 Oct
+Fix typos
+
+19 Oct
+Added Fire Ball CtC damage; added skill to basic variables, defined bireballtext in items, added damage calcs and display line to functions
+
+22 Oct
+Added another obesession leg
+
+2 Nov
+Rework fists of fire to use an actual % of meteor fire damage to calculate phys damage instead of relying on static table of damage values. 
+
+11 Nov
+Added missing line break in mana regen line
+
+13 Nov
+Added known Patch 22 item changes
+Barb skill tree changes
+Some CtC skills added
+
+14 Nov
+More CtC skills
+Double throw text change
+
+15 Nov
+New barb skill tree picture with correct skill placement and paths
+Reordered barb skills to fix synergy light/dark icon problems
+Marked skills that need to be, but have not been, updated
+Added some S22 items, removed old
+
+18 Nov
+Changed Aegis defence and str requirements
+Some runeword fixes: Hand of Justice, Venom, Principle, Edge, Voice of Reason, Wrath, Brand, 
+Destruction, Treachery, CtA
+Created "all summon" stat, applied it to some summoning skills
+Fixed some P22 skills
+
+21 Nov
+Added new bow base in item_metadata to allow for creating 2 new bow debug items in items.js that do 100-100 damage for testing damage calcs
+
+30 Nov
+Mosaic, how did I miss that??? Added it to list of runewords in item-metadata, added new var for charge duration, added fists of fire and claws of thunder(again how???) to metadata, added the item itself in items
+
+23 Dec
+Removed Plague Wirt's Leg, oops. 
+Added clarity on ES damage taken values not being able to go below zero
+Added top navigation bar and background to give the builder a look that's consistent with the rest of, AND allows simpler navigation back to, the PoD web pages
+
+1st week of January
+Added runeword options
+Added hotkey (SHIFT + left-click) toggle to make items ethereal; no more need to maintain eth and non-eth item versions, but it does allow for more things that don't exist in game like slammed eth and bow and set eth. It's a worthwhile trade off imo
+More patch 22 updates
+Started working on character import, enter char name, click ok and it pulls in class, level, stats, and skills. Not sure I see a true way forward because we can't account for all items, even things like a spirit in a long sword would require an absurd ammount of extra coding. Will keep poking at it and see how far I can go before it gets too unweildy. Might be worth the time, might not.
+
+11 Jan
+Got items to import from the api to a limited extent. Requires name matching work, some planner items have been renamed to accomodate this. 
+Added short link support for the character import, url https://build.pathofdiablo.com/?import= plus a charactername
+Added better text placeholder on import textbox
+Added blood golem oskill, applied it to death runeword
+Blocked ethereal toggle on bows, crossbows, sets
+Updated Ice Arrow, still need new numbers
+
+
+26 Jan
+In the last week...
+Fixed some barb skill synergies
+Fixed Mosaic adding flar AR instsead of %
+Added skillers with frw and fhr
+Added chaos in a better claw base
+Work on custom item creation, which should allow for importing stats found on magic/rare/craft
+
+

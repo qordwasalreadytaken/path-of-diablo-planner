@@ -47,10 +47,13 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 		if (skill.name == "Immolate" && elem < 2) { 					result *= ((1 + (0.04*sk[23].level)) * (1+c.fDamage/100)) }
 		if (skill.name == "Fire Ball" && elem < 2) { 					result *= ((1 + (0.06*sk[22].level + 0.06*sk[29].level)) * (1+c.fDamage/100)) }
 		if (skill.name == "Fire Wall" && elem < 2) { 					result *= ((1 + (0.04*sk[23].level + 0.04*sk[24].level)) * (1+c.fDamage/100)) }
-		if (skill.name == "Enflame" && elem < 4) { 						result *= ((1 + (0.08*sk[23].level)+  (0.12*sk[22].level)) * (1+c.fDamage/100)) }
-		if (skill.name == "Meteor" && elem < 2) { 						result *= ((1 + (0.06*sk[22].level + 0.06*sk[26].level)) * (1+c.fDamage/100)) * (1+c.physicalDamage/100)}	// physical damage multipled by fire bonus (25% of total fire damage as extra physical damage)
-		if (skill.name == "Meteor" && elem < 4 && elem > 1) { 			result *= ((1 + (0.06*sk[22].level + 0.06*sk[26].level)) * (1+c.fDamage/100)) }
-		if (skill.name == "Meteor" && elem < 6 && elem > 3) { 			result *= ((1 + (0.03*sk[24].level)) * (1+c.fDamage/100)) }
+		if (skill.name == "Enflame" && elem < 4) { 						result *= ((1 + (0.12*sk[23].level)+  (0.12*sk[22].level)) * (1+c.fDamage/100)) }
+//		if (skill.name == "Meteor" && elem < 2) { 						result *= ((1 + (0.06*sk[22].level + 0.06*sk[26].level)) * (1+c.fDamage/100)) * (1+c.physicalDamage/100)}	// physical damage multipled by fire bonus (25% of total fire damage as extra physical damage)
+//		if (skill.name == "Meteor" && elem < 2) { 						result *= (1+c.physicalDamage/100)}	// physical damage multipled by fire bonus (25% of total fire damage as extra physical damage)
+//		if (skill.name == "Meteor" && elem < 4 && elem > 1) { 			result *= ((1 + (0.06*sk[22].level + 0.06*sk[26].level)) * (1+c.fDamage/100)) }
+//		if (skill.name == "Meteor" && elem < 6 && elem > 3) { 			result *= ((1 + (0.03*sk[24].level)) * (1+c.fDamage/100)) }
+		if (skill.name == "Meteor" && elem < 2) { 			result *= ((1 + (0.06*sk[22].level + 0.06*sk[26].level)) * (1+c.fDamage/100)) }
+		if (skill.name == "Meteor" && elem < 4 && elem > 1) { 			result *= ((1 + (0.03*sk[24].level)) * (1+c.fDamage/100)) }
 		if (skill.name == "Hydra" && elem < 3 && elem > 0) { 			result *= ((1 + (0.01*sk[23].level + 0.02*sk[26].level)) * (1+c.fDamage/100)) }
 
 //		if (skillName == "Dangoon Discharge Proc" && elem < 2) { 		result *= ((1 + 0.03*sk[12].level + 0.03*sk[14].level))} // + 0.01*Math.floor(((character.energy + character.all_attributes)*(1+character.max_energy/100))/2)) * (1+c.lDamage/100)) }
@@ -148,7 +151,8 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 		else if (skill.name == "Immolate") {		attack = 0; spell = 1; fDamage_min = character.getSkillData(skill,lvl,0); fDamage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Fire Ball") {		attack = 0; spell = 1; fDamage_min = character.getSkillData(skill,lvl,0); fDamage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Fire Wall") {		attack = 0; spell = 1; fDamage_min = character.getSkillData(skill,lvl,0); fDamage_max = character.getSkillData(skill,lvl,1); }
-		else if (skill.name == "Meteor") {			attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); fDamage_min = character.getSkillData(skill,lvl,2); fDamage_max = character.getSkillData(skill,lvl,3); }
+//		else if (skill.name == "Meteor") {			attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); fDamage_min = character.getSkillData(skill,lvl,2); fDamage_max = character.getSkillData(skill,lvl,3); }
+		else if (skill.name == "Meteor") {			attack = 0; spell = 1; fDamage_min = character.getSkillData(skill,lvl,2); fDamage_max = character.getSkillData(skill,lvl,3); damage_min = (fDamage_min * 0.35) * (1+character.physicalDamage/100); (damage_max = fDamage_max * 0.35) * (1+character.physicalDamage/100); }
 		else if (skill.name == "Hydra") {			attack = 0; spell = 1; fDamage_min = character.getSkillData(skill,lvl,1); fDamage_max = character.getSkillData(skill,lvl,2); }
 
 		if (attack == 0) { phys_min = 0; phys_max = 0; phys_mult = 1; nonPhys_min = 0; nonPhys_max = 0; damage_enhanced = 0; }
@@ -166,10 +170,13 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 		if (lDamage_min > 0) {skill2Breakdown += "\nLight Damage: " + Math.floor(lDamage_min) + "-" + Math.floor(lDamage_max)};
 		if (mDamage_min > 0) {skill2Breakdown += "\nMagic Damage: " + Math.floor(mDamage_min) + "-" + Math.floor(mDamage_max)};
 		if (pDamage_min > 0) {skill2Breakdown += "\nPoison Damage: " + Math.floor(pDamage_min) + "-" + Math.floor(pDamage_max)};
-		addmore = "no"
-//		if (attack == 1){
-//			addmore = "yes"
-//		}
+		if (attack != 0){
+			addmore = "yes"
+		}
+		if (attack == 0){
+			addmore = "no"
+		}		
+
 
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
 		return result
@@ -181,12 +188,18 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 	// ---------------------------------
 	setSkillAmounts : function(s) {
 		skills[s].extra_levels += character.skills_sorceress
+//			if (c.class_name != "Sorceress" ) {
+//				skills[s].extra_levels += character.skills_sorceress
+//			}		
 		if (s < 11) {
 			skills[s].extra_levels += character.skills_cold
 			skills[s].extra_levels += character.skills_tree1
 			skills[s].extra_levels += character.skills_cold_all
 			skills[s].extra_levels += character.skills_ele_poison_all
 		} else if (s > 21) {
+//			if (character.class_name != "Sorceress" ) {
+//				skills[s].extra_levels += character.skills_sorceress
+//			}
 			skills[s].extra_levels += character.skills_fire
 			skills[s].extra_levels += character.skills_tree3
 			skills[s].extra_levels += character.skills_fire_all
@@ -364,8 +377,10 @@ var character_sorceress = {class_name:"Sorceress", strength:10, dexterity:25, vi
 		["attack rating",50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,], 
 ]};
 /*[29] Meteor			*/ var d352 = {values:[
-		["damage min",40,47.5,55,62.5,70,77.5,85,92.5,102.5,112.5,122.5,132.5,142.5,152.5,162.5,172.5,187.5,202.5,217.5,232.5,247.5,262.5,282.5,302.5,322.5,342.5,362.5,382.5,407.5,432.5,457.5,482.5,507.5,532.5,557.5,582.5,607.5,632.5,657.5,682.5,707.5,732.5,757.5,782.5,807.5,832.5,857.5,882.5,907.5,932.5,957.5,982.5,1007.5,1032.5,1057.5,1082.5,1107.5,1132.5,1157.5,1182.5,], 
-		["damage max",50,60,70,80,90,100,110,120,135,150,165,180,195,210,225,240,260,280,300,320,340,360,385,410,435,460,485,510,540,570,600,630,660,690,720,750,780,810,840,870,900,930,960,990,1020,1050,1080,1110,1140,1170,1200,1230,1260,1290,1320,1350,1380,1410,1440,1470,], 
+//		["damage min",40,47.5,55,62.5,70,77.5,85,92.5,102.5,112.5,122.5,132.5,142.5,152.5,162.5,172.5,187.5,202.5,217.5,232.5,247.5,262.5,282.5,302.5,322.5,342.5,362.5,382.5,407.5,432.5,457.5,482.5,507.5,532.5,557.5,582.5,607.5,632.5,657.5,682.5,707.5,732.5,757.5,782.5,807.5,832.5,857.5,882.5,907.5,932.5,957.5,982.5,1007.5,1032.5,1057.5,1082.5,1107.5,1132.5,1157.5,1182.5,], 
+//		["damage max",50,60,70,80,90,100,110,120,135,150,165,180,195,210,225,240,260,280,300,320,340,360,385,410,435,460,485,510,540,570,600,630,660,690,720,750,780,810,840,870,900,930,960,990,1020,1050,1080,1110,1140,1170,1200,1230,1260,1290,1320,1350,1380,1410,1440,1470,], 
+//		["damage min",], 
+//		["damage max",], 
 		["fire min",160,190,220,250,280,310,340,370,410,450,490,530,570,610,650,690,750,810,870,930,990,1050,1130,1210,1290,1370,1450,1530,1630,1730,1830,1930,2030,2130,2230,2330,2430,2530,2630,2730,2830,2930,3030,3130,3230,3330,3430,3530,3630,3730,3830,3930,4030,4130,4230,4330,4430,4530,4630,4730,], 
 		["fire max",200,240,280,320,360,400,440,480,540,600,660,720,780,840,900,960,1040,1120,1200,1280,1360,1440,1540,1640,1740,1840,1940,2040,2160,2280,2400,2520,2640,2760,2880,3000,3120,3240,3360,3480,3600,3720,3840,3960,4080,4200,4320,4440,4560,4680,4800,4920,5040,5160,5280,5400,5520,5640,5760,5880,], 
 		["avg fire min",35,44,53,63,72,82,91,100,112,124,135,147,159,171,182,194,208,222,236,250,264,278,292,306,320,335,349,363,377,391,405,419,433,447,461,475,489,503,517,532,546,560,574,588,602,616,630,644,658,672,686,700,714,728,742,756,770,784,798,812,], 
@@ -398,7 +413,7 @@ var skills_sorceress = [
 
 {data:d212, key:"212", code:47, name:"Charged Bolt", i:11, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates multiple, randomly directed<br>bolts of electrical energy", syn_title:"<br>Charged Bolt Receives Bonuses From:<br>", syn_text:"Lightning Surge: +8% Lightning Damage per Level<br>Chain Lightning: +8% Lightning Damage per Level<br>Lightning Mastery", graytext:"", index:[0,""], text:[""," bolts<br>Lightning Damage: ","-","<br>Mana Cost: ",""]},
 {data:d221, key:"221", code:48, name:"Static Field", i:12, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates an electrical field that reduces life<br>of all nearby enemies<br><br>Weakens enemies by 20 percent", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Radius: "," yards<br>Mana Cost: 9",""]},
-{data:d223, key:"223", code:49, name:"Telekinesis", i:13, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Uses the power of your mind to<br>pick up items, use objects,<br>and knock back enemies", syn_title:"<br>Telekinesis Receives Bonuses From:<br>", syn_text:"Lightning Mastery", graytext:"", index:[0,""], text:["Lightning Damage: ","-","<br>Mana Cost: 7",""]},
+{data:d223, key:"223", code:49, name:"Telekinesis", i:13, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Uses the power of your mind to<br>pick up items, use objects,<br>and knock back enemies", syn_title:"<br>Telekinesis Receives Bonuses From:<br>", syn_text:"Lightning Mastery", graytext:"", index:[0,""], text:["Lightning Damage: ","-","<br>Mana Cost: 7",""], notupdated:1},
 {data:d231, key:"231", code:50, name:"Nova", i:14, req:[12], reqlvl:12, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates an expanding ring of lightning<br>to shock nearby enemies", syn_title:"<br>Nova Receives Bonuses From:<br>", syn_text:"Discharge: +3% Lightning Damage per Level<br>Lightning Mastery", graytext:"", index:[0,""], text:["Lightning Damage: ","-","<br>Mana Cost: ",""]},
 {data:d232, key:"232", code:51, name:"Lightning Surge", i:15, req:[11], reqlvl:12, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates a powerful lightning bolt<br>to lay waste to your enemies", syn_title:"<br>Lightning Surge Receives Bonuses From:<br>", syn_text:"Charged Bolt: +5% Lightning Damage per Level<br>Chain Lightning: +5% Lightning Damage per Level<br>Lightning Mastery", graytext:"", index:[0,""], text:["Lightning Damage: ","-","<br>Mana Cost: ",""]},
 {data:d242, key:"242", code:52, name:"Chain Lightning", i:16, req:[15,11], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates a bolt of lightning that<br>arcs through several targets", syn_title:"<br>Chain Lightning Receives Bonuses From:<br>", syn_text:"Charged Bolt: +3% Lightning Damage per Level<br>Lightning Surge: +3% Lightning Damage per Level<br>Lightning Mastery", graytext:"", index:[0,""], text:[""," hits<br>Lightning Damage: ","-","<br>Mana Cost: ",""]},
@@ -415,8 +430,9 @@ var skills_sorceress = [
 {data:d331, key:"331", code:61, name:"Immolate", i:25, req:[24], reqlvl:12, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates a fiery blast in front of you<br>engulfing enemies with intense heat<br><br>Radius: 7 yards", syn_title:"<br>Immolate Receives Bonuses From:<br>", syn_text:"Warmth: +4% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Damage: ","-","<br>Mana Cost: ",""]},
 {data:d332, key:"332", code:62, name:"Fire Ball", i:26, req:[22], reqlvl:12, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Creates an explosive sphere of fiery death<br>to engulf your enemies<br><br>Radius: 3 yards", syn_title:"<br>Fire Ball Receives Bonuses From:<br>", syn_text:"Fire Bolt: +6% Fire Damage per Level<br>Meteor: +6% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Damage: ","-","<br>Mana Cost: ",""]},
 {data:d341, key:"341", code:63, name:"Fire Wall", i:27, req:[25,24], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Creates a wall of flame that<br>blocks or burns your enemies", syn_title:"<br>Fire Wall Receives Bonuses From:<br>", syn_text:"Warmth: +4% Fire Damage per Level<br>Inferno: +4% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Duration: 3.6 seconds<br>Average Fire Damage: ","-"," per second<br>"," yards<br>Mana Cost: ",""]},
-{data:d343, key:"343", code:64, name:"Enflame", i:28, req:[23,26,22], reqlvl:18, level:0, extra_levels:0, force_levels:0, effect:3, bindable:0, description:"Activated Aura - Heats your party's weapons<br>While active, adds fire damage to allies near you<br><br>Mana Cost: 25", syn_title:"<br>Enflame Receives Bonuses From:<br>", syn_text:"Warmth: +8% Fire Damage per Level<br>Fire Bolt: +12% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Damage (self): ","-","<br>Fire Damage (allies): ","-","<br>Attack Bonus: +"," percent"]},
-{data:d352, key:"352", code:65, name:"Meteor", i:29, req:[26,27,22,25,24], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Summons a meteor from the heavens<br>to crush and incinerate your enemies<br><br>Gains Physical Damage equal to 35% of Fire Damage", syn_title:"<br>Meteor Receives Bonuses From:<br>", syn_text:"Fire Bolt: +6% Fire Damage per Level<br>Fire Ball: +6% Fire Damage per Level<br>Inferno: +3% Average Fire Damage per Second per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Damage: ","-","<br>Fire Damage: ","-","<br>Radius: 4 yards<br>Average Fire Damage: ","-"," per second<br>Mana Cost: ",""]},
+{data:d343, key:"343", code:64, name:"Enflame", i:28, req:[23,26,22], reqlvl:18, level:0, extra_levels:0, force_levels:0, effect:3, bindable:0, description:"Activated Aura - Heats your party's weapons<br>While active, adds fire damage to allies near you<br><br>Mana Cost: 25", syn_title:"<br>Enflame Receives Bonuses From:<br>", syn_text:"Warmth: +12% Fire Damage per Level<br>Fire Bolt: +12% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Damage (self): ","-","<br>Fire Damage (allies): ","-","<br>Attack Bonus: +"," percent"]},
+//{data:d352, key:"352", code:65, name:"Meteor", i:29, req:[26,27,22,25,24], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Summons a meteor from the heavens<br>to crush and incinerate your enemies<br><br>Gains Physical Damage equal to 35% of Fire Damage", syn_title:"<br>Meteor Receives Bonuses From:<br>", syn_text:"Fire Bolt: +6% Fire Damage per Level<br>Fire Ball: +6% Fire Damage per Level<br>Inferno: +3% Average Fire Damage per Second per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Damage: ","-","<br>Fire Damage: ","-","<br>Radius: 4 yards<br>Average Fire Damage: ","-"," per second<br>Mana Cost: ",""]},
+{data:d352, key:"352", code:65, name:"Meteor", i:29, req:[26,27,22,25,24], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Summons a meteor from the heavens<br>to crush and incinerate your enemies<br><br>Gains Physical Damage equal to 35% of Fire Damage", syn_title:"<br>Meteor Receives Bonuses From:<br>", syn_text:"Fire Bolt: +6% Fire Damage per Level<br>Fire Ball: +6% Fire Damage per Level<br>Inferno: +3% Average Fire Damage per Second per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Fire Damage: ","-","<br>Radius: 4 yards<br>Average Fire Damage: ","-"," per second<br>Mana Cost: ",""]},
 {data:d362, key:"362", code:66, name:"Fire Mastery", i:30, req:[], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:1, bindable:0, description:"Passive - Increases the damage of your fire skills<br>by piercing enemies' resistances to fire", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Fire Pierce: +"," percent<br>Fire Damage: +"," percent",""]},
 {data:d363, key:"363", code:67, name:"Hydra", i:31, req:[28,23,26,22], reqlvl:30, level:0, extra_levels:0, force_levels:0, bindable:2, description:"Summons a multi-headed beast of flame<br>to reduce your enemies to ashes<br><br>Maximum Hydras: 4", syn_title:"<br>Hydra Receives Bonuses From:<br>", syn_text:"Warmth: +1% Fire Damage per Level<br>Fire Ball: +2% Fire Damage per Level<br>Fire Mastery", graytext:"", index:[0,""], text:["Duration: "," seconds<br>Hydra Fire Damage: ","-","<br>Mana Cost: ",""]}
 ];

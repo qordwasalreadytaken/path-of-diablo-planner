@@ -21,6 +21,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 	// result: value of the skill element at the specified level
 	// ---------------------------------
 	getSkillData : function(skill, lvl, elem) {
+//		console.log("Character AR beginning getskilldata", character.ar_bonus)
 		var result = skill.data.values[elem][lvl];
 		
 		if (skill.name == "Firestorm" && elem > 0 && elem < 3) { 		result *= ((1 + (0.30*skills[1].level + 0.30*skills[4].level)) * (1+character.fDamage/100)) }
@@ -48,7 +49,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		if (skill.name == "Fire Claws" && elem < 2) {							 result *= ((1 + (0.12*skills[0].level + 0.12*skills[1].level + 0.12*skills[7].level + 0.12*skills[9].level)) * (1+character.fDamage/100)) }
 //		if (skill.name == "Shock Wave" && elem < 2) {							 result *= (1 + ((0.08*skills[15].level)) * (1+character.physicalDamage/100)) + ((0.08*skills[15].level) * (1+character.damage_bonus/100))} // * (1+character.damage_bonus/100)} //tried to get shockwave damage right, this did not do it
 		if (skill.name == "Shock Wave" && elem < 2) {							 result *= (1 + (0.08*skills[15].level)) * (1+character.physicalDamage/100)}
-		if (skill.name == "Rabies" && elem > 0 && elem < 3) {					 result *= ((1 + (0.20*skills[22].level + 0.20*skills[27].level)) * (1+character.pDamage/100)) }
+		if (skill.name == "Rabies" && elem > 0 && elem < 3) {					 result *= ((1 + (0.17*skills[22].level + 0.17*skills[27].level)) * (1+character.pDamage/100)) }
 
 		if (skill.name == "Raven" && elem < 3 && elem > 0) { 			result *= (1 + (0.20*skills[5].level + 0.20*skills[6].level + character.summon_damage/100)) }
 		if (skill.name == "Raven" && elem < 5 && elem > 2) { 			result *= ((1 + 0.21*skills[3].level + 0.01*((character.energy + character.all_attributes)*(1+character.max_energy/100)) + character.summon_damage/100) * (1+character.cDamage/100)) }
@@ -60,6 +61,8 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		if (skill.name == "Summon Dire Wolf" && elem == 2) { if (skills[24].level > 0) { result = skills[24].data.values[5][skills[24].level+skills[24].extra_levels] } else { result = 0 } }
 		if (skill.name == "Summon Dire Wolf" && elem == 3) { if (skill.level > 0) { result = ((1 + (skill.data.values[6][skill.level] / 100)) * skill.data.values[elem][character.difficulty]) } else { result = skill.data.values[elem][character.difficulty] } }	// Oak Sage...? (1 + ~~skills[26].data.values[1][skills[26].level+skills[26].extra_levels]/100)
 		if (skill.name == "Summon Dire Wolf" && elem < 6 && elem > 3) { if (skills[30].level > 0) { result *= (1 + (skills[30].data.values[5][skills[30].level+skills[30].extra_levels] / 100) + character.summon_damage/100) } else { result *= (1+character.summon_damage/100) } }	// Heart of Wolverine:  + (~~skills[23].data.values[1][skills[23].level+skills[23].extra_levels]/100)
+//		if (skill.name == "Summon Dire Wolf" && elem == 7 ) {  result = (0 + ) }
+//		if (skill.name == "Summon Dire Wolf" && elem == 8 ) {  result + mDamage_max }
 		if (skill.name == "Summon Grizzly" && elem == 0) { if (skills[27].level > 0) { result = ((1 + (skills[27].data.values[6][skills[27].level+skills[27].extra_levels] / 100)) * skill.data.values[elem][character.difficulty]) } else { result = skill.data.values[elem][character.difficulty] } }
 		if (skill.name == "Summon Grizzly" && elem == 1) { if (skills[24].level > 0) { result = skills[24].data.values[4][skills[24].level+skills[24].extra_levels] } else { result = 0 } }
 		if (skill.name == "Summon Grizzly" && elem == 2) { if (skills[24].level > 0) { result = skills[24].data.values[5][skills[24].level+skills[24].extra_levels] } else { result = 0 } }
@@ -67,6 +70,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		if (skill.name == "Poison Creeper" && elem > 0 && elem < 3) { 	result *= (1+character.summon_damage/100) }
 		if ((skill.name == "Poison Creeper" || skill.name == "Heart of Wolverine" || skill.name == "Carrion Vine" || skill.name == "Oak Sage" || skill.name == "Solar Creeper" || skill.name == "Spirit of Barbs") && elem == 0) { result = skill.data.values[elem][character.difficulty][lvl] }
 		
+//		console.log("Character AR end getskilldata", character.ar_bonus)
 	return result
 	},
 	
@@ -75,6 +79,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 	// result: indexed array including stats affected and their values
 	// ---------------------------------
 	getBuffData : function(skill) {
+//		console.log("Character AR being getbuffdata", character.ar_bonus)
 		var id = skill.name.split(' ').join('_');
 		var lvl = skill.level + skill.extra_levels;
 		var result = {};
@@ -115,8 +120,9 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		if (skill.name == "Poison Creeper") {  }
 		if (skill.name == "Raven") { result.amountSummoned = skill.data.values[0][lvl]; }
 		if (skill.name == "Summon Spirit Wolf") { result.amountSummoned = skill.data.values[0][lvl]; }
-		if (skill.name == "Summon Dire Wolf") { result.amountSummoned = skill.data.values[0][lvl]; }
+		if (skill.name == "Summon Dire Wolf") { result.amountSummoned = skill.data.values[0][lvl]; result.mDamage_min = (.24 * character.getSkillData(skill,lvl,4)); result.mDamage_max = (.24 * character.getSkillData(skill,lvl,4)) ;}
 		if (skill.name == "Summon Grizzly") { result.amountSummoned = 1+character.extraGrizzly; }
+//		console.log("Character AR being getbuffdata", character.ar_bonus)
 		
 	return result
 	},
@@ -126,7 +132,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 	//	ar: base attack rating
 	//	min/max parameters: base damage of different types
 	// ---------------------------------
-	getSkillDamage : function(skill, ar, phys_min, phys_max, phys_mult, nonPhys_min, nonPhys_max) {
+	getSkillDamage : function(skill, baseAR, phys_min, phys_max, phys_mult, nonPhys_min, nonPhys_max) {
 		var lvl = skill.level+skill.extra_levels;
 		var ar_bonus = 0; var damage_bonus = 0; var weapon_damage = 100;
 		var damage_min = 0; var damage_max = 0;
@@ -150,18 +156,18 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		else if (skill.name == "Tornado") { 			attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Armageddon") {			attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,1); damage_max = character.getSkillData(skill,lvl,2); fDamage_min = character.getSkillData(skill,lvl,3); fDamage_max = character.getSkillData(skill,lvl,4); }
 		else if (skill.name == "Hurricane") {			attack = 0; spell = 1; cDamage_min = character.getSkillData(skill,lvl,1); cDamage_max = character.getSkillData(skill,lvl,2); }
-		else if (skill.name == "Feral Rage") {			attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,5); damage_bonus = character.getSkillData(skill,lvl,4); }
+		else if (skill.name == "Feral Rage") {			attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,5); damage_bonus = character.getSkillData(skill,lvl,4); console.log("Character getSkillDamage AR: ", ar, ar_bonus);}
 		else if (skill.name == "Maul") { 				attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,3); damage_bonus = character.getSkillData(skill,lvl,2); }
 		else if (skill.name == "Rabies") { 				attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,0); pDamage_min = character.getSkillData(skill,lvl,1); pDamage_max = character.getSkillData(skill,lvl,2); pDamage_duration = 4; }
 		else if (skill.name == "Fire Claws") {			attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,2); fDamage_min = character.getSkillData(skill,lvl,0); fDamage_max = character.getSkillData(skill,lvl,1); }
 		else if (skill.name == "Hunger") { 				attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,2); damage_bonus = -75; }
 //		else if (skill.name == "Shock Wave") {			attack = 1; spell = 0; weapon_damage = 25; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1); e_damage = -75;}
-		else if (skill.name == "Shock Wave") {			attack = 1; spell = 0; weapon_damage = 25; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1);}
-		else if (skill.name == "Fury") { 				attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,1); damage_bonus = character.getSkillData(skill,lvl,2); }
+		else if (skill.name == "Shock Wave") {			attack = 1; spell = 0; weapon_damage = 30; damage_min = character.getSkillData(skill,lvl,0); damage_max = character.getSkillData(skill,lvl,1);}
+		else if (skill.name == "Fury") { 				attack = 1; spell = 0; ar_bonus = character.getSkillData(skill,lvl,1); damage_bonus = character.getSkillData(skill,lvl,2); console.log("Character getSkillDamage AR: ", ar, ar_bonus); }
 		else if (skill.name == "Raven") { 				attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,1); damage_max = character.getSkillData(skill,lvl,2); cDamage_min = character.getSkillData(skill,lvl,3); cDamage_max = character.getSkillData(skill,lvl,4); }
 		else if (skill.name == "Poison Creeper") { 		attack = 0; spell = 1; pDamage_min = character.getSkillData(skill,lvl,1); pDamage_max = character.getSkillData(skill,lvl,2); pDamage_duration = 5; }
 		else if (skill.name == "Summon Spirit Wolf") {	attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,2); damage_max = character.getSkillData(skill,lvl,3); ar_bonus = character.getSkillData(skill,lvl,4); }
-		else if (skill.name == "Summon Dire Wolf") {	attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,4); damage_max = character.getSkillData(skill,lvl,5); ar_bonus = character.getSkillData(skill,lvl,1); }
+		else if (skill.name == "Summon Dire Wolf") {	attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,4); damage_max = character.getSkillData(skill,lvl,5); ar_bonus = character.getSkillData(skill,lvl,1); mDamage_min = (.24 * character.getSkillData(skill,lvl,4)); mDamage_max = (.24 * character.getSkillData(skill,lvl,5)); }
 		else if (skill.name == "Summon Grizzly") { 		attack = 0; spell = 1; damage_min = character.getSkillData(skill,lvl,3); damage_max = character.getSkillData(skill,lvl,4); ar_bonus = character.getSkillData(skill,lvl,1); }
 		
 		if (skill.name == "Feral Rage" || skill.name == "Rabies" || skill.name == "Fury" || skill.name == "Maul" || skill.name == "Shock Wave" || skill.name == "Fire Claws" || skill.name == "Hunger") {
@@ -187,7 +193,10 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		phys_min = (~~phys_min * (phys_mult + damage_bonus/100) * (1 + (weapon_damage-100)/100) + (damage_min * (1+(damage_bonus+damage_enhanced)/100)));
 		phys_max = (~~phys_max * (phys_mult + damage_bonus/100) * (1 + (weapon_damage-100)/100) + (damage_max * (1+(damage_bonus+damage_enhanced+(character.level*character.e_max_damage_per_level))/100)));
 		if (spell != 2) { skillMin = Math.floor(phys_min+nonPhys_min); skillMax = Math.floor(phys_max+nonPhys_max); }
-		if (spell == 0) { skillAr = Math.floor(ar*(1+ar_bonus/100)); }
+//		if (spell == 0) { skillAr = Math.floor(ar*((1+ar_bonus)/100)); }
+		if (spell == 0) { skillAr = Math.floor(character.baseAR*(1+(ar_bonus+character.arBonusPercent)/100)); }
+		console.log("getskilldamage mid AR, skillar = character.baseAR * ar_bonus: ", skillAr, character.baseAR, ar_bonus, character.arBonusPercent)
+//		if (spell == 0) { skillAr = Math.floor(ar * (ar_bonus/100)); }
 
 	// Get breakdown of sources of skill damage
 		skill2Breakdown = "Skill damage Breakdown-" ;  // \nPhys Damage: " + phys_min + "-" + phys_max +  "\nFire Damage: " + fDamage_min + "-" + fDamage_max + "\nCold Damage: " + cDamage_min + "-" + cDamage_max + "\nLight Damage: " + lDamage_min + "-" + lDamage_max  + "\nMagic Damage: " + mDamage_min + "-" + mDamage_max  + "\nPoison Damage: " + pDamage_min + "-" + pDamage_max ;
@@ -206,6 +215,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		}		
 
 		var result = {min:skillMin,max:skillMax,ar:skillAr};
+		console.log("getskilldamage final AR: ", result.ar, skillAr)
 		return result
 	},
 	
@@ -223,6 +233,7 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		} else if (s > 20) {
 			skills[s].extra_levels += character.skills_summoning_druid
 			skills[s].extra_levels += character.skills_tree3
+			skills[s].extra_levels += character.skills_summon_all
 		} else {
 			skills[s].extra_levels += character.skills_shapeshifting
 			skills[s].extra_levels += character.skills_tree2
@@ -410,6 +421,8 @@ var character_druid = {class_name:"Druid", strength:15, dexterity:20, vitality:2
 		["damage min",7,10,13,16,19,22,25,28,34,40,46,52,58,64,70,76,86,96,106,116,126,136,152,168,184,200,216,232,258,284,310,336,362,388,414,440,466,492,518,544,570,596,622,648,674,700,726,752,778,804,830,856,882,908,934,960,986,1012,1038,1064,], 
 		["damage max",12,18,24,30,36,42,48,54,63,72,81,90,99,108,117,126,144,162,180,198,216,234,258,282,306,330,354,378,418,458,498,538,578,618,658,698,738,778,818,858,898,938,978,1018,1058,1098,1138,1178,1218,1258,1298,1338,1378,1418,1458,1498,1538,1578,1618,1658,], 
 		["life bonus",75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,420,435,450,465,480,495,510,525,540,555,570,585,600,615,630,645,660,675,690,705,720,735,750,765,780,795,810,825,840,855,870,885,900,915,930,945,960,], 
+		["magic damage min",],
+		["magic damage max",],
 ]};
 /*[28] Solar Creeper	*/ var d353 = {values:[
 		["life", 
@@ -457,19 +470,19 @@ var skills_druid = [
 {data:d223, key:"223", code:233, name:"Werebear", i:13, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, effect:5, bindable:1, description:"Transform into a werebear", syn_title:"<br>Werebear Receives Bonuses From:<br>", syn_text:"Lycanthropy", graytext:"", index:[1," percent<br>Duration: 1040 seconds"], text:["Life: +","Damage: +"," percent<br>Defense: +"," percent<br>Mana Cost: 15",""]},
 {data:d231, key:"231", code:234, name:"Feral Rage", i:14, req:[11], reqlvl:12, level:0, extra_levels:0, force_levels:0, effect:4, bindable:2, description:"When in werewolf form,<br>go into a frenzied rage to steal<br>increasing amounts of life from your enemies<br>with successive hits<br><br>Mana Cost: 3<br>Duration: 20 seconds", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Walk/Run Speed: +","-"," percent<br>Life Steal: +","-"," percent<br>Damage: +"," percent<br>Attack Rating: +"," percent",""]},
 {data:d233, key:"233", code:235, name:"Maul", i:15, req:[13], reqlvl:12, level:0, extra_levels:0, force_levels:0, effect:4, bindable:2, description:"When in werebear form,<br>maul your enemies<br>for increasing extra damage<br>with successive hits<br><br>Mana Cost: 3<br>Duration: 20 seconds", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Stun Length: "," seconds<br>Damage: +","-"," percent<br>Attack Rating: +"," percent",""]},
-{data:d241, key:"241", code:236, name:"Rabies", i:16, req:[14,11], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werewolf form,<br>bite your enemies<br>to inflict them with disease<br>that spreads to other monsters<br><br>Mana Cost: 10", syn_title:"<br>Rabies Receives Bonuses From:<br>", syn_text:"Poison Creeper: +20% Poison damage per Level<br>Summon Dire Wolf: +20% Poison Damage per Level", graytext:"", index:[0,""], text:["Attack Rating: +"," percent<br>Poison Damage: ","-","<br>over 4 seconds",""]},
+{data:d241, key:"241", code:236, name:"Rabies", i:16, req:[14,11], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werewolf form,<br>bite your enemies<br>to inflict them with disease<br>that spreads to other monsters<br><br>Mana Cost: 10", syn_title:"<br>Rabies Receives Bonuses From:<br>", syn_text:"Poison Creeper: +17% Poison damage per Level<br>Summon Dire Wolf: +17% Poison Damage per Level", graytext:"", index:[0,""], text:["Attack Rating: +"," percent<br>Poison Damage: ","-","<br>over 4 seconds",""], notupdated:0},
 {data:d242, key:"242", code:237, name:"Fire Claws", i:17, req:[14,15,11,13], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werewolf or werebear<br>form, maul your enemies<br>with a fiery claw attack<br><br>Deals 100% of Fire Weapon Damage as Splash Damage<br>Radius: 7 yards", syn_title:"<br>Fire Claws Receives Bonuses From:<br>", syn_text:"Firestorm: +12% Fire Damage per Level<br>Molten Boulder: +12% Fire Damage per Level<br>Volcano: +12% Fire Damage per Level<br>Armageddon: +12% Fire Damage per Level", graytext:"", index:[0,""], text:["Fire Damage: ","-","<br>Attack Rating: +"," percent<br>Mana Cost: ",""]},
 {data:d252, key:"252", code:238, name:"Hunger", i:18, req:[17,14,15,11,13], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werewolf or werebear<br>form, bite your enemies<br>to gain life and mana<br><br>Damage: -75 percent", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life Steal: "," percent<br>Mana Steal: "," percent<br>Attack Rating: +"," percent<br>Mana Cost: 3",""]},
-{data:d253, key:"253", code:239, name:"Shock Wave", i:19, req:[15,13], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werebear form,<br>stomp to create a shock wave<br>that crushes enemies<br><br>Deals 25% of Weapon Damage", syn_title:"<br>Shock Wave Receives Bonuses From:<br>", syn_text:"Maul: +8% Damage per Level", graytext:"", index:[0,""], text:["Stun Length: 1.4 seconds<br>Damage: ","-","<br>Mana Cost: 7",""]},
+{data:d253, key:"253", code:239, name:"Shock Wave", i:19, req:[15,13], reqlvl:24, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werebear form,<br>stomp to create a shock wave<br>that crushes enemies<br><br>Deals 30% of Weapon Damage", syn_title:"<br>Shock Wave Receives Bonuses From:<br>", syn_text:"Maul: +8% Damage per Level", graytext:"", index:[0,""], text:["Stun Length: 1.4 seconds<br>Damage: ","-","<br>Mana Cost: 7",""], damagetoohigh:1},
 {data:d261, key:"261", code:240, name:"Fury", i:20, req:[16,14,11], reqlvl:30, level:0, extra_levels:0, force_levels:0, bindable:2, description:"When in werewolf form, attack<br>either multiple adjacent targets<br>or one target multiple times", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:[""," hits<br>Attack Bonus: +"," percent<br>Damage: +"," percent<br>Mana Cost: 4",""]},
 
 {data:d312, key:"312", code:241, name:"Raven", i:21, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Summon ravens to peck out<br>the eyes of your enemies<br><br>Raven attacks deal splash damage<br><br>3 Hits", syn_title:"<br>Raven Receives Bonuses From:<br>", syn_text:"Cyclone Armor: +20% Physical Damage per Level<br>Twister: +20% Physical Damage per Level<br>Arctic Blast: +21% Cold Damage per Level<br>1% Increased Cold Damage per Energy", graytext:"", index:[0,""], text:["Ravens: ","<br>Damage: ","-","<br>Cold Damage: ","-","<br>Mana Cost per Raven: ",""]},
-{data:d313, key:"313", code:242, name:"Poison Creeper", i:22, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, effect:0, bindable:1, description:"Summon a vine that spreads<br>disease to all it contacts", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Poison Damage: ","-","<br>over 5 seconds<br>Mana Cost: 8"]},
+{data:d313, key:"313", code:242, name:"Poison Creeper", i:22, req:[], reqlvl:1, level:0, extra_levels:0, force_levels:0, effect:0, bindable:1, description:"Summon a vine that spreads<br>disease to all it contacts", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Poison Damage: ","-","<br>over 5 seconds<br>Mana Cost: 8"], notupdated:1},
 {data:d321, key:"321", code:243, name:"Heart of Wolverine", i:23, req:[], reqlvl:6, level:0, extra_levels:0, force_levels:0, effect:5, bindable:1, description:"Summon a spirit pet that adds<br>to the damage and attack rating<br>of you and your party", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Damage: +"," percent<br>Attack Rating: +"," percent<br>Radius: "," yards<br>Mana Cost: ",""]},
 {data:d322, key:"322", code:244, name:"Summon Spirit Wolf", i:24, req:[21], reqlvl:6, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Summon a wolf to fight by your side", syn_title:"<br>Summon Spirit Wolf Receives Bonuses From:<br>", syn_text:"Summon Dire Wolf<br>Summon Grizzly", graytext:"<br>One Wolf per Base Level. Max: 7<br>", index:[2,""], text:["Wolves: ","<br>Mana Cost: 15<br>Life: ","Damage: ","-","<br>Attack Rating: +"," percent<br>Defense: +"," percent"]},
 {data:d333, key:"333", code:245, name:"Carrion Vine", i:25, req:[22], reqlvl:12, level:0, extra_levels:0, force_levels:0, effect:4, bindable:1, description:"Summon a vine that eats corpses<br>and replenishes your life", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Heals: "," percent<br>Mana Cost: 10",""]},
 {data:d341, key:"341", code:246, name:"Oak Sage", i:26, req:[23], reqlvl:18, level:0, extra_levels:0, force_levels:0, effect:5, bindable:1, description:"Summon a spirit pet that increases<br>life for you and your party", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Life: +"," percent<br>Radius: "," yards<br>Mana Cost: ",""]},
-{data:d342, key:"342", code:247, name:"Summon Dire Wolf", i:27, req:[23,24,21], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Summon a wolf that becomes enraged,<br>eating corpses to increase its damage", syn_title:"<br>Summon Dire Wolf Receives Bonuses From:<br>", syn_text:"Summon Spirit Wolf<br>Summon Grizzly", graytext:"<br>One Wolf per Base Level. Max: 3<br>", index:[3," percent"], text:["Wolves: ","<br>Mana Cost: 20<br>Attack Rating: +"," percent<br>Defense: +","Life: ","<br>Damage: ","-","<br>Life: +"," percent",""]},
+{data:d342, key:"342", code:247, name:"Summon Dire Wolf", i:27, req:[23,24,21], reqlvl:18, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Summon a wolf that becomes enraged,<br>eating corpses to increase its damage", syn_title:"<br>Summon Dire Wolf Receives Bonuses From:<br>", syn_text:"Summon Spirit Wolf<br>Summon Grizzly", graytext:"<br>One Wolf per Base Level. Max: 3<br>", index:[3," percent"], text:["Wolves: ","<br>Mana Cost: 20<br>Attack Rating: +"," percent<br>Defense: +","Life: ","<br>Damage: ","-","<br>Life: +"," percent<br>Magic damage: ","-",""], notupdated:1},
 {data:d353, key:"353", code:248, name:"Solar Creeper", i:28, req:[25,22], reqlvl:24, level:0, extra_levels:0, force_levels:0, effect:4, bindable:1, description:"Summon a vine that eats corpses<br>and replenishes your mana", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>Mana Recovery Rate: "," percent<br>Mana Cost: ",""]},
 {data:d361, key:"361", code:249, name:"Spirit of Barbs", i:29, req:[26,23], reqlvl:30, level:0, extra_levels:0, force_levels:0, effect:4, bindable:1, description:"Summon spirit pet that reflects damage<br>taken by you and your party<br>back at your enemies", syn_title:"", syn_text:"", graytext:"", index:[0,""], text:["Life: ","<br>"," percent damage returned<br>Radius: "," yards<br>Mana Cost: ",""]},
 {data:d362, key:"362", code:250, name:"Summon Grizzly", i:30, req:[27,23,24,21], reqlvl:30, level:0, extra_levels:0, force_levels:0, bindable:1, description:"Summon a ferocious grizzly bear", syn_title:"<br>Summon Grizzly Receives Bonuses From:<br>", syn_text:"Summon Spirit Wolf<br>Summon Dire Wolf<br>Maul", graytext:"", index:[3," percent"], text:["Mana Cost: 40<br>Life: ","<br>Attack Rating: +"," percent<br>Defense: +","Damage: ","-","<br>Damage: +"," percent",""]}

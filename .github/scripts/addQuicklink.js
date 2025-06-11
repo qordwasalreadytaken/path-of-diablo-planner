@@ -78,13 +78,17 @@ const closeOptions = {
   }
 };
 
-const closeReq = https.request(closeOptions, res => {
-  if (res.statusCode !== 200) {
-    console.error(`❌ Failed to close issue: ${res.statusCode}`);
+let responseBody = '';
+res.on('data', chunk => responseBody += chunk);
+res.on('end', () => {
+  if (res.statusCode !== 201) {
+    console.error(`❌ Failed to comment on issue: ${res.statusCode}`);
+    console.error(`Response body: ${responseBody}`);
   } else {
-    console.log(`✅ Issue #${issueNumber} closed`);
+    console.log(`💬 Commented on issue #${issueNumber}`);
   }
 });
+
 closeReq.on('error', console.error);
 closeReq.write(JSON.stringify({ state: 'closed' }));
 closeReq.end();

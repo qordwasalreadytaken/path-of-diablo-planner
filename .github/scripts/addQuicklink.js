@@ -44,6 +44,7 @@ console.log(`✅ Added ${newQql} → ${longUrl}`);
 const postData = JSON.stringify({
   body: `✅ Shortlink created: [https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}](https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
 });
+console.warn(`Post Data: ${postData}`);
 
 const commentOptions = {
   hostname: 'api.github.com',

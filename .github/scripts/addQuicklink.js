@@ -35,12 +35,16 @@ fs.writeFileSync(filePath, newContent);
 console.log(`✅ Added ${newQql} → ${longUrl}`);
 
 // Leave a comment on the issue
-const commentBody = {
-//  body: `✅ Shortlink created: [https://build.pathofdiablo.com/?${newQql}](https://build.pathofdiablo.com/?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
-  body: `✅ Shortlink created: [https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}](https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
-};
+//const commentBody = {
+////  body: `✅ Shortlink created: [https://build.pathofdiablo.com/?${newQql}](https://build.pathofdiablo.com/?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
+//  body: `✅ Shortlink created: [https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}](https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
+//};
 
-const postData = JSON.stringify(commentBody);
+//const postData = JSON.stringify(commentBody);
+const postData = JSON.stringify({
+  body: `✅ Shortlink created: [https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}](https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?${newQql}) → ${longUrl}\n\nIssue will now be closed.`
+});
+
 const commentOptions = {
   hostname: 'api.github.com',
   path: `/repos/${repo}/issues/${issueNumber}/comments`,

@@ -41,20 +41,20 @@ const commentBody = {
 };
 
 const postData = JSON.stringify(commentBody);
-const options = {
+const commentOptions = {
   hostname: 'api.github.com',
   path: `/repos/${repo}/issues/${issueNumber}/comments`,
   method: 'POST',
   headers: {
     'User-Agent': 'quicklink-action',
-    'Authorization': `token ${token}`,
+    'Authorization': `Bearer ${token}`,
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
     'Content-Length': postData.length
   }
 };
 
-const req = https.request(options, res => {
+const commentReq = https.request(commentOptions, res => {
   let responseBody = '';
   res.on('data', chunk => responseBody += chunk);
   res.on('end', () => {
@@ -66,9 +66,10 @@ const req = https.request(options, res => {
     }
   });
 });
-req.on('error', console.error);
-req.write(postData);
-req.end();
+commentReq.on('error', console.error);
+commentReq.write(postData);
+commentReq.end();
+
 
 
 // Close the issue
@@ -78,19 +79,25 @@ const closeOptions = {
   method: 'PATCH',
   headers: {
     'User-Agent': 'quicklink-action',
-    'Authorization': `token ${token}`,
+    'Authorization': `Bearer ${token}`,
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json'
   }
 };
 
 const closeReq = https.request(closeOptions, res => {
-  if (res.statusCode !== 200) {
-    console.error(`❌ Failed to close issue: ${res.statusCode}`);
-  } else {
-    console.log(`✅ Issue #${issueNumber} closed`);
-  }
+  let responseBody = '';
+  res.on('data', chunk => responseBody += chunk);
+  res.on('end', () => {
+    if (res.statusCode !== 200) {
+      console.error(`❌ Failed to close issue: ${res.statusCode}`);
+      console.error(`Response body: ${responseBody}`);
+    } else {
+      console.log(`✅ Issue #${issueNumber} closed`);
+    }
+  });
 });
 closeReq.on('error', console.error);
 closeReq.write(JSON.stringify({ state: 'closed' }));
 closeReq.end();
+

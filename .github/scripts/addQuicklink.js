@@ -54,7 +54,7 @@ const commentOptions = {
     'Authorization': `Bearer ${token}`,
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
-    'Content-Length': postData.length
+    'Content-Length': Buffer.byteLength(postData, 'utf8')
   }
 };
 

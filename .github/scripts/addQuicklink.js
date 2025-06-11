@@ -23,7 +23,7 @@ const maxQql = qqlMatches.length ? Math.max(...qqlMatches.map(m => parseInt(m[1]
 const newQql = `qql${maxQql + 1}`;
 
 // Build new line
-const newLine = `if (params.has('${newQql}')) { window.location.href = "${longUrl}"; }`;
+const newLine = `if (params.has('${newQql}') == true) { window.location.href = "${longUrl}"; }`;
 
 // Insert above your comment marker or at the end
 const newContent = fileContent.replace(

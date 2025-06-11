@@ -78,6 +78,7 @@ const closeOptions = {
   }
 };
 
+const closeReq = https.request(closeOptions, res => {
 let responseBody = '';
 res.on('data', chunk => responseBody += chunk);
 res.on('end', () => {
@@ -89,6 +90,7 @@ res.on('end', () => {
   }
 });
 
+});
 closeReq.on('error', console.error);
 closeReq.write(JSON.stringify({ state: 'closed' }));
 closeReq.end();

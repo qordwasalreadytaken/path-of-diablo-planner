@@ -47,7 +47,7 @@ const options = {
   method: 'POST',
   headers: {
     'User-Agent': 'quicklink-action',
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `token ${token}`,
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
     'Content-Length': postData.length

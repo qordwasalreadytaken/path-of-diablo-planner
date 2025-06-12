@@ -7707,7 +7707,35 @@ function createQuicklink() {
     window.open(newIssueUrl, "_blank");
 }
 
-  
+
+document.addEventListener('DOMContentLoaded', () => {
+  const button = document.getElementById('copyShortLink');
+  if (!button) {
+    console.warn('⚠️ Button with id "copyShortLink" not found.');
+    return;
+  }
+
+  console.log('✅ Button found, setting up click listener.');
+
+  button.addEventListener('click', () => {
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.split('?')[0];
+    const params = currentUrl.split('?')[1] || '';
+
+    const compressed = LZString.compressToEncodedURIComponent(params);
+    const shortUrl = `${baseUrl}?s=${compressed}`;
+
+    console.log(`📋 Copying short URL: ${shortUrl}`);
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      alert('✅ Short URL copied to clipboard!');
+    }).catch(err => {
+      console.error('❌ Failed to copy:', err);
+    });
+  });
+});
+
+
+
 // Notes for Organization Overhaul:
 //   TODO...
 //   variable names for item classification 

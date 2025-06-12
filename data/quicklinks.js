@@ -1,19 +1,29 @@
 function checkShorturl() {
-    if (params.has('import') == true) { 
-        const url = window.location.href;
-        const query = url.split('?')[1]; // "import=sorcsallsuck"
-        // Split the query into key-value pairs
-        const queryParams = query.split('&'); // ["import=sorcsallsuck"]
-        // Find the "import" parameter and extract its value
-        let characterName = '';
-        queryParams.forEach(param => {
-            const [key, value] = param.split('='); // ["import", "sorcsallsuck"]
-                if (key === 'import') {
-                    characterName = value;
-                }
-        });
-        importChar(characterName) 
-    } ; 
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.has('s') == true) {
+        const compressed = params.get('s');
+        try {
+            const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
+            if (decompressed) {
+                const newUrl = window.location.origin + window.location.pathname + '?' + decompressed;
+                window.history.replaceState(null, '', newUrl);
+                // Optionally, you can reload to re-parse the expanded URL:
+                window.location.href = newUrl;
+                // Or call your main parsing function again here
+            } else {
+                console.error('Decompression returned null or empty string.');
+            }
+        } catch (e) {
+            console.error('Error decompressing short URL:', e);
+        }
+    }
+
+    if (params.has('import')) {
+        const characterName = params.get('import');
+        importChar(characterName);
+    }
+
     if (params.has('qql211') == true) { window.location.href = "https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&url=1&class=druid&level=1&difficulty=3&quests=0&running=0&strength=0&dexterity=0&vitality=0&energy=0&coupling=1&synthwep=0&autocast=1&skills=00000000000000000000000000000000000000000000000000000000000000&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2C+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+2&helm=none%2C0%2Cnone%2C%2C%2C&armor=none%2C0%2Cnone%2C%2C%2C%2C&gloves=none%2C0%2Cnone&boots=none%2C0%2Cnone&belt=none%2C0%2Cnone&amulet=none%2C0%2Cnone&ring1=none%2C0%2Cnone&ring2=none%2C0%2Cnone&weapon=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&offhand=none%2C0%2Cnone%2C%2C%2C%2C%2C%2C&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone"; }
 if (params.has('qql212') == true) { window.location.href = "https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=sorceress&level=91&difficulty=3&quests=1&running=0&strength=126&dexterity=50&vitality=60&energy=200&url=1&coupling=1&synthwep=0&autocast=1&skills=0000000000000000000000010020000101010007200001120000010020000600&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2CFire+Bolt&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Diadem%2C3%2Cnone%2C%2C%2C&armor=Treachery+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Wyrmhide%2C3%2Cnone%2C%2C%2C%2C&gloves=Sander%27s+Taboo%2C1%2Cnone&boots=Infernostride%2C2%2Cnone&belt=Thundergod%27s+Vigor%2C2%2Cnone&amulet=Angelic+Wings%2C0%2Cnone&ring1=Angelic+Halo%2C0%2Cnone&ring2=Raven+Frost%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2C%2B+Sockets%2C%2C%2C%2C%2C%2CHel+Rune&offhand=Phoenix+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Monarch%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Energy_Shield%2C1%2C0&effect=Lightning_Mastery%2C1%2C0&effect=Warmth%2C1%2C0&effect=Enflame%2C1%2C0&effect=Fire_Mastery%2C1%2C0&effect=Fade-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&effect=Blaze-boots%2C0%2C0&effect=Redemption-offhand%2C1%2C0&effect=Blaze-offhand%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=Mang+Song%2FES+Plague+on+Swap&charm=%2B1+Sparking+Grand+Charm"; }
 if (params.has('qql213') == true) { window.location.href = "https://qordwasalreadytaken.github.io/path-of-diablo-planner/index.html?v=2&class=sorceress&level=91&difficulty=3&quests=1&running=0&strength=126&dexterity=50&vitality=60&energy=200&url=1&coupling=1&synthwep=0&autocast=1&skills=0000000000000000000000010020000101010007200001120000010020000600&selected=+%C2%AD+%C2%AD+%C2%AD+%C2%AD+Skill+1%2CFire+Bolt&helm=Delirium+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Diadem%2C3%2Cnone%2C%2C%2C&armor=Treachery+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Wyrmhide%2C3%2Cnone%2C%2C%2C%2C&gloves=Sander%27s+Taboo%2C1%2Cnone&boots=Infernostride%2C2%2Cnone&belt=Thundergod%27s+Vigor%2C2%2Cnone&amulet=Angelic+Wings%2C0%2Cnone&ring1=Angelic+Halo%2C0%2Cnone&ring2=Raven+Frost%2C0%2Cnone&weapon=Dangoon%27s+Teaching%2C3%2C%2B+Sockets%2C%2C%2C%2C%2C%2CHel+Rune&offhand=Phoenix+%C2%AD+%C2%AD+-+%C2%AD+%C2%AD+Monarch%2C3%2Cnone%2C%2C%2C%2C%2C%2C&effect=Energy_Shield%2C1%2C0&effect=Lightning_Mastery%2C1%2C0&effect=Warmth%2C1%2C0&effect=Enflame%2C1%2C0&effect=Fire_Mastery%2C1%2C0&effect=Fade-armor%2C1%2C0&effect=Venom-armor%2C1%2C0&effect=Blaze-boots%2C0%2C0&effect=Redemption-offhand%2C1%2C0&effect=Blaze-offhand%2C1%2C0&mercenary=none%2Cnone%2Cnone%2Cnone%2Cnone&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Sparking+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=%2B1+Burning+Grand+Charm&charm=Mang+Song%2FES+Plague+on+Swap&charm=%2B1+Sparking+Grand+Charm"; }

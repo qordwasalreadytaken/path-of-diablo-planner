@@ -11,6 +11,7 @@ function checkShorturl() {
         if (decompressed) {
         const newUrl = window.location.origin + window.location.pathname + '?' + decompressed;
         window.history.replaceState(null, '', newUrl);
+        window.location.href = newUrl;
         } else {
         console.error('Decompression returned null or empty string.');
         }

@@ -1,22 +1,20 @@
 function checkShorturl() {
     const params = new URLSearchParams(window.location.search);
 
-    if (params.has('s') == true) {
-        const compressed = params.get('s');
-        try {
-            const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
-            if (decompressed) {
-                const newUrl = window.location.origin + window.location.pathname + '?' + decompressed;
-                window.history.replaceState(null, '', newUrl);
-                // Optionally, you can reload to re-parse the expanded URL:
-                window.location.href = newUrl;
-                // Or call your main parsing function again here
-            } else {
-                console.error('Decompression returned null or empty string.');
-            }
-        } catch (e) {
-            console.error('Error decompressing short URL:', e);
+    if (params.has('s')) {
+    try {
+        const encoded = params.get('s');
+        const compressed = base64UrlDecode(encoded);
+        const decompressed = pako.inflate(compressed, { to: 'string' });
+        if (decompressed) {
+        const newUrl = window.location.origin + window.location.pathname + '?' + decompressed;
+        window.history.replaceState(null, '', newUrl);
+        } else {
+        console.error('Decompression returned null or empty string.');
         }
+    } catch (e) {
+        console.error('Error decompressing short URL:', e);
+    }
     }
 
     if (params.has('import')) {

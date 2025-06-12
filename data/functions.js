@@ -7707,32 +7707,43 @@ function createQuicklink() {
     window.open(newIssueUrl, "_blank");
 }
 
+function base64UrlEncode(buffer) {
+  return btoa(String.fromCharCode(...buffer))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-  const button = document.getElementById('copyShortLink');
-  if (!button) {
-    console.warn('⚠️ Button with id "copyShortLink" not found.');
-    return;
+function base64UrlDecode(str) {
+  // Add padding
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  const binary = atob(str);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
+  return bytes;
+}
 
-  console.log('✅ Button found, setting up click listener.');
+document.getElementById('copyShortLink').addEventListener('click', () => {
+  const urlParams = window.location.search.substring(1); // e.g. "foo=1&bar=2"
+  // Compress
+  const compressed = pako.deflate(new TextEncoder().encode(urlParams));
+  // Encode to base64url
+  const encoded = base64UrlEncode(compressed);
 
-  button.addEventListener('click', () => {
-    const currentUrl = window.location.href;
-    const baseUrl = currentUrl.split('?')[0];
-    const params = currentUrl.split('?')[1] || '';
-
-    const compressed = LZString.compressToEncodedURIComponent(params);
-    const shortUrl = `${baseUrl}?s=${compressed}`;
-
-    console.log(`📋 Copying short URL: ${shortUrl}`);
-    navigator.clipboard.writeText(shortUrl).then(() => {
-      alert('✅ Short URL copied to clipboard!');
-    }).catch(err => {
-      console.error('❌ Failed to copy:', err);
-    });
+  const shortUrl = `${window.location.origin}${window.location.pathname}?s=${encoded}`;
+  
+  // Copy to clipboard and alert
+  navigator.clipboard.writeText(shortUrl).then(() => {
+    alert('Short URL copied to clipboard!');
+  }).catch(() => {
+    alert('Failed to copy short URL');
   });
 });
+
 
 
 

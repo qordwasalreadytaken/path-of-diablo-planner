@@ -5,11 +5,12 @@ function checkShorturl() {
     try {
         const encoded = params.get('s');
         const compressed = base64UrlDecode(encoded);
+        console.log("Compressed URL:", compressed);
         const decompressed = pako.inflate(compressed, { to: 'string' });
+        console.log("Deompressed URL:", decompressed);
         if (decompressed) {
         const newUrl = window.location.origin + window.location.pathname + '?' + decompressed;
         window.history.replaceState(null, '', newUrl);
-        window.location.href = newUrl;
         } else {
         console.error('Decompression returned null or empty string.');
         }

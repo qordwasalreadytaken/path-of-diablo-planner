@@ -7773,10 +7773,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         const shortLink = data.shortLink;
 
-        await navigator.clipboard.writeText(shortLink);
+//        await navigator.clipboard.writeText(shortLink);
         document.getElementById('output').textContent = `✅ Copied to clipboard: ${shortLink}`;
+		alert(`✅ Copied to clipboard:\n${shortLink}`);
       } catch (error) {
-        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
+		alert(`❌ Error: ${error.message}}`);
+//        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
         console.error(error);
       }
     }

@@ -7744,6 +7744,41 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   });
 });
 
+document.getElementById('createLink').addEventListener('click', async () => {
+  // Reusable helper inside the click handler
+  async function createShortLink(authToken = 'TacoToken') {
+    const currentUrl = window.location.href;
+
+    try {
+      const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: currentUrl })
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Server returned ${response.status}: ${err}`);
+      }
+
+      const data = await response.json();
+      const shortLink = data.shortLink;
+
+      await navigator.clipboard.writeText(shortLink);
+      document.getElementById('output').textContent = `✅ Copied to clipboard: ${shortLink}`;
+    } catch (error) {
+      document.getElementById('output').textContent = `❌ Error: ${error.message}`;
+      console.error(error);
+    }
+  }
+
+  // 🔄 Run it
+  createShortLink();
+});
+
 
 
 

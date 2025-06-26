@@ -7775,9 +7775,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await navigator.clipboard.writeText(shortLink);
 //        document.getElementById('output').textContent = `✅ Copied to clipboard: ${shortLink}`;
-		alert(`✅ Copied to clipboard:\n${shortLink}`);
+		showPopup(`✅ Copied to clipboard:\n${shortLink}`);
       } catch (error) {
-		alert(`❌ Error: ${error.message}}`);
+		showPopup(`❌ Error: ${error.message}}`);
 //        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
         console.error(error);
       }
@@ -7787,6 +7787,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function showPopup(message, duration = 3000) {
+  const popup = document.getElementById('popup');
+  popup.textContent = message;
+  popup.style.display = 'block';
+
+  setTimeout(() => {
+    popup.style.display = 'none';
+  }, duration);
+}
 
 
 

@@ -7775,9 +7775,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await navigator.clipboard.writeText(shortLink);
 //        document.getElementById('output').textContent = `✅ Copied to clipboard: ${shortLink}`;
-		showPopup(`✅ Copied to clipboard:\n${shortLink}`);
+		showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
       } catch (error) {
-		showPopup(`❌ Error: ${error.message}}`);
+		showPopup(`❌ Error: ${error.message}`);
 //        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
         console.error(error);
       }

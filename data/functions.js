@@ -7754,6 +7754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   button.addEventListener('click', async () => {
     async function createShortLink(authToken = 'TacoToken') {
       const currentUrl = window.location.href;
+	  const now = Math.floor(Date.now() / 1000); // Current time in seconds
 	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
       try {
         const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {

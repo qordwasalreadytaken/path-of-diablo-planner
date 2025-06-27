@@ -7754,7 +7754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   button.addEventListener('click', async () => {
     async function createShortLink(authToken = 'TacoToken') {
       const currentUrl = window.location.href;
-
+	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
       try {
         const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
           method: 'POST',
@@ -7762,8 +7762,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ url: currentUrl })
-        });
+			body: JSON.stringify({
+				url: window.location.href, // or any URL you want
+				expiration: sevenDaysFromNow
+			})
+		});
 
         if (!response.ok) {
           const err = await response.text();

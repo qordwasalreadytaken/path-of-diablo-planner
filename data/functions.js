@@ -7758,7 +7758,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
 //	  const sevenDaysFromNow = now + 604800;
 	  const sevenDaysFromNow = now + 300;
-
+	  console.log("now: ",now, " Seven days: ", sevenDaysFromNow)
 	  try {
         const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
           method: 'POST',

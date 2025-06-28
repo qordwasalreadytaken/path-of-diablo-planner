@@ -7766,7 +7766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			body: JSON.stringify({
 				url: window.location.href, // or any URL you want
 //				expiration: sevenDaysFromNow
-				expiration: '604800'
+				expiration: 604800
 			})
 		});
 

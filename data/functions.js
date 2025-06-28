@@ -7756,7 +7756,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentUrl = window.location.href;
 	  const now = Math.floor(Date.now() / 1000); // Current time in seconds
 //	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
-	  const sevenDaysFromNow = now + 604800;
+//	  const sevenDaysFromNow = now + 604800;
+	  const sevenDaysFromNow = now + 300;
 
 	  try {
         const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {

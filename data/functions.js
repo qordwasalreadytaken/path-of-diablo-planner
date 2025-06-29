@@ -7752,7 +7752,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   button.addEventListener('click', async () => {
-    async function createShortLink(authToken = 'TacoToken') {
+//    async function createShortLink(authToken = 'TacoToken') {
+    async function createShortLink() {
       const currentUrl = window.location.href;
 	  const now = Math.floor(Date.now() / 1000); // Current time in seconds
 //	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
@@ -7763,7 +7764,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+//            'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
           },
 			body: JSON.stringify({

@@ -7744,6 +7744,7 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   });
 });
 
+
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('createLink');
   if (!button) {

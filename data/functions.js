@@ -7751,51 +7751,39 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  button.addEventListener('click', async () => {
-//    async function createShortLink(authToken = 'TacoToken') {
-    async function createShortLink() {
-      const currentUrl = window.location.href;
-	  const now = Math.floor(Date.now() / 1000); // Current time in seconds
-//	  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
-//	  const sevenDaysFromNow = now + 604800;
-	  const sevenDaysFromNow = now + 300;
-//	  console.log("now: ",now, " Seven days: ", sevenDaysFromNow)
-	  try {
-        const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
-          method: 'POST',
-          headers: {
-//            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          },
-			body: JSON.stringify({
-				url: window.location.href, // or any URL you want
-				createdat: now,
-				expiration: sevenDaysFromNow
-//				expiration: 604800
-			})
-		});
+button.addEventListener('click', async () => {
+  const currentUrl = window.location.href;
+  const now = Math.floor(Date.now() / 1000);
+  const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
 
-        if (!response.ok) {
-          const err = await response.text();
-          throw new Error(`Server returned ${response.status}: ${err}`);
-        }
+  try {
+    const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: currentUrl,
+        expiration: sevenDaysFromNow
+      })
+    });
 
-        const data = await response.json();
-        const shortLink = data.shortLink;
-
-        await navigator.clipboard.writeText(shortLink);
-//        document.getElementById('output').textContent = `✅ Copied to clipboard: ${shortLink}`;
-		showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
-      } catch (error) {
-		showPopup(`❌ Error: ${error.message}`);
-//        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
-        console.error(error);
-      }
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Server returned ${response.status}: ${err}`);
     }
 
-    await createShortLink();
-  });
+    const data = await response.json();
+    const shortLink = data.shortLink;
+
+    await navigator.clipboard.writeText(shortLink);
+    showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
+  } catch (error) {
+    showPopup(`❌ Error: ${error.message}`);
+    console.error(error);
+  }
 });
+
 
 function showPopup(message, duration = 3000) {
   const popup = document.getElementById('popup');

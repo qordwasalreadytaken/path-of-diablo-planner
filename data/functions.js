@@ -7744,12 +7744,7 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  const button = document.getElementById('createLink');
-  if (!button) {
-    console.warn('createLink button not found');
-    return;
-  }
+
 
 button.addEventListener('click', async () => {
   const currentUrl = window.location.href;

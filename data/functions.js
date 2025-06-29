@@ -7759,7 +7759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //    const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
 
     try {
-		await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+		const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

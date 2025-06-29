@@ -7754,19 +7754,20 @@ document.addEventListener('DOMContentLoaded', () => {
   button.addEventListener('click', async () => {
     const currentUrl = window.location.href;
     const now = Math.floor(Date.now() / 1000);
-    const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
+    const sevenDaysFromNow = now + 300;
+//    const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
 
     try {
-      const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          url: currentUrl,
-          expiration: sevenDaysFromNow
-        })
-      });
+		await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			url: window.location.href,
+			expiration: sevenDaysFromNow
+		})
+		});
 
       if (!response.ok) {
         const err = await response.text();

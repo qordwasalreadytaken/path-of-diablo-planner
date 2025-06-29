@@ -7753,43 +7753,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   button.addEventListener('click', async () => {
-    const currentUrl = window.location.href;
     const now = Math.floor(Date.now() / 1000);
-    const sevenDaysFromNow = now + 300;
-//    const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
+    const expiration = now + 60 * 60 * 24 * 7; // 7 days from now
 
     try {
-		const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			url: window.location.href,
-			expiration: sevenDaysFromNow
-		})
-		});
+      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: window.location.href,
+          expiration,
+        }),
+      });
 
-      if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`Server returned ${response.status}: ${err}`);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Server returned ${res.status}: ${errText}`);
       }
 
-      const data = await response.json();
+      const data = await res.json();
       const shortLink = data.shortLink;
 
       await navigator.clipboard.writeText(shortLink);
-      showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
+      showPopup(`✅ Shortlink copied:\n${shortLink}`);
     } catch (error) {
-      showPopup(`❌ Error: ${error.message}`);
+      showPopup(`❌ Error:\n${error.message}`);
       console.error(error);
     }
   });
 });
 
-
 function showPopup(message, duration = 3000) {
   const popup = document.getElementById('popup');
+  if (!popup) {
+    alert(message); // fallback
+    return;
+  }
+
   popup.textContent = message;
   popup.style.display = 'block';
 

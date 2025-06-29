@@ -7750,16 +7750,16 @@ button.addEventListener('click', async () => {
   const sevenDaysFromNow = now + 300;
 
   try {
-    const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        url: currentUrl,
-        expiration: sevenDaysFromNow
-      })
-    });
+	const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+	method: 'POST',
+	headers: {
+		'Content-Type': 'application/json'
+	},
+	body: JSON.stringify({
+		url: window.location.href,
+		expiration: sevenDaysFromNow
+	})
+	});
 
     if (!response.ok) {
       const err = await response.text();

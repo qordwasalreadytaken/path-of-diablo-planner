@@ -7744,39 +7744,47 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   });
 });
 
-button.addEventListener('click', async () => {
-  const currentUrl = window.location.href;
-  const now = Math.floor(Date.now() / 1000);
-  const sevenDaysFromNow = now + 300;
-
-  try {
-	const response = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-	method: 'POST',
-	headers: {
-		'Content-Type': 'application/json'
-	},
-	body: JSON.stringify({
-		url: window.location.href,
-		expiration: sevenDaysFromNow
-	})
-	});
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Server returned ${response.status}: ${err}`);
-    }
-
-    const data = await response.json();
-    const shortLink = data.shortLink;
-
-    await navigator.clipboard.writeText(shortLink);
-    showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
-  } catch (error) {
-    showPopup(`❌ Error: ${error.message}`);
-    console.error(error);
+document.addEventListener('DOMContentLoaded', () => {
+  const button = document.getElementById('createLink');
+  if (!button) {
+    console.warn('createLink button not found');
+    return;
   }
-});
 
+  button.addEventListener('click', async () => {
+    const currentUrl = window.location.href;
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysFromNow = now + 300;
+//    const sevenDaysFromNow = now + 60 * 60 * 24 * 7;
+
+    try {
+		await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			url: window.location.href,
+			expiration: sevenDaysFromNow
+		})
+		});
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Server returned ${response.status}: ${err}`);
+      }
+
+      const data = await response.json();
+      const shortLink = data.shortLink;
+
+      await navigator.clipboard.writeText(shortLink);
+      showPopup(`Shortlink copied to clipboard:\n${shortLink}`);
+    } catch (error) {
+      showPopup(`❌ Error: ${error.message}`);
+      console.error(error);
+    }
+  });
+});
 
 
 function showPopup(message, duration = 3000) {

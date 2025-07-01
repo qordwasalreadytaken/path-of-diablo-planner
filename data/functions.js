@@ -7757,16 +7757,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const expiration = now + 60 * 60 * 24 * 7; // 7 days from now
 
     try {
-      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: window.location.href,
-          expiration,
-        }),
-      });
+		await fetch("https://sink.actuallyiamqord.workers.dev/api/link/create", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ url, expiration }),
+		});
+
 
       if (!res.ok) {
         const errText = await res.text();

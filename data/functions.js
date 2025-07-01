@@ -7755,11 +7755,10 @@ document.addEventListener('DOMContentLoaded', () => {
   button.addEventListener('click', async () => {
     const currentUrl = window.location.href;
     const referrer = document.referrer;
-
+	console.log("referred by ", document.referrer)
     const shortDomain = 'https://sink.actuallyiamqord.workers.dev/';
-    const slugRegex = /^[a-z0-9]{6,}$/; // Same as used in nanoid() — customize if needed
+    const slugRegex = /^[a-z0-9]{6,}$/;
 
-    // If referrer is from your short domain and has a valid slug, reuse it
     if (
       referrer.startsWith(shortDomain) &&
       slugRegex.test(referrer.slice(shortDomain.length))
@@ -7769,12 +7768,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Otherwise, create a new short link
-//    const expiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7;
-    const expiration = Math.floor(Date.now() / 1000) + 300;
+    const expiration = Math.floor(Date.now() / 1000) + 300; // 5 min
 
     try {
-      const res = await fetch('https://build.pathofdiablo.com/api/link/proxy-create-link', {
+      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -7801,6 +7798,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
 
 
 function showPopup(message, duration = 3000) {

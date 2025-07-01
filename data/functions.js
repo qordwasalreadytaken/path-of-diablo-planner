@@ -7759,7 +7759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
 //      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
-      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/proxy-create-link', {
+      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
 	
         method: 'POST',
         headers: {

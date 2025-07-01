@@ -7753,20 +7753,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   button.addEventListener('click', async () => {
-    const now = Math.floor(Date.now() / 1000);
-//    const expiration = now + 60 * 60 * 24 * 7; // 7 days from now
-    const expiration = now + 300; // 5 minutes from now
+    const currentUrl = window.location.href;
+    const referrer = document.referrer;
+
+    const shortDomain = 'https://sink.actuallyiamqord.workers.dev/';
+    const slugRegex = /^[a-z0-9]{6,}$/; // Same as used in nanoid() — customize if needed
+
+    // If referrer is from your short domain and has a valid slug, reuse it
+    if (
+      referrer.startsWith(shortDomain) &&
+      slugRegex.test(referrer.slice(shortDomain.length))
+    ) {
+      await navigator.clipboard.writeText(referrer);
+      showPopup(`✅ Shortlink reused:\n${referrer}`);
+      return;
+    }
+
+    // Otherwise, create a new short link
+//    const expiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7;
+    const expiration = Math.floor(Date.now() / 1000) + 300;
 
     try {
-//      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
-      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-	
+      const res = await fetch('https://build.pathofdiablo.com/api/link/proxy-create-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: window.location.href,
+          url: currentUrl,
           expiration,
         }),
       });
@@ -7787,6 +7801,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
 
 function showPopup(message, duration = 3000) {
   const popup = document.getElementById('popup');

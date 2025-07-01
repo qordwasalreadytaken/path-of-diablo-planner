@@ -7754,7 +7754,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   button.addEventListener('click', async () => {
     const now = Math.floor(Date.now() / 1000);
-    const expiration = now + 60 * 60 * 24 * 7; // 7 days from now
+//    const expiration = now + 60 * 60 * 24 * 7; // 7 days from now
+    const expiration = now + 300; // 5 minutes from now
 
     try {
       const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {

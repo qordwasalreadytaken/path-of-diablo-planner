@@ -7770,7 +7770,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Otherwise, create a new short link
-    const expiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7;
+//    const expiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7;
+    const expiration = Math.floor(Date.now() / 1000) + 300;
 
     try {
       const res = await fetch('https://build.pathofdiablo.com/api/link/proxy-create-link', {

@@ -7758,7 +7758,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const expiration = now + 300; // 5 minutes from now
 
     try {
-      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
+//      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/create', {
+      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/link/proxy-create-link', {
+	
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

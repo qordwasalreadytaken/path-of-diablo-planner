@@ -7754,21 +7754,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   button.addEventListener('click', async () => {
     const currentUrl = window.location.href;
-    const referrer = document.referrer;
-	console.log("referred by ", document.referrer)
-    const shortDomain = 'https://sink.actuallyiamqord.workers.dev/';
-    const slugRegex = /^[a-z0-9]{6,}$/;
+    const existingSlug = sessionStorage.getItem('lastShortSlug');
 
-    if (
-      referrer.startsWith(shortDomain) &&
-      slugRegex.test(referrer.slice(shortDomain.length))
-    ) {
-      await navigator.clipboard.writeText(referrer);
-      showPopup(`✅ Shortlink reused:\n${referrer}`);
+    if (existingSlug && currentUrl.includes(existingSlug)) {
+      const shortLink = `https://sink.actuallyiamqord.workers.dev/${existingSlug}`;
+      await navigator.clipboard.writeText(shortLink);
+      showPopup(`✅ Shortlink copied (from cache):\n${shortLink}`);
       return;
     }
 
-    const expiration = Math.floor(Date.now() / 1000) + 300; // 5 min
+    const now = Math.floor(Date.now() / 1000);
+    const expiration = now + 300; // 5 minutes from now
 
     try {
       const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
@@ -7798,6 +7794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
 
 
 

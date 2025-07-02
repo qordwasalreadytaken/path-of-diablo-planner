@@ -7754,17 +7754,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   button.addEventListener('click', async () => {
     const currentUrl = window.location.href;
-    const existingSlug = sessionStorage.getItem('lastShortSlug');
+    const cacheKey = `short:${currentUrl}`;
+    const cachedShort = localStorage.getItem(cacheKey);
 
-    if (existingSlug && currentUrl.includes(existingSlug)) {
-      const shortLink = `https://sink.actuallyiamqord.workers.dev/${existingSlug}`;
-      await navigator.clipboard.writeText(shortLink);
-      showPopup(`✅ Shortlink copied (from cache):\n${shortLink}`);
+    if (cachedShort) {
+      await navigator.clipboard.writeText(cachedShort);
+      showPopup(`✅ Reused shortlink:\n${cachedShort}`);
       return;
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const expiration = now + 300; // 5 minutes from now
+    const expiration = now + 60 * 5; // 5 minutes (or 7 days)
 
     try {
       const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
@@ -7772,10 +7772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          url: currentUrl,
-          expiration,
-        }),
+        body: JSON.stringify({ url: currentUrl, expiration }),
       });
 
       if (!res.ok) {
@@ -7786,6 +7783,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       const shortLink = data.shortLink;
 
+      localStorage.setItem(cacheKey, shortLink);
       await navigator.clipboard.writeText(shortLink);
       showPopup(`✅ Shortlink copied:\n${shortLink}`);
     } catch (error) {
@@ -7794,6 +7792,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function showPopup(message, duration = 3000) {
+  const popup = document.getElementById('popup');
+  if (!popup) {
+    alert(message); // fallback
+    return;
+  }
+
+  popup.textContent = message;
+  popup.style.display = 'block';
+
+  setTimeout(() => {
+    popup.style.display = 'none';
+  }, duration);
+}
+
 
 
 

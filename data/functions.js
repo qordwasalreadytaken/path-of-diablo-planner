@@ -7775,11 +7775,16 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ url: currentUrl, expiration }),
       });
 
-      if (!res.ok) {
+    if (!res.ok) {
+      // Friendly fallback for Cloudflare quota exhaustion
+      if (res.status === 1105 || res.status === 503) {
+        showPopup(`⚠️ The shortener is currently offline due to rate limiting. Please try again later.`);
+      } else {
         const errText = await res.text();
         throw new Error(`Server returned ${res.status}: ${errText}`);
       }
-
+      return;
+    }
       const data = await res.json();
       const shortLink = data.shortLink;
 

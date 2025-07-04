@@ -62,11 +62,12 @@
           throw new Error('No redirect received.');
         }
       } catch (e) {
-        window.location.href = finalURL;
+//        window.location.href = finalURL;
         console.error('Redirect failed:', e);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
         const fallback = document.getElementById('fallback-link');
+        window.location.href = `https://sink.actuallyiamqord.workers.dev/${slug}`;
         fallback.href = `https://sink.actuallyiamqord.workers.dev/${slug}`;
         fallback.style.display = 'inline-block';
         fallback.textContent = `Try this link instead`;

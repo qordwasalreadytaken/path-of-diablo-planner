@@ -7763,7 +7763,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const expiration = now + 60 * 5; // 5 minutes (or 7 days)
+    const expiration = now + 60 * 5; // 5 minutes
 
     try {
       const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
@@ -7774,28 +7774,29 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ url: currentUrl, expiration }),
       });
 
-    if (!res.ok) {
-      // Friendly fallback for Cloudflare quota exhaustion
-      if (res.status === 1105 || res.status === 503) {
-        showPopup(`⚠️ The shortener is currently offline due to rate limiting. Please try again later.`);
-      } else {
-        const errText = await res.text();
-        throw new Error(`Server returned ${res.status}: ${errText}`);
+      if (!res.ok) {
+        if (res.status === 1105 || res.status === 503) {
+          showPopup(`⚠️ The shortener is rate-limited. Try again later.`);
+        } else {
+          const errText = await res.text();
+          throw new Error(`Server returned ${res.status}: ${errText}`);
+        }
+        return;
       }
-      return;
-    }
-      const data = await res.json();
-      const shortLink = data.shortLink;
 
-      localStorage.setItem(cacheKey, shortLink);
-      await navigator.clipboard.writeText(shortLink);
-      showPopup(`✅ Shortlink copied:\n${shortLink}`);
+      const data = await res.json();
+      const vanityUrl = `https://build.pathofdiablo.com/shorts/${data.link.slug}`;
+
+      localStorage.setItem(cacheKey, vanityUrl);
+      await navigator.clipboard.writeText(vanityUrl);
+      showPopup(`✅ Shortlink copied:\n${vanityUrl}`);
     } catch (error) {
       showPopup(`❌ Error:\n${error.message}`);
       console.error(error);
     }
   });
 });
+
 
 function showPopup(message, duration = 3000) {
   const popup = document.getElementById('popup');

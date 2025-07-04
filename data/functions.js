@@ -7786,8 +7786,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await res.json();
 //      const vanityUrl = `https://build.pathofdiablo.com/shorts/${data.link.slug}`;
-      const vanityUrl = `https://qordwasalreadytaken.github.io/path-of-diablo-planner/shorts/${data.link.slug}`;
-
+//      const vanityUrl = `https://qordwasalreadytaken.github.io/path-of-diablo-planner/shorts/${data.link.slug}`;
+	  const vanityUrl = 'https://qordwasalreadytaken.github.io/path-of-diablo-planner/shorts.html?slug=abc123';
       localStorage.setItem(cacheKey, vanityUrl);
       await navigator.clipboard.writeText(vanityUrl);
       showPopup(`✅ Shortlink copied:\n${vanityUrl}`);

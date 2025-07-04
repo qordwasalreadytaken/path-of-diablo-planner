@@ -62,6 +62,7 @@
           throw new Error('No redirect received.');
         }
       } catch (e) {
+        window.location.href = finalURL;
         console.error('Redirect failed:', e);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';

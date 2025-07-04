@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Redirecting...</title>
+  <meta name="robots" content="noindex">
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    #loading {
+      font-size: 1.2em;
+    }
+    #error {
+      color: red;
+      display: none;
+    }
+    #fallback-link {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">⏳ Redirecting you to your destination...</div>
+  <div id="error">⚠️ Failed to redirect. Please use the link below:</div>
+  <div><a id="fallback-link" href="#" rel="noopener noreferrer">Open Link</a></div>
+
+  <noscript>
+    <p><strong>⚠️ JavaScript is required to use short links.</strong></p>
+  </noscript>
+
+  <script>
+    (async () => {
+      const slug = window.location.pathname.split('/').pop();
+
+      if (!slug) {
+        document.getElementById('loading').textContent = '❌ Invalid or missing shortlink slug.';
+        return;
+      }
+
+      const cacheKey = `slug:${slug}`;
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        window.location.href = cached;
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://sink.actuallyiamqord.workers.dev/${slug}`, {
+          method: 'GET',
+          redirect: 'follow',
+        });
+
+        if (res.redirected) {
+          const finalURL = res.url;
+          localStorage.setItem(cacheKey, finalURL);
+          window.location.href = finalURL;
+        } else {
+          throw new Error('No redirect received.');
+        }
+      } catch (e) {
+        console.error('Redirect failed:', e);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        const fallback = document.getElementById('fallback-link');
+        fallback.href = `https://sink.actuallyiamqord.workers.dev/${slug}`;
+        fallback.style.display = 'inline-block';
+        fallback.textContent = `Try this link instead`;
+      }
+    })();
+  </script>
+</body>
+</html>

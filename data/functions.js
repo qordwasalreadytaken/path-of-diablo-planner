@@ -7744,7 +7744,6 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   });
 });
 
-
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('createLink');
   if (!button) {
@@ -7812,10 +7811,6 @@ function showPopup(message, duration = 3000) {
     popup.style.display = 'none';
   }, duration);
 }
-
-
-
-
 
 function showPopup(message, duration = 3000) {
   const popup = document.getElementById('popup');

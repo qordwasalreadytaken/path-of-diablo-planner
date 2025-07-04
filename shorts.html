@@ -24,7 +24,8 @@
 </head>
 <body>
   <div id="loading">⏳ Redirecting you to your destination...</div>
-  <div id="error">⚠️ Failed to redirect. Please use the link below:</div>
+  <div id="error">⏳ Redirecting you to your destination...</div>
+<!--  <div id="error">⚠️ Failed to redirect. Please use the link below:</div> -->
   <div><a id="fallback-link" href="#" rel="noopener noreferrer">Open Link</a></div>
 
   <noscript>
@@ -67,6 +68,7 @@
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
         const fallback = document.getElementById('fallback-link');
+        localStorage.setItem(cacheKey, `https://sink.actuallyiamqord.workers.dev/${slug}`);
         window.location.href = `https://sink.actuallyiamqord.workers.dev/${slug}`;
         fallback.href = `https://sink.actuallyiamqord.workers.dev/${slug}`;
         fallback.style.display = 'inline-block';

@@ -86,6 +86,8 @@ function startup(choice) {
 	init()
 	updateStats()
 	toggleParameters(parameters)
+	document.getElementById("quests").checked = true; toggleQuests(document.getElementById("quests"))
+//	toggleQuests()
 }
 
 // reset - Calls startup() with the specified class name
@@ -101,6 +103,7 @@ function init() {
 		document.getElementById("s"+skills[s].key).onmouseover = function() {skillHover(skills[s])};
 		document.getElementById("s"+skills[s].key).onclick = function() {skillUp(event,skills[s],1)};
 		document.getElementById("s"+skills[s].key).oncontextmenu = function() {skillDown(event,skills[s])};
+//		toggleQuests()
 	}
 }
 
@@ -745,89 +748,120 @@ function corrupt(group, val) {
 //	val: name of item
 // ---------------------------------
 function equipMerc(group, val) {
-	var auraName = "";
-	var auraLevel = 0;
-	for (old_affix in mercEquipped[group]) {
-		if (old_affix == "aura" || old_affix == "aura_lvl" || old_affix == "name" || old_affix == "type" || old_affix == "base" || old_affix == "only" || old_affix == "not" || old_affix == "img") {
-			if (old_affix == "aura") {
-				removeEffect(mercEquipped[group][old_affix].split(' ').join('_')+"-mercenary_"+group)
-			}
-		} else {
-			mercenary[old_affix] -= mercEquipped[group][old_affix]
-		}
-	}
-	mercEquipped[group] = {name:"none"}
-	if (group == val) { document.getElementById(("dropdown_merc_"+group)).selectedIndex = 0 }
-	else {
-		for (item in equipment[group]) {
-			if (equipment[group][item].name == val) {
-				// add affixes from base item
-				if (typeof(equipment[group][item]["base"]) != 'undefined') {	// TODO: Combine with duplicate code from equip()
-					var base = getBaseId(equipment[group][item].base);
-					var multEth = 1;
-					var multED = 1;
-					var multReq = 1;
-					var reqEth = 0;
-					if (typeof(equipment[group][item]["ethereal"]) != 'undefined') { if (equipment[group][item]["ethereal"] == 1) { multEth = 1.5; reqEth = 10; } }
-					if (typeof(equipment[group][item]["e_def"]) != 'undefined') { multED += (equipment[group][item]["e_def"]/100) }
-					if (typeof(equipment[group][item]["req"]) != 'undefined') { multReq += (equipment[group][item]["req"]/100) }
-					for (affix in bases[base]) {
-						if (affix != "group" && affix != "type" && affix != "upgrade" && affix != "downgrade" && affix != "subtype" && affix != "only" && affix != "def_low" && affix != "def_high" && affix != "durability" && affix != "range" && affix != "twoHands") {
-							if (typeof(mercEquipped[group][affix]) == 'undefined') { mercEquipped[group][affix] = unequipped[affix] }	// undefined (new) affixes get initialized to zero
-							if (affix == "base_damage_min" || affix == "base_damage_max") {
-								mercEquipped[group][affix] = Math.ceil(multEth*bases[base][affix])
-								mercenary[affix] += Math.ceil(multEth*bases[base][affix])
-							} else if (affix == "req_strength" || affix == "req_dexterity") {
-								mercEquipped[group][affix] = Math.max(0,Math.ceil(multReq*bases[base][affix] - reqEth))
-							} else {
-								mercEquipped[group][affix] = bases[base][affix]
-								mercenary[affix] += bases[base][affix]
-							}
-						}
-					}
-				}
-				// add regular affixes
-				for (affix in equipment[group][item]) {
-					if (typeof(mercEquipped[group][affix]) == 'undefined') { mercEquipped[group][affix] = unequipped[affix] }
-					if (affix == "damage_vs_undead") {
-						mercEquipped[group][affix] += equipment[group][item][affix]
-						mercenary[affix] += equipment[group][item][affix]
-					} else if (affix == "name" || affix == "type" || affix == "base" || affix == "only" || affix == "not" || affix == "img" || affix == "rarity" || affix == "req" || affix == "ethereal" || affix == "indestructible" || affix == "autorepair" || affix == "autoreplenish" || affix == "stack_size" || affix == "set_bonuses" || affix == "pod_changes" || affix == "aura_lvl" || affix == "twoHanded" || affix == "sockets" || affix == "e_def" || affix == "ctc" || affix == "cskill" || affix == "aura" || affix == "req_strength" || affix == "req_dexterity") {
-						if (affix == "req_strength" || affix == "req_dexterity") {
-							if (equipment[group][item][affix] > mercEquipped[group][affix]) { mercEquipped[group][affix] = equipment[group][item][affix] }
-						} else {
-							mercEquipped[group][affix] = equipment[group][item][affix]
-							if (affix == "aura") { auraName = equipment[group][item][affix]; auraLevel = equipment[group][item].aura_lvl; }
-						}
-					} else {
-						if (affix == "sup" || affix == "e_damage") {
-							if (typeof(mercEquipped[group]["e_damage"]) == 'undefined') { mercEquipped[group]["e_damage"] = unequipped["e_damage"] }
-							if (affix == "sup") { mercEquipped[group][affix] = equipment[group][item][affix] }
-							mercEquipped[group]["e_damage"] += equipment[group][item][affix]
-							mercenary["e_damage"] += equipment[group][item][affix]
-						} else {
-							mercEquipped[group][affix] = equipment[group][item][affix]
-							mercenary[affix] += equipment[group][item][affix]
-						}
-					}
-				}
-				// TODO: implement set bonuses for mercenaries
+    console.log("Merc Equip function kicked off");
+
+//    if (val === "[runeword]") {
+//        openRunewordPicker("merc_" + group);  // important: distinguish merc slots!
+//        const dd = document.getElementById(`dropdown_merc_${group}`);
+//        if (mercEquipped[group]?.name) dd.value = mercEquipped[group].name;
+//        else dd.selectedIndex = 0;
+//        return;
+//    } 
+
+    // unequip old item
+    let auraName = "";
+    let auraLevel = 0;
+    for (old_affix in mercEquipped[group]) {
+        if (old_affix === "aura") {
+            removeEffect(mercEquipped[group][old_affix].split(' ').join('_') + "-mercenary_" + group);
+        } else if (!["name","type","base","only","not","img"].includes(old_affix)) {
+            mercenary[old_affix] -= mercEquipped[group][old_affix];
+        }
+    }
+    mercEquipped[group] = { name: "none" };
+
+    if (group == val) {
+        document.getElementById(`dropdown_merc_${group}`).selectedIndex = 0;
+        return;
+    }
+
+	// Reset runeword option text if unequipped or placeholder for picker
+	if (val === group || val === "none") {
+		const dropdown = document.getElementById(`dropdown_merc_${group}`);
+		if (dropdown) {
+			const rwOption = dropdown.querySelector(`option[value="[runeword]"]`);
+			if (rwOption) {
+				rwOption.textContent = "Runeword Picker";
 			}
 		}
-		updateMercenary()
 	}
-	if (auraName != "" && auraLevel != 0) {
-		addEffect("aura",auraName,auraLevel,"mercenary_"+group)
-	}
-	updateStats()
-	updateAllEffects()
+
+    // 🔑 FIX: iterate over items from the *right source*
+    // All possible gear is still in equipment[group], runewords included.
+    for (let itemKey in equipment[group]) {
+        let item = equipment[group][itemKey];
+        if (item.name == val) {
+            // --- add base stats ---
+            if (item.base) {
+                let base = getBaseId(item.base);
+                let multEth = (item.ethereal ? 1.5 : 1);
+                let reqEth = (item.ethereal ? 10 : 0);
+                let multED = 1 + (item.e_def || 0) / 100;
+                let multReq = 1 + (item.req || 0) / 100;
+
+                for (let affix in bases[base]) {
+                    if (["group","type","upgrade","downgrade","subtype","only","def_low","def_high","durability","range","twoHands"].includes(affix)) continue;
+
+                    if (typeof mercEquipped[group][affix] === "undefined") {
+                        mercEquipped[group][affix] = unequipped[affix];
+                    }
+
+                    if (affix === "base_damage_min" || affix === "base_damage_max") {
+                        mercEquipped[group][affix] = Math.ceil(multEth * bases[base][affix]);
+                        mercenary[affix] += mercEquipped[group][affix];
+                    } else if (affix === "req_strength" || affix === "req_dexterity") {
+                        mercEquipped[group][affix] = Math.max(0, Math.ceil(multReq * bases[base][affix] - reqEth));
+                    } else {
+                        mercEquipped[group][affix] = bases[base][affix];
+                        mercenary[affix] += bases[base][affix];
+                    }
+                }
+            }
+
+            // --- add item affixes ---
+            for (let affix in item) {
+                if (typeof mercEquipped[group][affix] === "undefined") {
+                    mercEquipped[group][affix] = unequipped[affix];
+                }
+
+                if (affix === "name" || affix === "type" || affix === "base" || affix === "img") {
+                    mercEquipped[group][affix] = item[affix];
+                } else if (affix === "aura") {
+                    auraName = item.aura;
+                    auraLevel = item.aura_lvl || 0;
+                    mercEquipped[group][affix] = item[affix];
+                } else {
+                    mercEquipped[group][affix] += item[affix];
+                    mercenary[affix] += item[affix];
+                }
+            }
+        }
+    }
+
+    updateMercenary();
+
+    if (auraName && auraLevel) {
+        addEffect("aura", auraName, auraLevel, "mercenary_" + group);
+    }
+    updateStats();
+    updateAllEffects();
 }
+
 
 // equip - Equips an item by adding its stats to the character, or unequips it if it's already equipped
 //	group: equipment group
 //	val: name of item
 // ---------------------------------
 function equip(group, val) {
+	console.log("Equip function kicked off")
+    if (val === "[runeword]") {
+        openRunewordPicker(group); // ← you’ll build this UI next
+        // reset dropdown to current selection so selecting “Runeword…” doesn’t clear the item
+        const dd = document.getElementById(`dropdown_${group}`);
+        if (equipped[group]?.name) dd.val = equipped[group].name;
+        else dd.selectedIndex = 0;
+        return;
+    }	
 	// TODO: consider renaming... switchItem()?  Also, split into multiple smaller functions
 	var auraName = "";
 	var auraLevel = 0;
@@ -1083,6 +1117,18 @@ function equip(group, val) {
 		if (equipped.offhand.type != "quiver" && twoHanded == 1 && (itemType != "sword" || character.class_name != "Barbarian") && corruptsEquipped.offhand.name != "none") { reloadOffhandCorruptions("shield"); }
 	}
 	if (val == group || val == "none") { document.getElementById(("dropdown_"+group)).selectedIndex = 0; }
+
+	// Reset runeword option text if unequipped, runeword picker
+	if (val == group || val == "none") {
+		const dropdown = document.getElementById(`dropdown_${group}`);
+		if (dropdown) {
+			const rwOption = dropdown.querySelector(`option[value="[runeword]"]`);
+			if (rwOption) {
+				rwOption.textContent = "Runeword Picker";
+			}
+		}
+	}
+
 	// set inventory image
 	if (equipped[group].name != "none") {
 		var src = "";
@@ -1377,6 +1423,10 @@ function loadItems(group, dropdown, className) {
 	else {
 		var choices = "";
 		var choices_offhand = "";
+		// only show Runeword for slots that can reasonably have them
+		const canHaveRunewords = (group === "weapon" || group === "offhand" || group === "armor" || group === "helm");
+		const RUN_EWORD_VALUE = "[runeword]"; // sentinel value we’ll catch in equip()
+
 //			if(synthwep != 0)
 //		{
 //			equipment["weapon"] =+ '{debug:1, name:"Testeroo",req_level:71, e_damage:220, pierce:33, life_leech:18, owounds:33, slows_target:25, twoHanded:1, type:"crossbow", base:"Demon Crossbow", img:"Gut_Siphon"},'
@@ -1411,6 +1461,46 @@ function loadItems(group, dropdown, className) {
 
 						if (group != "charms") { addon = "<option selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
 						else { addon = "<option disabled selected>" + "­ ­ ­ ­ " + item.name + "</option>" }
+						// 👇 inject the Runeword option right after the header (for eligible slots)
+//						if (canHaveRunewords) {
+//							addon += `<option class="dropdown-runeword" value="${RUN_EWORD_VALUE}">Runeword…</option>`;
+//						}						
+						if (canHaveRunewords) {
+							const rwOpt = document.createElement("option");
+							rwOpt.value = RUN_EWORD_VALUE;
+							rwOpt.textContent = "Runeword Picker";
+							rwOpt.classList.add("dropdown-runeword");
+
+							// Insert at top if you want
+							addon += `<option class="dropdown-runeword" value="${RUN_EWORD_VALUE}">Runeword Picker</option>`;
+
+							// Hover logic for pop-out panel
+							rwOpt.addEventListener("mouseenter", () => {
+								openRunewordPicker(group, rwOpt); // pass slot and reference element
+							});
+							rwOpt.addEventListener("mouseleave", () => {
+								closeRunewordPicker();
+							});
+							// Remove Runeword Picker from merc dropdowns for now
+							["weapon", "offhand", "armor", "helm"].forEach(slot => {
+							const mercDropdown = document.getElementById(`dropdown_merc_${slot}`);
+							if (mercDropdown) {
+								const rwOpt = mercDropdown.querySelector(`option[value="${RUN_EWORD_VALUE}"]`);
+								if (rwOpt) rwOpt.remove();
+							}
+							});
+
+							attachRunewordHover("dropdown_weapon");
+							attachRunewordHover("dropdown_offhand");
+							attachRunewordHover("dropdown_armor");
+							attachRunewordHover("dropdown_helm");
+//							attachRunewordHover("dropdown_merc_weapon");
+//							attachRunewordHover("dropdown_merc_offhand");
+//							attachRunewordHover("dropdown_merc_armor");
+//							attachRunewordHover("dropdown_merc_helm");
+
+						}
+
 					} else {
 						if (game_version == 2) {	// PoD item loading
 							if (typeof(item.pd2) != 'undefined') { addon = "" }
@@ -1418,6 +1508,10 @@ function loadItems(group, dropdown, className) {
 							else if (typeof(item.rarity) != 'undefined') { addon = "<option class='dropdown-"+item.rarity+"'>" + item.name + "</option>" }
 //							else if (settings.synthwep == "1" && item.synth_wep == "true") { addon = "" }
 							else { addon = "<option class='dropdown-unique'>" + item.name + "</option>" }
+//							// 👇 inject the Runeword option right after the header (for eligible slots)
+//							if (canHaveRunewords) {
+//								addon += `<option class="dropdown-runeword" value="${RUN_EWORD_VALUE}">Runeword…</option>`;
+//							}							
 						} else {
 							if (typeof(item.pod) != 'undefined') { addon = "" }
 							else {
@@ -1443,6 +1537,7 @@ function loadItems(group, dropdown, className) {
 		}
 		if (group == "weapon") { offhandSetup = choices_offhand }
 		if (className == "barbarian" && group == "offhand") { choices += offhandSetup }	// weapons inserted into offhand dropdown list
+		
 		document.getElementById(dropdown).innerHTML = choices
 	}
 }
@@ -2067,12 +2162,28 @@ function hoverEffectOn(id) {
 	var source = "";
 	var note = "";
 	var affixes = "";
-	for (affix in effects[id]) { if (affix != "info" && affix != "duration" && affix != "radius") {
+//	for (affix in effects[id]) { if (affix != "info" && affix != "duration" && affix != "radius") {
+//		if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
+//			var affix_info = getAffixLine(affix,"effects",id,"");
+//			if (affix_info[1] != 0) { affixes += affix_info[0]+"<br>" }
+//		}
+//	} }
+	// Aura display fix
+	patchAuraDisplayDamage(effects, id);
+
+	for (affix in effects[id]) {
+	if (affix != "info" && affix != "duration" && affix != "radius") {
 		if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
-			var affix_info = getAffixLine(affix,"effects",id,"");
-			if (affix_info[1] != 0) { affixes += affix_info[0]+"<br>" }
+		var affix_info = getAffixLine(affix, "effects", id, "");
+		if (affix_info[1] != 0) {
+			affixes += affix_info[0] + "<br>";
 		}
-	} }
+		}
+	}
+	}
+
+	restoreAuraDisplayDamage(effects, id);
+
 	if (origin != "skill" && origin != "oskill" && origin != "misc") {
 		source = "Source: "
 		var group = other;
@@ -2159,10 +2270,19 @@ function getAuraData(aura, lvl, source) {
 		if (character.class_name == "Sorceress") {
 			result.ftick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[30].level+skills[30].force_levels))*(~~skills[30].data.values[1][skills[30].level+skills[30].extra_levels])/100)* (1+character.fDamage/100)) ; 
 			result.ftick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[30].level+skills[30].force_levels))*(~~skills[30].data.values[1][skills[30].level+skills[30].extra_levels])/100)* (1+character.fDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		}
-		if (character.class_name != "Sorceress"){ 
+		if (character.class_name == "Paladin") {
+			result.fDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
+			result.fDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); 
+			result.ftick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level) * (1+character.fDamage/100);
+			result.ftick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level) * (1+character.fDamage/100); 
+//			result.addeddmgdisplaywrong = 1
+		}
+		else { 
 			result.ftick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.fDamage/100)) ; 
 			result.ftick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.fDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		}
 	}
 	else if (aura == "Precision") { result.cstrike = auras[a].data.values[2][lvl]; result.ar_bonus = auras[a].data.values[3][lvl]; result.radius = 16; if (source == "mercenary" || source == "golem") { result.pierce = auras[a].data.values[1][lvl] } else { result.pierce = auras[a].data.values[0][lvl] }}
@@ -2173,10 +2293,19 @@ function getAuraData(aura, lvl, source) {
 		if (character.class_name == "Sorceress") {
 			result.ctick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[10].level+skills[10].force_levels))*(~~skills[10].data.values[1][skills[10].level+skills[10].extra_levels])/100)* (1+character.cDamage/100)) ; 
 			result.ctick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[10].level+skills[10].force_levels))*(~~skills[10].data.values[1][skills[10].level+skills[10].extra_levels])/100)* (1+character.cDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		}
-		if (character.class_name != "Sorceress"){ 
+		if (character.class_name == "Paladin") {
+			result.cDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
+			result.cDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); 
+			result.ctick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level) * (1+character.cDamage/100);
+			result.ctick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level) * (1+character.cDamage/100); 
+//			result.addeddmgdisplaywrong = 1
+		}
+		else { 
 			result.ctick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.cDamage/100)) ; 
 			result.ctick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.cDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		} 
 	}	
 //	else if (aura == "Holy Shock") { result.lDamage_min = auras[a].data.values[0][lvl]; result.lDamage_max = auras[a].data.values[1][lvl]; result.radius = 18.6; }
@@ -2184,17 +2313,30 @@ function getAuraData(aura, lvl, source) {
 		if (character.class_name == "Sorceress") {
 			result.ltick_min = Math.floor(auras[a].data.values[2][lvl] * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100)* (1+character.lDamage/100)) ; 
 			result.ltick_max = Math.floor(auras[a].data.values[3][lvl] * (1 + Math.min(1,(skills[20].level+skills[20].force_levels))*(~~skills[20].data.values[1][skills[20].level+skills[20].extra_levels])/100)* (1+character.lDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		}
-		if (character.class_name != "Sorceress"){ 
+		if (character.class_name == "Paladin") {
+			result.lDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
+			result.lDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); 
+			result.ltick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level) * (1+character.lDamage/100);
+			result.ltick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level) * (1+character.lDamage/100); 
+//			result.addeddmgdisplaywrong = 1
+		}
+		else { 
 			result.ltick_min = Math.floor(auras[a].data.values[2][lvl] * (1+character.lDamage/100)) ; 
 			result.ltick_max = Math.floor(auras[a].data.values[3][lvl] * (1+character.lDamage/100)) ; 
+//			result.addeddmgdisplaywrong = 1
 		} 
 	}
 //	else if (aura == "Sanctuary") { result.damage_vs_undead = auras[a].data.values[0][lvl]; result.radius = 12.6; }
-	else if (aura == "Sanctuary") { result.damage_vs_undead = auras[a].data.values[0][lvl]; result.mtick_min = auras[a].data.values[1][lvl]; result.mtick_max = auras[a].data.values[2][lvl]; result.radius = 12.6; 
-		if (character.class_name != "Paladin") {
-			result.mtick_min = Math.floor(auras[a].data.values[1][lvl] * (1+character.mDamage/100));
-			result.mtick_max = Math.floor(auras[a].data.values[2][lvl] * (1+character.mDamage/100)) ; }
+	else if (aura == "Sanctuary") { 
+		result.damage_vs_undead = auras[a].data.values[0][lvl]; 
+		result.mtick_min = auras[a].data.values[1][lvl] * (1+character.mDamage/100); 
+		result.mtick_max = auras[a].data.values[2][lvl] * (1+character.mDamage/100); 
+		result.radius = 12.6; 
+		if (character.class_name == "Paladin") {
+			result.mtick_min = Math.floor(auras[a].data.values[1][lvl] * ((1+(0.18*skills[4].level + 0.18*skills[30].level))* (1+character.mDamage/100)));
+			result.mtick_max = Math.floor(auras[a].data.values[2][lvl] * ((1+(0.18*skills[4].level + 0.18*skills[30].level))* (1+character.mDamage/100))) ; }
 	}
 	else if (aura == "Fanaticism") { result.radius = 12; if (source == "mercenary" || source == "golem") { result.damage_bonus = auras[a].data.values[0][lvl] } else { result.damage_bonus = auras[a].data.values[1][lvl]; result.ias_skill = auras[a].data.values[2][lvl]; result.ar_bonus = auras[a].data.values[3][lvl]; }}
 	else if (aura == "Conviction") { result.enemy_defense = auras[a].data.values[0][lvl]; result.enemy_fRes = auras[a].data.values[1][lvl]; result.enemy_cRes = auras[a].data.values[1][lvl]; result.enemy_lRes = auras[a].data.values[1][lvl]; result.enemy_pRes = auras[a].data.values[1][lvl]; result.radius = 24; }
@@ -2207,22 +2349,40 @@ function getAuraData(aura, lvl, source) {
 	if (character.class_name == "Paladin") {
 		if (aura == "Cleansing") { result.life_replenish = Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]); }
 		else if (aura == "Meditation") { result.life_replenish = Math.min(1,(skills[0].level+skills[0].force_levels))*~~(skills[0].data.values[0][skills[0].level+skills[0].extra_levels]); }
-		else if (aura == "Holy Fire") { 
-			result.fDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
-			result.fDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); 
-			result.ftick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
-			result.ftick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); }
-		else if (aura == "Holy Freeze") { 
-			result.cDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
-			result.cDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); 
-			result.ctick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
-			result.ctick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); }
-		else if (aura == "Holy Shock") { 
-			result.lDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
-			result.lDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); 
-			result.ltick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
-			result.ltick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); }
+//		else if (aura == "Holy Fire") { 
+//			result.fDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level);
+//			result.fDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level); 
+//			result.ftick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level) * (1+character.fDamage/100);
+//			result.ftick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[1].level + 0.06*skills[9].level) * (1+character.fDamage/100); }
+//		else if (aura == "Holy Freeze") { 
+//			result.cDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level);
+//			result.cDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level); 
+//			result.ctick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level) * (1+character.cDamage/100);
+//			result.ctick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[3].level + 0.06*skills[9].level) * (1+character.cDamage/100); }
+//		else if (aura == "Holy Shock") { 
+//			result.lDamage_min = auras[a].data.values[0][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level);
+//			result.lDamage_max = auras[a].data.values[1][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level); 
+//			result.ltick_min = auras[a].data.values[2][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level) * (1+character.lDamage/100);
+//			result.ltick_max = auras[a].data.values[3][lvl] * (1 + 0.04*skills[5].level + 0.06*skills[9].level) * (1+character.lDamage/100); }
 	}
+//	Fix for aura display popup damage values
+	if (result.fDamage_min !== undefined) {
+	result.fDamage_min_display = result.fDamage_min * (1+character.fDamage/100);
+	result.fDamage_max_display = result.fDamage_max * (1+character.fDamage/100);
+	}
+	if (result.cDamage_min !== undefined) {
+	result.cDamage_min_display = result.cDamage_min * (1+character.cDamage/100);
+	result.cDamage_max_display = result.cDamage_max * (1+character.cDamage/100);
+	}
+	if (result.lDamage_min !== undefined) {
+	result.lDamage_min_display = result.lDamage_min * (1+character.lDamage/100);
+	result.lDamage_max_display = result.lDamage_max * (1+character.lDamage/100);
+	}
+	if (result.mDamage_min !== undefined) {
+	result.mDamage_min_display = result.mDamage_min * (1+character.mDamage/100);
+	result.mDamage_max_display = result.mDamage_max * (1+character.mDamage/100);
+	}
+
 	return result;
 }
 
@@ -2332,6 +2492,18 @@ function getCTCSkillData(name, lvl, group) {
 			result.damage_max = skill.data.values[1][lvl] ;
 		}
 		warcrytext = "(" + Math.round(result.damage_min) + "-" + Math.round(result.damage_max) + " phys)" + " {" +Math.round((result.damage_min+result.damage_max)/2) + "}"; 
+	}	
+
+	else if (name == "Cleave") {
+//		if (character.class_name == "Barbarian") {
+//			result.damage_min = skill.data.values[0][lvl] * (1 + 0.06*skills[0].level + 0.06*skills[2].level + 0.06*skills[5].level) ;
+//			result.damage_max = skill.data.values[1][lvl] * (1 + 0.06*skills[0].level + 0.06*skills[2].level + 0.06*skills[5].level) ;
+//		}
+		if (character.class_name != "Barbarian") {
+			result.damage_min = skill.data.values[0][lvl] ;
+			result.damage_max = skill.data.values[1][lvl] ;
+		}
+		cleavetext = "(" + Math.round(result.damage_min) + "-" + Math.round(result.damage_max) + " phys)" + " {" +Math.round((result.damage_min+result.damage_max)/2) + "}"; 
 	}	
 	// Druid
 	else if (name == "Cyclone Armor") { result.absorb_elemental = skill.data.values[0][lvl]; }
@@ -3144,6 +3316,17 @@ function equipmentHover(group) {
 		}
 	}
 	for (affix in equipped[group]) {
+		if (character.class_name === "Paladin")
+		{	
+		if (equipped[group][affix] != unequipped[affix] && stats[affix] != unequipped[affix] && stats[affix] != 1 && affix != "velocity") {
+			var affix_info = getAffixLine(affix,"equipped",group,"");
+			if (affix_info[1] != 0) {
+				if (affix == "base_damage_min" || affix == "base_defense" || affix == "req_level" || affix == "req_strength" || affix == "req_dexterity" || affix == "durability" || affix == "baseSpeed" || affix == "range" || affix == "throw_min" || affix == "base_min_alternate" || affix == "block" || affix == "velocity" || affix == "smite_min") { main_affixes += affix_info[0]+"<br>" }
+				else { affixes += affix_info[0]+"<br>" }
+			}
+		}
+		}
+		else{
 		if (equipped[group][affix] != unequipped[affix] && stats[affix] != unequipped[affix] && stats[affix] != 1 && affix != "velocity" && affix != "smite_min") {
 			var affix_info = getAffixLine(affix,"equipped",group,"");
 			if (affix_info[1] != 0) {
@@ -3151,6 +3334,8 @@ function equipmentHover(group) {
 				else { affixes += affix_info[0]+"<br>" }
 			}
 		}
+		}
+
 	}
 	if (equipped[group].name != "none" && (group == "helm" || group == "armor" || group == "weapon" || group == "offhand")) {
 		updateSocketTotals()
@@ -4088,7 +4273,7 @@ function skillHover(skill) {
 	if (typeof(skill.notupdated) != 'undefined') { if (skill.notupdated != "") {
 		if (skill.syn_text != "") { document.getElementById("syn_text").innerHTML += "<br>" }
 		if (skill.notupdated == 1) {
-			document.getElementById("syn_text").innerHTML += "<br><font color='"+colors.Red+"'font-size:12px>Skill has not been updated to P22 Minium</font>"
+			document.getElementById("syn_text").innerHTML += "<br><font color='"+colors.Red+"'font-size:12px>Skill may not be updated to newest patch values</font>"
 		} else {
 			document.getElementById("syn_text").innerHTML += "<br><font color='"+colors.Red+"'>"+skill.notupdated+"</font>"
 		}
@@ -4772,7 +4957,19 @@ function updateSecondaryStats() {
 //	if (c.life_regen > 0) { lifeRegen = c.life_regen+"% " }; if (c.life_replenish > 0) { lifeRegen += ("+"+c.life_replenish) }; if (c.life_regen == 0 && c.life_replenish == 0) { lifeRegen = 0 }
 	if (c.life_regen > 0) { lifeRegen = c.life_regen+"% "}; if (c.life_replenish > 0) { lifeRegen += ("+"+c.life_replenish); lifeRegen += " (" + (Math.floor(lifeTotal * (c.life_regen/100))+ c.life_replenish) +")"  }; if (c.life_regen == 0 && c.life_replenish == 0) { lifeRegen = 0 }
 	document.getElementById("life_regen").innerHTML = lifeRegen
-	document.getElementById("mana_regen").innerHTML = Math.round(c.mana_regen,1)+"%"	// TODO: mana_regen should multiply base regen (1.66%) instead of being additive? Or is the 1.66 value meant to be 166%?
+//	Testing mana regen formulas, how much per second
+//	var energyTotal = Math.floor((c.energy + c.all_attributes)*(1+c.max_energy/100));	
+//	console.log(energyTotal, "Energy total")
+//	var mana_addon = (energyTotal-c.starting_energy)*c.mana_per_energy;
+//	console.log(mana_addon, "Mana addon")
+//	var manaTotal = (c.mana + c.level*c.mana_per_level + mana_addon) * (1 + c.max_mana/100);
+//	console.log(manaTotal, "Mana total")
+////	Math.floor((c.mana + c.level*c.mana_per_level + mana_addon) * (1 + c.max_mana/100))
+//	manaRegeneratedPerSecond = Math.round(10 * (5 * ((256 * manaTotal / (25 * 120)) * (100 + c.mana_regen) / 100) / 256)) / 10;
+////	manaRegeneratedPerSecond = 	Math.round(manaTotal * (100 + c.mana_regen) / 12000)
+//	console.log(manaRegeneratedPerSecond, "Mana per second")
+	document.getElementById("mana_regen").innerHTML = Math.round(c.mana_regen,1)+"%"//+" ("+manaRegeneratedPerSecond+" per second)"	// TODO: mana_regen should multiply base regen (1.66%) instead of being additive? Or is the 1.66 value meant to be 166%?
+//	document.getElementById("mana_regen").innerHTML = Math.round(c.mana_regen,1)+"%"+" ("+manaRegeneratedPerSecond+" per second)"	// TODO: mana_regen should multiply base regen (1.66%) instead of being additive? Or is the 1.66 value meant to be 166%?
 	//var manaTotal = Math.floor((c.mana + c.level*c.mana_per_level + mana_addon) * (1 + c.max_mana/100));
 	//var manaRegeneratedPerSecond = 25 * Math.floor(Math.floor(256*manaTotal/(25*120)) * ((100+c.mana_regen)/100)) / 256;
 	
@@ -4914,7 +5111,42 @@ function updateTertiaryStats() {
 	if (character.dodge > 0) { statlines += character.dodge + "% Chance to <b>Dodge</b> melee attack when attacking or standing still" + "<br>"}
 	if (c.avoid > 0) { statlines += c.avoid + "% Chance to <b>Avoid</b> missiles when attacking or standing still" + "<br>"}
 	if (c.evade > 0) { statlines += c.evade + "% Chance to <b>Evade</b> melee or missile attack when walking or running" + "<br>"}
+	if (character.metamorphosis_bear1 > 0) { 
+//		character.oskill_Cleave = character.maul_charges
+		character.skill_Cleave = character.maul_charges
+//		var outcome = {min:0,max:0,ar:0};
+//		var physDamage = getWeaponDamage(character.strTotal,character.dexTotal,"weapon",0);
+//		var dmg = getNonPhysWeaponDamage("weapon");
+//		var basic_min = Math.floor(physDamage[0]*physDamage[2]);
+//		var basic_max = Math.floor(physDamage[1]*physDamage[2]);
 
+//		var nonPhys_min = Math.floor(dmg.fMin + dmg.cMin + dmg.lMin + dmg.pMin + dmg.mMin);
+//		var nonPhys_max = Math.floor(dmg.fMax + dmg.cMax + dmg.lMax + dmg.pMax + dmg.mMax);
+
+//		outcome = character_all.any.getSkillDamage("Cleave", ar, physDamage[0], physDamage[1], physDamage[2], nonPhys_min, nonPhys_max)
+//		var output = ": " + outcome.min + "-" + outcome.max + " {"+Math.ceil((outcome.min+outcome.max)/2)+"}";
+//		var outcome = {min:0,max:0,ar:0};
+//		outcome = c.getSkillDamage(skill, ar, physDamage_offhand[0], physDamage_offhand[1], physDamage_offhand[2], nonPhys_min_offhand, nonPhys_max_offhand);
+//		var output = outcome.min + "-" + outcome.max + " {"+Math.ceil((outcome.min+outcome.max)/2)+"}";
+
+//		cleave_dam_min = outcome.min
+//		cleave_dam_max = outcome.max
+//		getCTCSkillData("Cleave", character.maul_charges, "helm")
+		physDamage = getWeaponDamage(character.strTotal,character.dexTotal,"weapon",0)
+		cleave_dam_min = Math.floor((physDamage[0]*.6) * (1 + character.damage_bonus/100)) // * (1 + (60-100)/100) + (physDamage[0] * (1+(character.damage_bonus+character.damage_enhanced)/100)) )
+		cleave_dam_max = Math.floor((physDamage[1]*.6) * (1 + character.damage_bonus/100)) //* (1 + (60-100)/100) + (character.damage_min * (1+(character.damage_bonus+character.damage_enhanced)/100)) )
+//console.warn  (character.skill_Cleave, basic_min, basic_max, physDamage, dmg, outcome)
+		maul_min = Math.floor((character_all.any.getSkillData("Cleave",character.maul_charges,0) * (1 + (character.damage_bonus + character.e_damage)/100)))
+		maul_max = Math.floor((character_all.any.getSkillData("Cleave",character.maul_charges,1) * (1 + character.damage_bonus/100 + character.e_damage/100)))
+		
+//		statlines += "Maul attacks gain cleave" + " (" + maul_min + ")" + " (" + maul_max + ")" + "<br>" + "Grizzly Maul attacks gain cleave" + "<br>"
+		statlines += "Maul attacks gain cleave" + "<br>" + "Grizzly Maul attacks gain cleave" + "<br>"
+//		statlines += "You have: " + character.maul_charges + " Maximum Maul Charges" + "<br>"
+		statlines += "BETA - Grizzly Cleave damage: " + cleave_dam_min + "-" + cleave_dam_max + "<br>&nbsp;&nbsp;&nbsp;&nbsp;Plus " + maul_min + "-" + maul_max + ""
+		
+	}
+
+	
 //	if (character.customStats != null) { statlines += c.addcraft }
 
 	document.getElementById("statlines").innerHTML = statlines
@@ -5025,6 +5257,11 @@ function updateCTC() {
 					}
 
 					else if (equipped[group].ctc[i][2] == "War Cry") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + warcrytext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Cleave") {
 						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
 						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + warcrytext;
 					}
@@ -5344,6 +5581,7 @@ function checkSkill(skillName, num) {
 		c.ar_skillup2 +
 		c.ar_bonus +
 		(c.level * c.ar_bonus_per_level);
+	console.log("Base AR, Bonus AR: ", baseAR, arBonusPercent)
 
 	// Total AR after % increases
 	let ar = baseAR * (1 + arBonusPercent / 100) * (1 + c.ar_shrine_bonus / 100);
@@ -5469,83 +5707,107 @@ function debounce(func, wait) {
 // updateURL - Updates the character parameters in the browser URL
 // ---------------------------------
 let updateURLTimeout = null;
-function updateURL() {
-	var param_quests = ~~character.quests_completed; if (param_quests == -1) { param_quests = 0 };
-	var param_run = ~~character.running; if (param_run == -1) { param_run = 0 };
-	
-	//params.set('v', game_version)		// handled elsewhere currently
-	params.set('class', character.class_name.toLowerCase())
-	params.set('level', ~~character.level)
-	params.set('difficulty', ~~character.difficulty)
-	params.set('quests', param_quests)
-	if (game_version == 2) { params.set('running', param_run) } else if (params.has('running')) { params.delete('running') }
-	//params.set('running', param_run)
-	params.set('strength', ~~character.strength_added)
-	params.set('dexterity', ~~character.dexterity_added)
-	params.set('vitality', ~~character.vitality_added)
-	params.set('energy', ~~character.energy_added)
-	params.set('url', ~~settings.parameters)
-	params.set('coupling', ~~settings.coupling)
-	params.set('synthwep', ~~settings.synthwep)
-	if (game_version == 2) { params.set('autocast', ~~settings.autocast) } else if (params.has('autocast')) { params.delete('autocast') }
-	//params.set('autocast', ~~settings.autocast)
-	var param_skills = '';
-	for (let s = 0; s < skills.length; s++) {
-		var skill_level = skills[s].level;
-		if (skill_level < 10) { skill_level = '0'+skill_level }
-		param_skills += skill_level
-	}
-	params.set('skills', param_skills)
-	params.delete('selected')
-	for (group in corruptsEquipped) { params.delete(group) }
-	params.delete('effect')
-	params.delete('mercenary')
-	params.delete('irongolem')
-	
-	if (game_version == 2) {	// these features are only available on the PoD version
-		params.set('selected', selectedSkill[0]+','+selectedSkill[1])
-		for (group in corruptsEquipped) {
-			var param_equipped = equipped[group].name+','+equipped[group].tier+','+corruptsEquipped[group].name
-			for (group_sock in socketed) { if (group == group_sock) {
-				for (let i = 0; i < socketed[group].items.length; i++) {
-					param_equipped += ','+socketed[group].items[i].name
-				}
-			} }
-			params.set(group, param_equipped)
-		}
-	}
-	
-	for (id in effects) { if (typeof(effects[id].info.enabled) != 'undefined') {
-		var param_effect = id+','+effects[id].info.enabled+','+effects[id].info.snapshot;
-		if (effects[id].info.snapshot == 1) {
-			param_effect += ','+effects[id].info.origin+','+effects[id].info.index
-			for (affix in effects[id]) { if (affix != "info") {
-				param_effect += ','+affix+','+effects[id][affix]
-			} }
-		}
-		params.append('effect', param_effect)
-	} }
-		
-	if (game_version == 2) {	// these features are only available on the PoD version
-		var param_mercenary = mercenary.name;
-		if (mercenary.name == "­ ­ ­ ­ Mercenary") { param_mercenary = "none" }
-		for (group in mercEquipped) { param_mercenary += ','+mercEquipped[group].name }
-		params.set('mercenary', param_mercenary)
-		if (golemItem.name != "none") { params.set('irongolem', golemItem.name) }
-	}
-	
-	params.delete('charm')
-//	for (charm in equipped.charms) { if (typeof(equipped.charms[charm].name) != 'undefined' && equipped.charms[charm].name != 'none') { params.append('charm', equipped.charms[charm].name) }}
-	for (charm in equipped.charms) { if (typeof(equipped.charms[charm].name) != 'undefined' && equipped.charms[charm].name != 'none') { params.append('charm', equipped.charms[charm].name) }}
-	
-	if (settings.parameters == 1) { window.history.replaceState({}, '', `${location.pathname}?${params}`) }
-	
-	// TODO: Shorten URL?
-	//var params_string = params.toString();
-	//params_string = params_string.split("%2C").join(",")
-	//params_string = params_string.split("%C2%AD").join("~")
-	//if (settings.parameters == 1) { window.history.replaceState({}, '', `${location.pathname}?`+params_string) }
+function buildCharacterURL(character, settings) {
+    const params = new URLSearchParams();
+
+    // --- Core stats & metadata ---
+    let param_quests = ~~character.quests_completed;
+    if (param_quests === -1) param_quests = 0;
+
+    let param_run = ~~character.running;
+    if (param_run === -1) param_run = 0;
+
+    params.set("class", character.class_name.toLowerCase());
+    params.set("level", ~~character.level);
+    params.set("difficulty", ~~character.difficulty);
+    params.set("quests", param_quests);
+    params.set("strength", ~~character.strength_added);
+    params.set("dexterity", ~~character.dexterity_added);
+    params.set("vitality", ~~character.vitality_added);
+    params.set("energy", ~~character.energy_added);
+    params.set("url", ~~settings.parameters);
+    params.set("coupling", ~~settings.coupling);
+    params.set("synthwep", ~~settings.synthwep);
+
+    if (game_version === 2) {
+        params.set("running", param_run);
+        params.set("autocast", ~~settings.autocast);
+    }
+
+    // --- Skills (zero-padded string) ---
+    let skillString = "";
+    for (let s = 0; s < skills.length; s++) {
+        let lvl = skills[s].level;
+        if (lvl < 10) lvl = "0" + lvl;
+        skillString += lvl;
+    }
+    params.set("skills", skillString);
+
+    // --- Items / equips ---
+    if (game_version === 2) {
+        params.set("selected", selectedSkill[0] + "," + selectedSkill[1]);
+        for (let group in corruptsEquipped) {
+            let eq = equipped[group];
+            let corr = corruptsEquipped[group];
+            let socked = socketed[group] || { items: [] };
+
+            let value = [eq.name, eq.tier, corr.name];
+            for (let item of socked.items) {
+                value.push(item.name);
+            }
+            params.set(group, value.join(","));
+        }
+    }
+
+    // --- Effects ---
+    for (let id in effects) {
+        if (typeof effects[id].info.enabled !== "undefined") {
+            let e = effects[id];
+            let value = [id, e.info.enabled, e.info.snapshot];
+
+            if (e.info.snapshot == 1) {
+                value.push(e.info.origin, e.info.index);
+                for (let affix in e) {
+                    if (affix !== "info") {
+                        value.push(affix, e[affix]);
+                    }
+                }
+            }
+            params.append("effect", value.join(","));
+        }
+    }
+
+    // --- Mercenary / Golem ---
+    if (game_version === 2) {
+        let mercStr = mercenary.name === "­ ­ ­ ­ Mercenary" ? "none" : mercenary.name;
+        for (let group in mercEquipped) {
+            mercStr += "," + mercEquipped[group].name;
+        }
+        params.set("mercenary", mercStr);
+
+        if (golemItem.name !== "none") {
+            params.set("irongolem", golemItem.name);
+        }
+    }
+
+    // --- Charms ---
+    for (let charm in equipped.charms) {
+        let c = equipped.charms[charm];
+        if (c && c.name && c.name !== "none") {
+            params.append("charm", c.name);
+        }
+    }
+
+    return `${location.pathname}?${params.toString()}`;
 }
+
+function updateURL() {
+    if (settings.parameters === 1) {
+        const newURL = buildCharacterURL(character, settings);
+        window.history.replaceState({}, "", newURL);
+    }
+}
+
 // 	getmmmpl
 //	This creates the url to mmmpld's ias calc and opens it in a new browser tab
 //  url structure: https://mmmpld.github.io/pod-attack-calc/?c=2&ss=2&io=55&w1=22
@@ -5667,160 +5929,295 @@ async function importChar() {
 //        return;
     }
 
-//let builderurl = "https://build.pathofdiablo.com/?v=PoD&"
-//let builderurl = "https://build.pathofdiablo.com/?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
-//let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
-let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&"
-let data; 
-function normalizeText(text) {
-    return text.replace(/[\u00A0\u200B\u200C\u200D\uFEFF\u2011]/g, '').trim(); // Removes invisible spaces
-}
-
-// API call to get character
-//characterName = "PIG_ASN"
-if (characterName) {
-	console.log("Character Name:", characterName);
-	
-	// Fetch character data and process it
-	try {
-		const characterData = await fetchCharacterData(characterName);
-		processCharacterData(characterData);  // Process after retrieval
-	} catch (error) {
-		console.error("Error during API calls:", error);
+	//let builderurl = "https://build.pathofdiablo.com/?v=PoD&"
+	//let builderurl = "https://build.pathofdiablo.com/?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
+	//let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
+	let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&"
+	let data; 
+	function normalizeText(text) {
+		return text.replace(/[\u00A0\u200B\u200C\u200D\uFEFF\u2011]/g, '').trim(); // Removes invisible spaces
 	}
-} else {
-	console.warn("Character Name is not set in the configuration.");
-}
 
-async function fetchCharacterData(characterName) {
-	console.log("Start function fetchCharacterData");
-//    const url = `https://beta.pathofdiablo.com/api/characters/${encodeURIComponent("sorcsallsuck")}/summary`;
-	const url = 'https://beta.pathofdiablo.com/api/characters/'+characterName+'/summary'
-	//    console.log("API URL:", url);
+	// API call to get character
+	//characterName = "PIG_ASN"
+	if (characterName) {
+		console.log("Character Name:", characterName);
+		
+		// Fetch character data and process it
+		try {
+			const characterData = await fetchCharacterData(characterName);
+			processCharacterData(characterData);  // Process after retrieval
+		} catch (error) {
+			console.error("Error during API calls:", error);
+		}
+	} else {
+		console.warn("Character Name is not set in the configuration.");
+	}
 
-    try {
-        const response = await fetch(url);
-        console.log("fetch worked");
+	async function fetchCharacterData(characterName) {
+		console.log("Start function fetchCharacterData");
+	//    const url = `https://beta.pathofdiablo.com/api/characters/${encodeURIComponent("sorcsallsuck")}/summary`;
+		const url = 'https://beta.pathofdiablo.com/api/characters/'+characterName+'/summary'
+		//    console.log("API URL:", url);
 
-        if (!response.ok) {
-            throw new Error(`API call failed with status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Character Data fetched:", data);
-        return data;
-    } catch (error) {
-        console.error("Error fetching character data:", error);
-        return null;
-    }
-}
+		try {
+			const response = await fetch(url);
+			console.log("fetch worked");
 
-// Set character stats & skills from api response
-// Function to process characterData after it's fetched
-function processCharacterData(characterData) {
-    if (!characterData || !characterData.Equipped) {
-        console.warn("No character data found.");
-        return;
-    }
+			if (!response.ok) {
+				throw new Error(`API call failed with status: ${response.status}`);
+			}
+			const data = await response.json();
+			console.log("Character Data fetched:", data);
+			return data;
+		} catch (error) {
+			console.error("Error fetching character data:", error);
+			return null;
+		}
+	}
 
-    console.log("Processing character data for direct item equipping...");
-    
-	reset(characterData.Class.toLowerCase())
-//    character.class = characterData.Class;
-    character.level = characterData.Stats.Level;
-	character.strength = characterData.Stats.Strength
-	character.dexterity = characterData.Stats.Dexterity
-	character.vitality = characterData.Stats.Vitality
-	character.energy = characterData.Stats.Energy
-    // Loop through equipped items and equip them directly
-    characterData.Equipped.forEach(item => {
-        if (item.SynthesisedFrom && item.SynthesisedFrom.length > 0) {
-            console.log(`Synthesized item detected: ${item.Title}`);
-            item = synthesizeFromAPI(item, characterData); // Merge donor properties
-        }
-//	character.skills_sorceress.skillName["Warmth"] = 10
-//	skills_sorceress.find(skill => skill.name === "Warmth").level = 10
-//	character["skill_warmth"].level = 10
-//	character.skillName["skill_warmth"].level = 10
-    // Dynamically reference the correct skills array
-    const classKey = `skills_${characterData.Class.toLowerCase()}`; // Example: "skills_sorceress"
-    const classSkills = window[classKey]; // Assuming skill arrays are globally accessible
+	// Set character stats & skills from api response
+	// Function to process characterData after it's fetched
+	function processCharacterData(characterData) {
+		if (!characterData || !characterData.Equipped) {
+			console.warn("No character data found.");
+			return;
+		}
 
-    if (!classSkills) {
-        console.error(`Skill data not found for class: ${characterData.Class}`);
-        return;
-    }
+		console.log("Processing character data for direct item equipping...");
+		
+		reset(characterData.Class.toLowerCase())
+	//    character.class = characterData.Class;
+		character.level = characterData.Stats.Level;
+		character.strength = characterData.Stats.Strength
+		character.dexterity = characterData.Stats.Dexterity
+		character.vitality = characterData.Stats.Vitality
+		character.energy = characterData.Stats.Energy
+		// Loop through equipped items and equip them directly
+		characterData.Equipped.forEach(item => {
+			if (item.SynthesisedFrom && item.SynthesisedFrom.length > 0) {
+				console.log(`Synthesized item detected: ${item.Title}`);
+				item = synthesizeFromAPI(item, characterData); // Merge donor properties
+			}
+	//	character.skills_sorceress.skillName["Warmth"] = 10
+	//	skills_sorceress.find(skill => skill.name === "Warmth").level = 10
+	//	character["skill_warmth"].level = 10
+	//	character.skillName["skill_warmth"].level = 10
+		// Dynamically reference the correct skills array
+		const classKey = `skills_${characterData.Class.toLowerCase()}`; // Example: "skills_sorceress"
+		const classSkills = window[classKey]; // Assuming skill arrays are globally accessible
 
-    // Loop through each skill from API and update
-    characterData.SkillTabs.forEach(tab => {
-        tab.Skills.forEach(apiSkill => {
-            const skillObject = classSkills.find(skill => skill.name === apiSkill.Name);
-            
-            if (skillObject) {
-                skillObject.level = apiSkill.Level;
-//                console.log(`Updated ${skillObject.name} to level ${skillObject.level}`);
-            } else {
-                console.warn(`Skill not found for class ${characterData.Class}: ${apiSkill.Name}`);
-            }
-        });
-    });
-    equipItemDirectly(item);
-    });
+		if (!classSkills) {
+			console.error(`Skill data not found for class: ${characterData.Class}`);
+			return;
+		}
 
-    update(); // Update interface dynamically
-}
+		// Loop through each skill from API and update
+		characterData.SkillTabs.forEach(tab => {
+			tab.Skills.forEach(apiSkill => {
+				const skillObject = classSkills.find(skill => skill.name === apiSkill.Name);
+				
+				if (skillObject) {
+					skillObject.level = apiSkill.Level;
+	//                console.log(`Updated ${skillObject.name} to level ${skillObject.level}`);
+				} else {
+					console.warn(`Skill not found for class ${characterData.Class}: ${apiSkill.Name}`);
+				}
+			});
+		});
+		equipItemDirectly(item);
+		});
 
-// Equip items from api response
-function formatSlotName(slot) {
-    if (slot === "ring1" || slot === "ring2") return "Ring"; // Special case for ring1
-    return slot.charAt(0).toUpperCase() + slot.slice(1);
-}
 
-const pendingPropertyLists = {};
+		// Determine which SkillTab has the most points
+		let dominantTab = characterData.SkillTabs.reduce((maxTab, currentTab) =>
+			currentTab.Total > maxTab.Total ? currentTab : maxTab
+		);
 
-function equipItemDirectly(item) {
+		const charmMap = {
+		Amazon: {
+			"Javelin and Spear Skills": "+1 Harpoonist's Grand Charm",
+			"Passive and Magic Skills": "+1 Acrobat's Grand Charm",
+			"Bow and Crossbow Skills": "+1 Fletcher's Grand Charm"
+		},
+		Assassin: {
+			"Martial Arts": "+1 Shogukusha's Grand Charm",
+			"Shadow Disciplines": "+1 Mentalist's Grand Charm",
+			"Traps": "+1 Entrapping Grand Charm"
+		},
+		Barbarian: {
+			"Warcries": "+1 Sounding Grand Charm",
+			"Masteries": "+1 Fanatic Grand Charm",
+			"Combat Skills": "+1 Expert's Grand Charm"
+		},
+		Druid: {
+			"Elemental Skills": "+1 Nature's Grand Charm",
+			"Shape Shifting Skills": "+1 Spiritual Grand Charm",
+			"Summoning Skills": "+1 Trainer's Grand Charm"
+		},
+		Necromancer: {
+			"Summoning Skills": "+1 Graverobber's Grand Charm",
+			"Poison and Bone Skills": "+1 Fungal Grand Charm",
+			"Curses": "+1 Hexing Grand Charm"
+		},
+		Paladin: {
+			"Defensive Auras": "+1 Preserver's Grand Charm",
+			"Offensive Auras": "+1 Captain's Grand Charm",
+			"Combat Skills": "+1 Lion Branded Grand Charm"
+		},
+		Sorceress: {
+			"Cold Skills": "+1 Chilling Grand Charm",
+			"Lightning Skills": "+1 Sparking Grand Charm",
+			"Fire Skills": "+1 Burning Grand Charm"
+		}
+		};
+
+		// Character class comes from your API data, e.g. "Paladin"
+		const charClass = characterData.Class;
+
+		// Add charm if there's a match
+		if (charmMap[charClass] && charmMap[charClass][dominantTab.Name]) {
+			if (document.getElementById("assumeCharms").checked) { // ✅ only if checkbox is checked
+				for (let i = 0; i < 9; i++) {
+					addCharm("Hellfire Torch");
+					addCharm("Annihilus");
+					addCharm(charmMap[charClass][dominantTab.Name]);
+				}
+				console.log(`Added charms for ${charClass} / ${dominantTab.Name}`);
+			} else {
+				console.log("Skipped charms — assume charms not checked");
+			}
+		} else {
+			console.warn(`No charm mapped for class/tab: ${charClass} / ${dominantTab.Name}`);
+		}
+
+		update(); // Update interface dynamically
+	}
+
+	// Equip items from api response
+	function formatSlotName(slot) {
+		if (slot === "ring1" || slot === "ring2") return "Ring"; // Special case for ring1
+		return slot.charAt(0).toUpperCase() + slot.slice(1);
+	}
+
+	// --- helpers ---
+	function resolveRunewordByName(name) {
+	return Object.values(runewordProperties)
+		.find(rw => rw.name.toLowerCase() === String(name).toLowerCase());
+	}
+
+	function resolveBaseKey(tag) {
+	if (!tag) return null;
+
+	// Normalize "Dusk Shroud" → "Dusk_Shroud"
+	let key = tag.replace(/ /g, "_");
+
+	// Direct match
+	if (bases[key]) return key;
+
+	// Case-insensitive fallback
+	const found = Object.keys(bases).find(
+		k => k.toLowerCase() === key.toLowerCase()
+	);
+	return found || null;
+	}
+
+
+
 	const pendingPropertyLists = {};
 
-	const slotMapping = {
-		body: "armor",
-		weapon1: "weapon",
-		weapon2: "offhand",
-		helmet: "helm"
-	};
+	function equipItemDirectly(item) {
+	const pendingPropertyLists = {};
 
+	const slotMapping = { body:"armor", weapon1:"weapon", weapon2:"offhand", helmet:"helm" };
 	const rawSlot = item.Worn;
-	const slot = slotMapping[rawSlot] || rawSlot;
+	// Ignore swap weapon slots
+	if (rawSlot.startsWith("sweapon")) {
+		console.log("Skipping swap weapon slot:", rawSlot);
+		return;
+	}  
+	const slot = slotMapping[rawSlot] || rawSlot; // unprefixed
 
 	let equipName = item.Title;
-	let offhandtag = item.Tag
+	const offhandtag = item.Tag;
+
 	switch (item.QualityCode) {
 		case "q_unique":
 		case "q_set":
-			equipName = item.Title;
+		equipName = item.Title;
+		break;
+
+	case "q_runeword": {
+		const rw = resolveRunewordByName(item.Title);
+		const baseKey = resolveBaseKey(item.Tag);
+
+		if (!rw || !bases[baseKey]) {
+			console.warn("Runeword or base not found:", item.Title, item.Tag);
 			break;
-		case "q_runeword":
-			equipName = `${item.Title} ­ ­ - ­ ­ ${item.Tag}`;
-			break;
-		case "q_magic":
-		case "q_rare":
-		case "q_crafted":
-			// Check if Tag is Bolts or Arrows
-			if (item.Tag === "Bolts" || item.Tag === "Arrows") {
-				console.log("Offhand equipped: ", offhandtag)
-				equipName = `Imported ${item.QualityCode.slice(2)} ${offhandtag}`;
-			} else {
-				equipName = `Imported ${item.QualityCode.slice(2)} ${formatSlotName(slot)}`;
-			}
-			break;
+		}
+
+		// Map Worn slots to proper dropdown/equipment keys
+		const slotMapping = { body: "armor", helmet: "helm", weapon1: "weapon", weapon2: "offhand" };
+		const equipSlot = slotMapping[item.Worn] || item.Worn;
+
+		// Flatten runeword for direct equip
+		const displayBase = baseKey.replace(/_/g, " ");
+		const flatRuneword = {
+			rarity: "rw",
+			name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
+			type: bases[baseKey].type,
+			base: displayBase,
+			runewordStats: rw.stats,
+			runes: rw.runes,
+			cskill: rw.cskill || [],
+			...rw.stats
+		};
+		["allowedTypes", "allowedCategories"].forEach(k => {
+			if (rw[k]) flatRuneword[k] = rw[k];
+		});
+
+		// Ensure equipment object exists
+		if (!equipment[equipSlot]) equipment[equipSlot] = {};
+
+		// Add runeword to equipment
+		equipment[equipSlot][flatRuneword.name] = flatRuneword;
+
+		// Equip it
+		equip(equipSlot, flatRuneword.name);
+
+		// Update the dropdown to reflect the runeword
+		const dropdown = document.getElementById(`dropdown_${equipSlot}`);
+	if (dropdown) {
+		const rwOption = dropdown.querySelector(`option[value="*"]`);
+		if (rwOption) rwOption.textContent = flatRuneword.name;
+		console.log("UI changed to: ", equipSlot, flatRuneword.name)
+	}	
+
+
+		console.log(`✅ Equipped runeword: ${flatRuneword.name} in slot: ${equipSlot}`);
+		return; // Important: don’t fall through to generic dropdown logic
 	}
 
 
-	// Save the real properties for use *after* placeholder is equipped
-	if (item.PropertyList && ["q_magic", "q_rare", "q_crafted"].includes(item.QualityCode)) {
+
+		case "q_magic":
+		case "q_rare":
+		case "q_crafted":
+		if (offhandtag === "Bolts" || offhandtag === "Arrows") {
+			equipName = `Imported ${item.QualityCode.slice(2)} ${offhandtag}`;
+		} else {
+			equipName = `Imported ${item.QualityCode.slice(2)} ${formatSlotName(slot)}`;
+		}
+		break;
+	}
+
+	// Save props for crafted/magic/rare
+	if (item.PropertyList && ["q_magic","q_rare","q_crafted"].includes(item.QualityCode)) {
 		pendingPropertyLists[slot] = item.PropertyList;
 		console.log(`✅ Stashed PropertyList for slot ${slot}`, item.PropertyList);
 	}
 
-	// Equip the placeholder item via dropdown
+	// Fallback generic dropdown flow
 	const dropdownId = `dropdown_${slot}`;
 	const dropdown = document.getElementById(dropdownId);
 	if (dropdown) {
@@ -5831,589 +6228,588 @@ function equipItemDirectly(item) {
 		console.warn(`Dropdown not found for slot: ${slot}`);
 	}
 
-	// After a short delay, apply the stored properties to the equipped item
+	// Delay apply properties
 	setTimeout(() => {
 		if (pendingPropertyLists[slot]) {
-			if (!equipped[slot]) {
-				console.warn(`❌ No item equipped in slot: ${slot} to apply properties`);
+		if (!equipped[slot]) {
+			console.warn(`❌ No item equipped in slot: ${slot} to apply properties`);
+			return;
+		}
+		equipped[slot].PropertyList = pendingPropertyLists[slot];
+		console.log(`✅ Injected PropertyList into equipped[${slot}]`, equipped[slot].PropertyList);
+		applyMatchedProperties(slot);
+		delete pendingPropertyLists[slot];
+		}
+	}, 0);
+	}
+
+
+
+
+	function applyMatchedProperties(slot) {
+		if (!equipped[slot]) {
+			console.warn(`❌ No equipped item found in slot: ${slot}`);
+			return;
+		}
+		const equippedItem = equipped[slot];
+
+		// Rename generic items if needed
+		if (["q_magic", "q_rare", "q_crafted"].includes(equippedItem.QualityCode)) {
+			const qualityName = equippedItem.QualityCode.split("_")[1];
+			const formattedQuality = qualityName.charAt(0).toUpperCase() + qualityName.slice(1);
+			const formattedSlot = formatSlotName(slot);
+			equippedItem.Title = `Imported ${formattedQuality} ${formattedSlot}`;
+			console.log(`⚠️ Adjusted item name: "${equippedItem.Title}"`);
+		}
+
+		equippedItem.PropertyList.forEach(propText => {
+			const matches = findMatchingStat(propText, stats);
+			if (!matches || matches.length === 0) {
+				console.warn(`❌ No match for: "${propText}"`);
 				return;
 			}
 
-			// Inject PropertyList temporarily into the equipped item
-			equipped[slot].PropertyList = pendingPropertyLists[slot];
-			console.log(`✅ Injecting PropertyList into equipped[${slot}]`, equipped[slot].PropertyList);
+			// If we can extract a number from the propertyText, do it once here
+			const numericValue = parseInt(propText.match(/[-+]?\d+/)?.[0], 10) || 0;
 
-			applyMatchedProperties(slot);
-			delete pendingPropertyLists[slot]; // Clean up
-		}
-	}, 0);
-}
+		matches.forEach(({ statKey, value }) => {
+			if (statKey === "ctc") {
+				if (!Array.isArray(equippedItem.ctc)) equippedItem.ctc = [];
+				equippedItem.ctc.push(value);
+				console.log(`✅ Added CTC:`, value);
+			} else if (statKey === "cskill") {
+				if (!Array.isArray(equippedItem.cskill)) equippedItem.cskill = [];
+				equippedItem.cskill.push(value);
+				console.log(`✅ Added Charged Skill:`, value);
+			} else {
+				const valueToApply = typeof value === "number" ? value : numericValue;
+				equippedItem[statKey] = (equippedItem[statKey] || 0) + valueToApply;
+				character[statKey] = (character[statKey] || 0) + valueToApply;
+			}
+		});
 
+		});
 
-
-function applyMatchedProperties(slot) {
-    if (!equipped[slot]) {
-        console.warn(`❌ No equipped item found in slot: ${slot}`);
-        return;
-    }
-    const equippedItem = equipped[slot];
-
-    // Rename generic items if needed
-    if (["q_magic", "q_rare", "q_crafted"].includes(equippedItem.QualityCode)) {
-        const qualityName = equippedItem.QualityCode.split("_")[1];
-        const formattedQuality = qualityName.charAt(0).toUpperCase() + qualityName.slice(1);
-        const formattedSlot = formatSlotName(slot);
-        equippedItem.Title = `Imported ${formattedQuality} ${formattedSlot}`;
-        console.log(`⚠️ Adjusted item name: "${equippedItem.Title}"`);
-    }
-
-    equippedItem.PropertyList.forEach(propText => {
-        const matches = findMatchingStat(propText, stats);
-        if (!matches || matches.length === 0) {
-            console.warn(`❌ No match for: "${propText}"`);
-            return;
-        }
-
-        // If we can extract a number from the propertyText, do it once here
-        const numericValue = parseInt(propText.match(/[-+]?\d+/)?.[0], 10) || 0;
-
-	matches.forEach(({ statKey, value }) => {
-		if (statKey === "ctc") {
-			if (!Array.isArray(equippedItem.ctc)) equippedItem.ctc = [];
-			equippedItem.ctc.push(value);
-			console.log(`✅ Added CTC:`, value);
-		} else if (statKey === "cskill") {
-			if (!Array.isArray(equippedItem.cskill)) equippedItem.cskill = [];
-			equippedItem.cskill.push(value);
-			console.log(`✅ Added Charged Skill:`, value);
-		} else {
-			const valueToApply = typeof value === "number" ? value : numericValue;
-			equippedItem[statKey] = (equippedItem[statKey] || 0) + valueToApply;
-			character[statKey] = (character[statKey] || 0) + valueToApply;
-		}
-	});
-
-    });
-
-    updateSelectedItemSummary(equippedItem);
-    update();
-    console.log(`🔄 UI refreshed for item: ${equippedItem.Title}`);
-}
-
-
-
-function findMatchingStat(propertyText, stats) {
-    console.log(`Checking property: "${propertyText}" against stats`);
-	const afterKillStat = parseAfterKillStat(propertyText);
-	if (afterKillStat) {
-		return [afterKillStat];
+		updateSelectedItemSummary(equippedItem);
+		update();
+		console.log(`🔄 UI refreshed for item: ${equippedItem.Title}`);
 	}
 
-    const ctcParsed = parseChanceToCast(propertyText);
-    if (ctcParsed) {
-        console.log(`🎯 Parsed CTC: ${JSON.stringify(ctcParsed.value)}`);
-        return [ctcParsed];  // Return in array form for compatibility
-    }
-    const cskillParsed = parseChargedSkill(propertyText);
-    if (cskillParsed) {
-        console.log(`🎯 Parsed Charged Skill: ${JSON.stringify(cskillParsed.value)}`);
-        return [cskillParsed];
-    }	
-    // Try to match "Adds #–# [Element] Damage"
-    const damageMatch = propertyText.match(/Adds\s+(\d+)[–-](\d+)\s*(\w*)\s*Damage/i);
-    if (damageMatch) {
-        const [, min, max, elementRaw] = damageMatch;
-        const element = elementRaw.toLowerCase();
-        let prefix = "damage"; // default is physical
-
-        switch (element) {
-            case "fire": prefix = "fDamage"; break;
-            case "cold": prefix = "cDamage"; break;
-            case "lightning": prefix = "lDamage"; break;
-            case "poison": prefix = "pDamage"; break;
-            // fall through: unknown/empty means physical
-        }
-
-        console.log(`🎯 Range match: ${prefix}_min = ${min}, ${prefix}_max = ${max}`);
-        return [
-            { statKey: `${prefix}_min`, value: parseInt(min, 10) },
-            { statKey: `${prefix}_max`, value: parseInt(max, 10) }
-        ];
-    }
-
-    // Fallback to format-based matching
-    for (const [statKey, statData] of Object.entries(stats)) {
-        if (statData.editable !== 1) continue;
-
-        const formatPattern = new RegExp(
-            statData.format.map(f =>
-                f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            ).join(".*"),
-            "i"
-        );
-
-        if (formatPattern.test(propertyText)) {
-            console.log(`✅ Matched property: "${propertyText}" → ${statKey}`);
-            return [{ statKey }];
-        }
-    }
-
-    console.warn(`❌ No match found for "${propertyText}"`);
-    return [];
-}
-
-// Inside findMatchingStat or as a helper function
-function parseChanceToCast(line) {
-    const ctcRegex = /(\d+)% Chance to cast level (\d+)\s+(.+?)\s+(when [\w\s]+)$/i;
-    const match = line.match(ctcRegex);
-    if (!match) return null;
-
-    const [, percent, level, skillName, trigger] = match;
-    return {
-        statKey: "ctc",
-        value: [parseInt(percent), parseInt(level), skillName.trim(), trigger.trim()]
-    };
-}
-
-function parseChargedSkill(line) {
-    const chargedRegex = /Level (\d+)\s+(.+?)\s+\((\d+)\/\d+ Charges\)/i;
-    const match = line.match(chargedRegex);
-    if (!match) return null;
-
-    const [, level, skillName, charges] = match;
-    return {
-        statKey: "cskill",
-        value: [parseInt(level), skillName.trim(), parseInt(charges)]
-    };
-}
-
-function parseAfterKillStat(line) {
-    const match = line.match(/\+(\d+)\s+(?:to\s+)?(Mana|Life)\s+after\s+each\s+Kill/i);
-    if (!match) return null;
-
-    const [, value, type] = match;
-    const statKey = type.toLowerCase() + "_after_kill";  // e.g., "mana_after_kill"
-
-    return {
-        statKey,
-        value: parseInt(value, 10)
-    };
-}
 
 
+	function findMatchingStat(propertyText, stats) {
+		console.log(`Checking property: "${propertyText}" against stats`);
+		const afterKillStat = parseAfterKillStat(propertyText);
+		if (afterKillStat) {
+			return [afterKillStat];
+		}
 
-// recreate synths found in api response
-function synthesizeFromAPI(baseItem, apiData, applyAll = false) {
-    if (!baseItem.SynthesisedFrom) return baseItem;
+		const ctcParsed = parseChanceToCast(propertyText);
+		if (ctcParsed) {
+			console.log(`🎯 Parsed CTC: ${JSON.stringify(ctcParsed.value)}`);
+			return [ctcParsed];  // Return in array form for compatibility
+		}
+		const cskillParsed = parseChargedSkill(propertyText);
+		if (cskillParsed) {
+			console.log(`🎯 Parsed Charged Skill: ${JSON.stringify(cskillParsed.value)}`);
+			return [cskillParsed];
+		}	
+		// Try to match "Adds #–# [Element] Damage"
+		const damageMatch = propertyText.match(/Adds\s+(\d+)[–-](\d+)\s*(\w*)\s*Damage/i);
+		if (damageMatch) {
+			const [, min, max, elementRaw] = damageMatch;
+			const element = elementRaw.toLowerCase();
+			let prefix = "damage"; // default is physical
 
-//    const slot = baseItem.Worn === "weapon1" ? "weapon" : baseItem.Worn;
-    const slot = baseItem.Worn === "weapon1" ? "weapon" : baseItem.Worn === "weapon2" ? "offhand" : baseItem.Worn;
-    window.currentSynthSlot = slot;
+			switch (element) {
+				case "fire": prefix = "fDamage"; break;
+				case "cold": prefix = "cDamage"; break;
+				case "lightning": prefix = "lDamage"; break;
+				case "poison": prefix = "pDamage"; break;
+				// fall through: unknown/empty means physical
+			}
 
-    equipItemDirectly(baseItem);
-    const equippedItem = equipped[slot];
+			console.log(`🎯 Range match: ${prefix}_min = ${min}, ${prefix}_max = ${max}`);
+			return [
+				{ statKey: `${prefix}_min`, value: parseInt(min, 10) },
+				{ statKey: `${prefix}_max`, value: parseInt(max, 10) }
+			];
+		}
 
-    if (!equippedItem) {
-        console.warn(`Failed to equip synthesized item "${baseItem.Title}"`);
-        return baseItem;
-    }
-
-    // Collect donor items
-    const donorItems = baseItem.SynthesisedFrom
-        .map(name => findDonorItem(name, apiData))
-        .filter(Boolean);
-
-    // Include base (equipped) item in synth properties
-    const synthProperties = gatherSynthPropertiesFromMultiple([equippedItem, ...donorItems]);
-//	applyMatchedProperties(slot)
-if (!applyAll) {
-	for (const key in equippedItem) {
-		if (key === "name" || key.startsWith("base") || key.startsWith("req_")) continue;
-		character[key] -= equippedItem[key];
-		delete equippedItem[key];
-	}
-	equippedItem.emptysynth = 1;
-
-	// Generate synth property UI
-	generateSynthPropertyUI(synthProperties, slot);
-
-	setTimeout(() => {
-		matchSynthStatsFromAPIStrings(baseItem.PropertyList || [], synthProperties, stats);
-	}, 0);
-
-    } else {
-        donorItems.forEach(donor => mergeItemProperties(equippedItem, donor));
-        updateSelectedItemSummary(slot);
-        update();
-    }
-
-    return equippedItem;
-}
-
-function matchSynthStatsFromAPIStrings(apiStatStrings, synthProperties, stats) {
-	if (!Array.isArray(apiStatStrings) || !Array.isArray(synthProperties)) return;
-
-	apiStatStrings.forEach(apiText => {
-		apiText = apiText.trim();
-		console.log(`🔍 Matching API stat: "${apiText}"`);
-
-		let matchedKey = null;
-		let matchedValue = null;
-
-		// Loop through all editable stats
+		// Fallback to format-based matching
 		for (const [statKey, statData] of Object.entries(stats)) {
 			if (statData.editable !== 1) continue;
 
-			// Build regex pattern from the stat's format, e.g. ["+", "% Enhanced Damage"]
-			const patternStr = statData.format
-				.map(piece => piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape regex chars
-				.join(".*?"); // allow anything (like numbers) in between
-			const pattern = new RegExp(`^${patternStr}$`, "i");
+			const formatPattern = new RegExp(
+				statData.format.map(f =>
+					f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+				).join(".*"),
+				"i"
+			);
 
-			if (pattern.test(apiText)) {
-				// Try to extract the number value from the string
-				const numMatch = apiText.match(/[-+]?\d+(\.\d+)?/);
-				const value = numMatch ? parseFloat(numMatch[0]) : null;
-				if (value !== null) {
-					matchedKey = statKey;
-					matchedValue = value;
-					break;
+			if (formatPattern.test(propertyText)) {
+				console.log(`✅ Matched property: "${propertyText}" → ${statKey}`);
+				return [{ statKey }];
+			}
+		}
+
+		console.warn(`❌ No match found for "${propertyText}"`);
+		return [];
+	}
+
+	// Inside findMatchingStat or as a helper function
+	function parseChanceToCast(line) {
+		const ctcRegex = /(\d+)% Chance to cast level (\d+)\s+(.+?)\s+(when [\w\s]+)$/i;
+		const match = line.match(ctcRegex);
+		if (!match) return null;
+
+		const [, percent, level, skillName, trigger] = match;
+		return {
+			statKey: "ctc",
+			value: [parseInt(percent), parseInt(level), skillName.trim(), trigger.trim()]
+		};
+	}
+
+	function parseChargedSkill(line) {
+		const chargedRegex = /Level (\d+)\s+(.+?)\s+\((\d+)\/\d+ Charges\)/i;
+		const match = line.match(chargedRegex);
+		if (!match) return null;
+
+		const [, level, skillName, charges] = match;
+		return {
+			statKey: "cskill",
+			value: [parseInt(level), skillName.trim(), parseInt(charges)]
+		};
+	}
+
+	function parseAfterKillStat(line) {
+		const match = line.match(/\+(\d+)\s+(?:to\s+)?(Mana|Life)\s+after\s+each\s+Kill/i);
+		if (!match) return null;
+
+		const [, value, type] = match;
+		const statKey = type.toLowerCase() + "_after_kill";  // e.g., "mana_after_kill"
+
+		return {
+			statKey,
+			value: parseInt(value, 10)
+		};
+	}
+
+
+
+	// recreate synths found in api response
+	function synthesizeFromAPI(baseItem, apiData, applyAll = false) {
+		if (!baseItem.SynthesisedFrom) return baseItem;
+
+	//    const slot = baseItem.Worn === "weapon1" ? "weapon" : baseItem.Worn;
+		const slot = baseItem.Worn === "weapon1" ? "weapon" : baseItem.Worn === "weapon2" ? "offhand" : baseItem.Worn;
+		window.currentSynthSlot = slot;
+
+		equipItemDirectly(baseItem);
+		const equippedItem = equipped[slot];
+
+		if (!equippedItem) {
+			console.warn(`Failed to equip synthesized item "${baseItem.Title}"`);
+			return baseItem;
+		}
+
+		// Collect donor items
+		const donorItems = baseItem.SynthesisedFrom
+			.map(name => findDonorItem(name, apiData))
+			.filter(Boolean);
+
+		// Include base (equipped) item in synth properties
+		const synthProperties = gatherSynthPropertiesFromMultiple([equippedItem, ...donorItems]);
+	//	applyMatchedProperties(slot)
+	if (!applyAll) {
+		for (const key in equippedItem) {
+			if (key === "name" || key.startsWith("base") || key.startsWith("req_")) continue;
+			character[key] -= equippedItem[key];
+			delete equippedItem[key];
+		}
+		equippedItem.emptysynth = 1;
+
+		// Generate synth property UI
+		generateSynthPropertyUI(synthProperties, slot);
+
+		setTimeout(() => {
+			matchSynthStatsFromAPIStrings(baseItem.PropertyList || [], synthProperties, stats);
+		}, 0);
+
+		} else {
+			donorItems.forEach(donor => mergeItemProperties(equippedItem, donor));
+			updateSelectedItemSummary(slot);
+			update();
+		}
+
+		return equippedItem;
+	}
+
+	function matchSynthStatsFromAPIStrings(apiStatStrings, synthProperties, stats) {
+		if (!Array.isArray(apiStatStrings) || !Array.isArray(synthProperties)) return;
+
+		apiStatStrings.forEach(apiText => {
+			apiText = apiText.trim();
+			console.log(`🔍 Matching API stat: "${apiText}"`);
+
+			let matchedKey = null;
+			let matchedValue = null;
+
+			// Loop through all editable stats
+			for (const [statKey, statData] of Object.entries(stats)) {
+				if (statData.editable !== 1) continue;
+
+				// Build regex pattern from the stat's format, e.g. ["+", "% Enhanced Damage"]
+				const patternStr = statData.format
+					.map(piece => piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape regex chars
+					.join(".*?"); // allow anything (like numbers) in between
+				const pattern = new RegExp(`^${patternStr}$`, "i");
+
+				if (pattern.test(apiText)) {
+					// Try to extract the number value from the string
+					const numMatch = apiText.match(/[-+]?\d+(\.\d+)?/);
+					const value = numMatch ? parseFloat(numMatch[0]) : null;
+					if (value !== null) {
+						matchedKey = statKey;
+						matchedValue = value;
+						break;
+					}
 				}
 			}
-		}
 
-		if (!matchedKey) {
-			console.warn(`❌ No matching stat key for "${apiText}"`);
-			return;
-		}
-console.log("🔍 Searching synthProperties for:", matchedKey, matchedValue);
-//console.table(synthProperties);
-
-		// Now match with synthProperties using resolved key and value
-		const match = synthProperties.find(
-			p => p.key === matchedKey && Number(p.value) === Number(matchedValue)
-		);
-		if (match) {
-			const checkbox = document.querySelector(
-				`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
-			);
-			if (checkbox && !checkbox.checked) {
-				checkbox.checked = true;
-				checkbox.dispatchEvent(new Event("change"));
-				console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
+			if (!matchedKey) {
+				console.warn(`❌ No matching stat key for "${apiText}"`);
+				return;
 			}
-		} else {
-			console.warn(`❌ No synth property matched for resolved stat "${matchedKey}: ${matchedValue}"`);
-		}
-	});
-}
+	console.log("🔍 Searching synthProperties for:", matchedKey, matchedValue);
+	//console.table(synthProperties);
 
-function matchSynthStatsFromAPI(apiPropertyList, synthProperties) {
-	if (!Array.isArray(apiPropertyList) || !Array.isArray(synthProperties)) return;
+			// Now match with synthProperties using resolved key and value
+			const match = synthProperties.find(
+				p => p.key === matchedKey && Number(p.value) === Number(matchedValue)
+			);
+			if (match) {
+				const checkbox = document.querySelector(
+					`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
+				);
+				if (checkbox && !checkbox.checked) {
+					checkbox.checked = true;
+					checkbox.dispatchEvent(new Event("change"));
+					console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
+				}
+			} else {
+				console.warn(`❌ No synth property matched for resolved stat "${matchedKey}: ${matchedValue}"`);
+			}
+		});
+	}
 
-	apiPropertyList.forEach(apiProp => {
-		const match = synthProperties.find(({ key, value }) => {
-			const [apiKey, apiRawValue] = apiProp.split(":").map(s => s.trim());
-			const apiValue = isNaN(apiRawValue) ? apiRawValue : parseFloat(apiRawValue);
-			return apiKey === key && apiValue === value;
+	function matchSynthStatsFromAPI(apiPropertyList, synthProperties) {
+		if (!Array.isArray(apiPropertyList) || !Array.isArray(synthProperties)) return;
+
+		apiPropertyList.forEach(apiProp => {
+			const match = synthProperties.find(({ key, value }) => {
+				const [apiKey, apiRawValue] = apiProp.split(":").map(s => s.trim());
+				const apiValue = isNaN(apiRawValue) ? apiRawValue : parseFloat(apiRawValue);
+				return apiKey === key && apiValue === value;
+			});
+
+			if (match) {
+				const checkbox = document.querySelector(
+					`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
+				);
+				if (checkbox && !checkbox.checked) {
+					checkbox.checked = true;
+					checkbox.dispatchEvent(new Event("change"));
+					console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
+				}
+			} else {
+				console.warn(`❌ No matching synth checkbox found for: "${apiProp}"`);
+			}
+		});
+	}
+
+	function gatherSynthPropertiesFromMultiple(items) {
+		const result = [];
+
+		items.forEach(item => {
+			const source = item.Title || item.name || "Unknown";
+
+			// ✅ If PropertyList doesn't exist, build it from raw properties
+			let propList = item.PropertyList;
+			if (!propList || propList.length === 0) {
+				propList = Object.entries(item)
+					.filter(([key]) =>
+						!["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill", "Worn", "SynthesisedFrom", "Title", "PropertyList", "tier", "max_sockets", "baseSpeed", "light_radius", "base_damage_min", "base_damage_max", "original_tier", "pod_changes", "req_strength", "req_dexterity", "iasindex"].includes(key)
+					)
+					.map(([key, value]) => `${key}: ${value}`);
+			}
+
+			propList.forEach(propString => {
+				const [key, value] = propString.split(":").map(s => s.trim());
+				result.push({ key, value, source });
+			});
 		});
 
-		if (match) {
-			const checkbox = document.querySelector(
-				`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
-			);
-			if (checkbox && !checkbox.checked) {
-				checkbox.checked = true;
-				checkbox.dispatchEvent(new Event("change"));
-				console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
-			}
-		} else {
-			console.warn(`❌ No matching synth checkbox found for: "${apiProp}"`);
+		return result;
+	}
+
+
+
+
+	function findDonorItem(name) {
+		for (const slot in equipment) {
+			const item = equipment[slot].find(i => i.name === name);
+			if (item) return item;
 		}
+		return null; // Return `null` if the donor item isn't found
+	}
+
+
+
+
+	function mergeItemProperties(baseItem, donor) {
+		if (!donor) {
+			console.warn(`Donor item is missing or undefined.`);
+			return;
+		}
+
+		if (!baseItem.PropertyList) baseItem.PropertyList = [];
+
+		if (!donor.PropertyList) {
+			console.warn(`Donor item "${donor.name}" has no PropertyList—building dynamically.`);
+			donor.PropertyList = Object.entries(donor)
+				.filter(([key]) => !["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill"].includes(key))
+				.map(([key, value]) => `${key}: ${value}`);
+		}
+
+		donor.PropertyList.forEach(propString => {
+			const [key, value] = propString.split(": ").map(str => str.trim());
+			const numericValue = parseFloat(value);
+
+			// Apply to baseItem
+			if (!baseItem[key]) baseItem[key] = 0;
+			if (!isNaN(numericValue)) {
+				baseItem[key] += numericValue;
+			} else {
+				baseItem[key] = value;
+			}
+
+			// Apply to character (if relevant)
+			if (!character[key]) character[key] = 0;
+			if (!isNaN(numericValue)) {
+				character[key] += numericValue;
+			}
+
+			// Avoid duplicates in PropertyList
+			if (!baseItem.PropertyList.includes(propString) && !key.includes("PropertyList")) {
+				baseItem.PropertyList.push(propString);
+				console.log(`Added stat: ${key}: ${value} to ${baseItem.Title}`);
+			}
+		});
+
+		console.log("Final Synthesized Item:", JSON.stringify(baseItem, null, 2));
+		updateSelectedItemSummary(baseItem.Worn);
+		update();
+	}
+
+	////////////////////////////////////////////////////////
+	// start listing potential properties for synth items
+
+	const validEquipmentProperties = new Set();
+
+	// ✅ Extract valid properties from all items inside nested lists (`weapon`, `armor`, etc.)
+	Object.entries(equipment).forEach(([category, itemList]) => {
+		itemList.forEach(item => {
+			Object.keys(item).forEach(prop => validEquipmentProperties.add(prop));
+		});
 	});
-}
-
-function gatherSynthPropertiesFromMultiple(items) {
-    const result = [];
-
-    items.forEach(item => {
-        const source = item.Title || item.name || "Unknown";
-
-        // ✅ If PropertyList doesn't exist, build it from raw properties
-        let propList = item.PropertyList;
-        if (!propList || propList.length === 0) {
-            propList = Object.entries(item)
-                .filter(([key]) =>
-                    !["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill", "Worn", "SynthesisedFrom", "Title", "PropertyList", "tier", "max_sockets", "baseSpeed", "light_radius", "base_damage_min", "base_damage_max", "original_tier", "pod_changes", "req_strength", "req_dexterity", "iasindex"].includes(key)
-                )
-                .map(([key, value]) => `${key}: ${value}`);
-        }
-
-        propList.forEach(propString => {
-            const [key, value] = propString.split(":").map(s => s.trim());
-            result.push({ key, value, source });
-        });
-    });
-
-    return result;
-}
 
+	function gatherSynthProperties(baseItem, donorItems) {
+		const properties = []; // ✅ Store all occurrences (including duplicates)
+
+		const addProperties = (item, source) => {
+			Object.entries(item).forEach(([key, value]) => {
+				properties.push({ key, value, source }); // ✅ Keep ALL properties, ensuring they remain in the equipped item
+			});
+		};
+
+		addProperties(baseItem, "Base Item");
+		donorItems.forEach(donor => addProperties(donor, `Donor: ${donor.name}`));
+
+		return properties; // ✅ This ensures properties exist for merging and deletion later
+	}
+
+	function filterPropertiesForUI(properties) {
+		const equipmentItems = Object.values(equipment).flat(); // ✅ Flatten all categories
+		const equipmentProperties = new Set(equipmentItems.flatMap(item => Object.keys(item))); // ✅ Extract valid names
+
+		const excludedPrefixes = ["img", "base", "twoHanded", "name", "req_", "type"];
+
+		return properties.filter(prop => {
+			return equipmentProperties.has(prop.key) && !excludedPrefixes.some(prefix => prop.key.startsWith(prefix));
+		});
+	}
+
+
+	function shouldIncludeProperty(key) {
+		const excludedKeys = ["name", "type", "base", "img", "req_level"];
+		return !excludedKeys.includes(key);
+	}
+
+	function generateSynthPropertyUI(properties, slot = "weapon") {
+		const containerId = slot === "offhand" ? "offhandsynthPropertyContainer" : "synthPropertyContainer";
+		const container = document.getElementById(containerId);
+
+		if (!container || !properties || properties.length === 0) {
+			if (container) container.style.display = "none";
+			return;
+		}
+
+		container.style.display = "block";
+		container.innerHTML = `<strong>Potential Synth Properties (${slot}):</strong>`;
+
+		const equippedItem = equipped[slot];
+
+		properties.forEach(({ key, value, source }) => {
+			const checkboxId = `${slot}-${key}-${source.replace(/\s+/g, '_')}`;
+			const div = document.createElement("div");
+
+			div.innerHTML = `
+				<label>
+					<input type="checkbox" id="${checkboxId}" data-key="${key}" data-value="${value}">
+					${key}: ${value} <small>(${source})</small>
+				</label>
+			`;
+
+			const checkbox = div.querySelector("input");
+			checkbox.addEventListener("change", (e) => {
+				const statKey = e.target.dataset.key;
+				const rawValue = e.target.dataset.value;
+				const value = isNaN(rawValue) ? rawValue : parseFloat(rawValue);
+
+				if (e.target.checked) {
+					equippedItem[statKey] = value;
+					character[statKey] = (character[statKey] || 0) + (isNaN(value) ? 0 : value);
+				} else {
+					if (!isNaN(value)) {
+						character[statKey] -= value;
+					}
+					delete equippedItem[statKey];
+				}
+
+				// Update PropertyList without duplication
+				equippedItem.PropertyList = equippedItem.PropertyList || [];
+				const propString = `${statKey}: ${value}`;
+				if (e.target.checked) {
+					if (!equippedItem.PropertyList.includes(propString)) {
+						equippedItem.PropertyList.push(propString);
+					}
+				} else {
+					equippedItem.PropertyList = equippedItem.PropertyList.filter(p => p !== propString);
+				}
+
+				updateSelectedItemSummary(equippedItem.Worn);
+				update();
+			});
+
+			container.appendChild(div);
+		});
+	}
+
+	function parseAddsDamageStat(text) {
+		const regex = /Adds\s+(\d+)\s*(?:–|to|-)\s*(\d+)\s*(Cold|Fire|Lightning|Magic|Poison)?\s*Damage/i;
+		const match = text.match(regex);
+		if (!match) return null;
+
+		const min = parseInt(match[1], 10);
+		const max = parseInt(match[2], 10);
+		const element = match[3] ? match[3].toLowerCase() : null;
 
+		let keyPrefix;
+		switch (element) {
+			case "cold": keyPrefix = "cDamage"; break;
+			case "fire": keyPrefix = "fDamage"; break;
+			case "lightning": keyPrefix = "lDamage"; break;
+			case "magic": keyPrefix = "mDamage"; break;
+			case "poison": keyPrefix = "pDamage"; break;
+			default: keyPrefix = "damage"; // physical
+		}
 
-
-function findDonorItem(name) {
-    for (const slot in equipment) {
-        const item = equipment[slot].find(i => i.name === name);
-        if (item) return item;
-    }
-    return null; // Return `null` if the donor item isn't found
-}
-
-
+		return {
+			keys: [`${keyPrefix}_min`, `${keyPrefix}_max`],
+			values: [min, max],
+			label: `${element ? element.charAt(0).toUpperCase() + element.slice(1) + " " : ""}Damage`,
+		};
+	}
 
+	const parsed = parseAddsDamageStat(propertyText);
+	if (parsed) {
+		parsed.keys.forEach((key, idx) => {
+			const value = parsed.values[idx];
 
-function mergeItemProperties(baseItem, donor) {
-    if (!donor) {
-        console.warn(`Donor item is missing or undefined.`);
-        return;
-    }
+			const match = synthProperties.find(
+				prop => prop.key === key && Number(prop.value) === value
+			);
 
-    if (!baseItem.PropertyList) baseItem.PropertyList = [];
+			if (match) {
+				console.log(`✅ Matched adds-damage property: "${key}: ${value}" from "${propertyText}"`);
+				const checkbox = document.querySelector(`input[type="checkbox"][data-key="${key}"][data-value="${value}"]`);
+				if (checkbox && !checkbox.checked) {
+					checkbox.checked = true;
+					checkbox.dispatchEvent(new Event("change"));
+				}
+			} else {
+				console.warn(`❌ No synth match found for "${key}: ${value}"`);
+			}
+		});
+	}
 
-    if (!donor.PropertyList) {
-        console.warn(`Donor item "${donor.name}" has no PropertyList—building dynamically.`);
-        donor.PropertyList = Object.entries(donor)
-            .filter(([key]) => !["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill"].includes(key))
-            .map(([key, value]) => `${key}: ${value}`);
-    }
 
-    donor.PropertyList.forEach(propString => {
-        const [key, value] = propString.split(": ").map(str => str.trim());
-        const numericValue = parseFloat(value);
-
-        // Apply to baseItem
-        if (!baseItem[key]) baseItem[key] = 0;
-        if (!isNaN(numericValue)) {
-            baseItem[key] += numericValue;
-        } else {
-            baseItem[key] = value;
-        }
-
-        // Apply to character (if relevant)
-        if (!character[key]) character[key] = 0;
-        if (!isNaN(numericValue)) {
-            character[key] += numericValue;
-        }
-
-        // Avoid duplicates in PropertyList
-        if (!baseItem.PropertyList.includes(propString) && !key.includes("PropertyList")) {
-            baseItem.PropertyList.push(propString);
-            console.log(`Added stat: ${key}: ${value} to ${baseItem.Title}`);
-        }
-    });
-
-    console.log("Final Synthesized Item:", JSON.stringify(baseItem, null, 2));
-    updateSelectedItemSummary(baseItem.Worn);
-    update();
-}
-
-////////////////////////////////////////////////////////
-// start listing potential properties for synth items
-
-const validEquipmentProperties = new Set();
-
-// ✅ Extract valid properties from all items inside nested lists (`weapon`, `armor`, etc.)
-Object.entries(equipment).forEach(([category, itemList]) => {
-    itemList.forEach(item => {
-        Object.keys(item).forEach(prop => validEquipmentProperties.add(prop));
-    });
-});
-
-function gatherSynthProperties(baseItem, donorItems) {
-    const properties = []; // ✅ Store all occurrences (including duplicates)
-
-    const addProperties = (item, source) => {
-        Object.entries(item).forEach(([key, value]) => {
-            properties.push({ key, value, source }); // ✅ Keep ALL properties, ensuring they remain in the equipped item
-        });
-    };
-
-    addProperties(baseItem, "Base Item");
-    donorItems.forEach(donor => addProperties(donor, `Donor: ${donor.name}`));
-
-    return properties; // ✅ This ensures properties exist for merging and deletion later
-}
-
-function filterPropertiesForUI(properties) {
-    const equipmentItems = Object.values(equipment).flat(); // ✅ Flatten all categories
-    const equipmentProperties = new Set(equipmentItems.flatMap(item => Object.keys(item))); // ✅ Extract valid names
-
-    const excludedPrefixes = ["img", "base", "twoHanded", "name", "req_", "type"];
-
-    return properties.filter(prop => {
-        return equipmentProperties.has(prop.key) && !excludedPrefixes.some(prefix => prop.key.startsWith(prefix));
-    });
-}
-
-
-function shouldIncludeProperty(key) {
-    const excludedKeys = ["name", "type", "base", "img", "req_level"];
-    return !excludedKeys.includes(key);
-}
-
-function generateSynthPropertyUI(properties, slot = "weapon") {
-    const containerId = slot === "offhand" ? "offhandsynthPropertyContainer" : "synthPropertyContainer";
-    const container = document.getElementById(containerId);
-
-    if (!container || !properties || properties.length === 0) {
-        if (container) container.style.display = "none";
-        return;
-    }
-
-    container.style.display = "block";
-    container.innerHTML = `<strong>Potential Synth Properties (${slot}):</strong>`;
-
-    const equippedItem = equipped[slot];
-
-    properties.forEach(({ key, value, source }) => {
-        const checkboxId = `${slot}-${key}-${source.replace(/\s+/g, '_')}`;
-        const div = document.createElement("div");
-
-        div.innerHTML = `
-            <label>
-                <input type="checkbox" id="${checkboxId}" data-key="${key}" data-value="${value}">
-                ${key}: ${value} <small>(${source})</small>
-            </label>
-        `;
-
-        const checkbox = div.querySelector("input");
-        checkbox.addEventListener("change", (e) => {
-            const statKey = e.target.dataset.key;
-            const rawValue = e.target.dataset.value;
-            const value = isNaN(rawValue) ? rawValue : parseFloat(rawValue);
-
-            if (e.target.checked) {
-                equippedItem[statKey] = value;
-                character[statKey] = (character[statKey] || 0) + (isNaN(value) ? 0 : value);
-            } else {
-                if (!isNaN(value)) {
-                    character[statKey] -= value;
-                }
-                delete equippedItem[statKey];
-            }
-
-            // Update PropertyList without duplication
-            equippedItem.PropertyList = equippedItem.PropertyList || [];
-            const propString = `${statKey}: ${value}`;
-            if (e.target.checked) {
-                if (!equippedItem.PropertyList.includes(propString)) {
-                    equippedItem.PropertyList.push(propString);
-                }
-            } else {
-                equippedItem.PropertyList = equippedItem.PropertyList.filter(p => p !== propString);
-            }
-
-            updateSelectedItemSummary(equippedItem.Worn);
-            update();
-        });
-
-        container.appendChild(div);
-    });
-}
-
-function parseAddsDamageStat(text) {
-    const regex = /Adds\s+(\d+)\s*(?:–|to|-)\s*(\d+)\s*(Cold|Fire|Lightning|Magic|Poison)?\s*Damage/i;
-    const match = text.match(regex);
-    if (!match) return null;
-
-    const min = parseInt(match[1], 10);
-    const max = parseInt(match[2], 10);
-    const element = match[3] ? match[3].toLowerCase() : null;
-
-    let keyPrefix;
-    switch (element) {
-        case "cold": keyPrefix = "cDamage"; break;
-        case "fire": keyPrefix = "fDamage"; break;
-        case "lightning": keyPrefix = "lDamage"; break;
-        case "magic": keyPrefix = "mDamage"; break;
-        case "poison": keyPrefix = "pDamage"; break;
-        default: keyPrefix = "damage"; // physical
-    }
-
-    return {
-        keys: [`${keyPrefix}_min`, `${keyPrefix}_max`],
-        values: [min, max],
-        label: `${element ? element.charAt(0).toUpperCase() + element.slice(1) + " " : ""}Damage`,
-    };
-}
-
-const parsed = parseAddsDamageStat(propertyText);
-if (parsed) {
-    parsed.keys.forEach((key, idx) => {
-        const value = parsed.values[idx];
-
-        const match = synthProperties.find(
-            prop => prop.key === key && Number(prop.value) === value
-        );
-
-        if (match) {
-            console.log(`✅ Matched adds-damage property: "${key}: ${value}" from "${propertyText}"`);
-            const checkbox = document.querySelector(`input[type="checkbox"][data-key="${key}"][data-value="${value}"]`);
-            if (checkbox && !checkbox.checked) {
-                checkbox.checked = true;
-                checkbox.dispatchEvent(new Event("change"));
-            }
-        } else {
-            console.warn(`❌ No synth match found for "${key}: ${value}"`);
-        }
-    });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-function applyItemStatToCharacter(property) {
-    console.log(`Applying property: ${property}`);
-    
-    // Check if the property is numerical
-    const numericMatch = property.match(/(\d+)/);
-    if (numericMatch) {
-        const value = parseInt(numericMatch[1], 10);
-
-        // Determine property type (Strength, Energy, Resistances, etc.)
-        const propertyKey = determinePropertyKey(property);
-        
-        if (!character[propertyKey]) {
-            character[propertyKey] = 0; // Initialize if missing
-        }
-        character[propertyKey] += value;
-    }
-}
-
-function determinePropertyKey(property) {
-    if (property.includes("Strength")) return "strength";
-    if (property.includes("Dexterity")) return "dexterity";
-    if (property.includes("Vitality")) return "vitality";
-    if (property.includes("Energy")) return "energy";
-    if (property.includes("Resist")) return "resistances";
-    
-    return "misc"; // Catch-all for unknown properties
-}
-
-
-
-
-//	window.open(builderurl);
-//	window.location.href = builderurl ;
-document.getElementById('importname').value = ""
+
+
+
+
+
+
+
+
+
+
+	function applyItemStatToCharacter(property) {
+		console.log(`Applying property: ${property}`);
+		
+		// Check if the property is numerical
+		const numericMatch = property.match(/(\d+)/);
+		if (numericMatch) {
+			const value = parseInt(numericMatch[1], 10);
+
+			// Determine property type (Strength, Energy, Resistances, etc.)
+			const propertyKey = determinePropertyKey(property);
+			
+			if (!character[propertyKey]) {
+				character[propertyKey] = 0; // Initialize if missing
+			}
+			character[propertyKey] += value;
+		}
+	}
+
+	function determinePropertyKey(property) {
+		if (property.includes("Strength")) return "strength";
+		if (property.includes("Dexterity")) return "dexterity";
+		if (property.includes("Vitality")) return "vitality";
+		if (property.includes("Energy")) return "energy";
+		if (property.includes("Resist")) return "resistances";
+		
+		return "misc"; // Catch-all for unknown properties
+	}
+
+
+
+
+	//	window.open(builderurl);
+	//	window.location.href = builderurl ;
+	document.getElementById('importname').value = ""
+	update()
 }
 
 async function justthesynth() {
@@ -6521,7 +6917,8 @@ function equipItemDirectly(item) {
 			equipName = item.Title;
 			break;
 		case "q_runeword":
-			equipName = `${item.Title} ­ ­ - ­ ­ ${item.Tag}`;
+//			equipName = `${item.Title} ­ ­ - ­ ­ ${item.Tag}`;
+			selectRuneword(rawSlot,item.Title,item.Tag)
 			break;
 		case "q_magic":
 		case "q_rare":
@@ -7338,67 +7735,141 @@ populateStatDropdown();
 
 // Add stats from custom list
 function addCustomStat() {
+    const statKey = document.getElementById('statDropdown').value;
+    const rawValue = document.getElementById('statValue').value.trim();
+    const selectedSlot = document.getElementById("slotSelect").value;
 
-		const statKey = document.getElementById('statDropdown').value;
-//		const value = parseInt(document.getElementById('statValue').value, 10);
-		const value = parseFloat(document.getElementById('statValue').value);
-		const selectedSlot = document.getElementById("slotSelect").value;
-		console.log("addCustomStat called");
-		console.log("equipped:", equipped);
+    console.log("addCustomStat called");
+    console.log("equipped:", equipped);
+    console.log("selectedSlot:", selectedSlot);
+
+    // Detect numeric vs string
+    const numericValue = parseFloat(rawValue);
+    const isNumeric = !isNaN(numericValue);
+
+    // Auto-equip a named custom item if slot is empty
+    if (!equipped[selectedSlot] || equipped[selectedSlot].name === "none") {
+        const customNames = {
+            weapon: "Custom Weapon",
+            helm: "Custom Helm",
+            armor: "Custom Armor",
+            offhand: "Custom Offhand",
+            gloves: "Custom Gloves",
+            boots: "Custom Boots",
+            belt: "Custom Belt",
+            ring1: "Custom Ring",
+            ring2: "Custom Ring",
+            amulet: "Custom Amulet"
+        };
+
+        const itemName = customNames[selectedSlot];
+        const slotItems = equipment[selectedSlot];
+        console.log("Trying to equip from slot:", selectedSlot);
+        console.log("Looking for item named:", itemName);
+        console.log("Items available in slot:", equipment[selectedSlot].map(i => i.name));
+
+        if (itemName && Array.isArray(slotItems)) {
+            const found = slotItems.find(item => item.name.trim().toLowerCase() === itemName.toLowerCase());
+
+            if (found) {
+                equipped[selectedSlot] = JSON.parse(JSON.stringify(found));
+                equip(selectedSlot, itemName);
+                updateSelectedItemSummary(selectedSlot);
+            } else {
+                alert(`Could not find "${itemName}" in equipment[${selectedSlot}]`);
+                return;
+            }
+        }
+    }
+
+    const item = equipped[selectedSlot];
+    if (!item) return;
+
+    if (isNumeric) {
+        // ✅ Handle numbers (preserve existing behavior)
+        if (!item[statKey]) item[statKey] = 0;
+        item[statKey] += numericValue;
+
+        if (!character[statKey]) character[statKey] = 0;
+        character[statKey] += numericValue;
+    } else {
+        // ✅ Handle strings
+        item[statKey] = rawValue;
+
+        // Don’t touch character[statKey] if it’s not numeric
+        if (!character[statKey]) character[statKey] = rawValue;
+    }
+
+    update();
+    updateSelectedItemSummary(selectedSlot);
+}
+	
+function larzuk() {
+	const statKey = "sockets";
+	const value = 1;
+	const selectedSlot = document.getElementById("slotSelect").value;
+	console.log("larzuk called");
+	console.log("equipped:", equipped);
 	console.log("selectedSlot:", selectedSlot);
-		
-		if (isNaN(value)) return;
-	
-		// Auto-equip a named custom item if slot is empty
-		if (!equipped[selectedSlot] || equipped[selectedSlot].name === "none") {
-			const customNames = {
-				weapon: "Custom Weapon",
-				helm: "Custom Helm",
-				armor: "Custom Armor",
-				offhand: "Custom Offhand",
-				gloves: "Custom Gloves",
-				boots: "Custom Boots",
-				belt: "Custom Belt",
-				ring1: "Custom Ring",
-				ring2: "Custom Ring",
-				amulet: "Custom Amulet"
-			};
-	
-			const itemName = customNames[selectedSlot];
-			const slotItems = equipment[selectedSlot];
-			console.log("Trying to equip from slot:", selectedSlot);
-			console.log("Looking for item named:", itemName);
-			console.log("Items available in slot:", equipment[selectedSlot].map(i => i.name));	
-			if (itemName && Array.isArray(slotItems)) {
-				console.log("Trying to equip from slot:", selectedSlot);
-				console.log("Looking for item named:", itemName);
-				console.log("Items available in slot:", equipment[selectedSlot].map(i => i.name));
-				const found = slotItems.find(item => item.name.trim().toLowerCase() === itemName.toLowerCase());
 
-				if (found) {
-					equipped[selectedSlot] = JSON.parse(JSON.stringify(found));
-					equip(selectedSlot,itemName);
-					updateSelectedItemSummary(selectedSlot);
-				} else {
-					alert(`Could not find "${itemName}" in equipment[${selectedSlot}]`);
-					return;
-				}
+	// Only allow specific slots
+	const allowedSlots = ["weapon", "offhand", "helm", "armor"];
+	const rejectionMessages = {
+		amulet: "Surely you jest, amulets don't get sockets!",
+		ring1: "Ha! Imagine that, a world where rings have sockets!",
+		ring2: "Sockets in rings? Not on my watch!",
+		gloves: "The legend of old socket hands; No thank you.",
+		boots: "We will not help you put holes in your shoes",
+		belt: "This isn't a Batman utility belt",
+	};
+
+	if (!allowedSlots.includes(selectedSlot)) {
+		const message = rejectionMessages[selectedSlot] || "You can only add sockets to weapons, shields, helms, or armor.";
+		showPopup(message);
+		return;
+	}
+
+	if (isNaN(value)) return;
+
+	// Auto-equip a named custom item if slot is empty
+	if (!equipped[selectedSlot] || equipped[selectedSlot].name === "none") {
+		const customNames = {
+			weapon: "Custom Weapon",
+			helm: "Custom Helm",
+			armor: "Custom Armor",
+			offhand: "Custom Offhand"
+		};
+
+		const itemName = customNames[selectedSlot];
+		const slotItems = equipment[selectedSlot];
+
+		if (itemName && Array.isArray(slotItems)) {
+			const found = slotItems.find(item => item.name.trim().toLowerCase() === itemName.toLowerCase());
+
+			if (found) {
+				equipped[selectedSlot] = JSON.parse(JSON.stringify(found));
+				equip(selectedSlot, itemName);
+				updateSelectedItemSummary(selectedSlot);
+			} else {
+				alert(`Could not find "${itemName}" in equipment[${selectedSlot}]`);
+				return;
 			}
 		}
-	
-		const item = equipped[selectedSlot];
-		if (!item) return;
-	
-		if (!item[statKey]) item[statKey] = 0;
-		item[statKey] += value;
-	
-		if (!character[statKey]) character[statKey] = 0;
-		character[statKey] += value;
-	
-		update();
-		updateSelectedItemSummary(selectedSlot);
 	}
-	
+
+	const item = equipped[selectedSlot];
+	if (!item) return;
+
+	if (!item[statKey]) item[statKey] = 0;
+	item[statKey] += value;
+
+	if (!character[statKey]) character[statKey] = 0;
+	character[statKey] += value;
+
+	update();
+	updateSelectedItemSummary(selectedSlot);
+}
+
 
 // Update the summary box
 function updateSelectedItemSummary() {
@@ -7432,7 +7903,9 @@ function updateSelectedItemSummary() {
 			removeButton.style.cursor = 'pointer';
 			removeButton.title = `Remove ${key}`;
 			removeButton.onclick = function () {
-				character[key] -= item[key];
+				if (typeof item[key] === "number") {
+					character[key] = (character[key] || 0) - item[key];
+				}
 				delete item[key];
 				updateSelectedItemSummary();
 				update?.(); // Optional: update character stats
@@ -7727,6 +8200,7 @@ function base64UrlDecode(str) {
   return bytes;
 }
 
+/*
 document.getElementById('copyShortLink').addEventListener('click', () => {
   const urlParams = window.location.search.substring(1); // e.g. "foo=1&bar=2"
   // Compress
@@ -7742,7 +8216,7 @@ document.getElementById('copyShortLink').addEventListener('click', () => {
   }).catch(() => {
     alert('Failed to copy short URL');
   });
-});
+}); */
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('createLink');
@@ -7758,12 +8232,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (cachedShort) {
       await navigator.clipboard.writeText(cachedShort);
-      showPopup(`✅ Reused shortlink:\n${cachedShort}`);
+      showPopup(`Reused existing shortlink:\n${cachedShort}`);
       return;
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const expiration = now + 300; // 5 minutes (or 7 days)
+//    const expiration = now + 300; // 5 minutes for quick expiration testing
+//	const expiration = now + 604800; //one week
+//	const expiration = now + 1209600; // 2 weeks
+	const expiration = now + 2419200; // 4 weeks
+//	const expiration = now + 60 * 60 * 24 * 365; // 1 year
 
     try {
 //      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
@@ -7790,7 +8268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       localStorage.setItem(cacheKey, shortLink);
       await navigator.clipboard.writeText(shortLink);
-      showPopup(`✅ Shortlink copied:\n${shortLink}`);
+      showPopup(`Shortlink copied:\n${shortLink}`);
     } catch (error) {
       showPopup(`❌ Error:\n${error.message}`);
       console.error(error);
@@ -7827,6 +8305,365 @@ function showPopup(message, duration = 3000) {
     popup.style.display = 'none';
   }, duration);
 }
+
+function switchClass(newClass) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("class", newClass);
+  window.location.href = url.toString();
+}
+
+function copyToClipboard(inputElement) {
+navigator.clipboard.writeText(inputElement.value).then(() => {
+	// Optional: visual feedback
+	inputElement.style.backgroundColor = "#333"; // or any effect
+	inputElement.title = "Copied!";
+	showPopup(`Import link copied, make sure to change character name before sharing`);
+}).catch(err => {
+	console.error('Failed to copy: ', err);
+});
+}
+
+  
+// Trying to fix aura pop up to display correct damage without double dipping final damage values
+function patchAuraDisplayDamage(effects, id) {
+  const types = ["fDamage", "cDamage", "lDamage", "pDamage", "mDamage"];
+  for (const type of types) {
+    const minKey = `${type}_min`;
+    const maxKey = `${type}_max`;
+    const minDisplay = `${minKey}_display`;
+    const maxDisplay = `${maxKey}_display`;
+
+    if (effects[id][minDisplay] !== undefined) {
+      effects[id][`_original_${minKey}`] = effects[id][minKey];
+      effects[id][minKey] = effects[id][minDisplay];
+    }
+    if (effects[id][maxDisplay] !== undefined) {
+      effects[id][`_original_${maxKey}`] = effects[id][maxKey];
+      effects[id][maxKey] = effects[id][maxDisplay];
+    }
+  }
+}
+
+function restoreAuraDisplayDamage(effects, id) {
+  const types = ["fDamage", "cDamage", "lDamage", "pDamage", "mDamage"];
+  for (const type of types) {
+    for (const suffix of ["min", "max"]) {
+      const key = `${type}_${suffix}`;
+      const orig = `_original_${key}`;
+      if (effects[id][orig] !== undefined) {
+        effects[id][key] = effects[id][orig];
+        delete effects[id][orig];
+      }
+    }
+  }
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+// Start runeword creator functions //
+//////////////////////////////////////
+//////////////////////////////////////
+
+function getSlotId(context, slot) {
+  // slot should be UNprefixed ("weapon","offhand","helm","armor")
+  return context === "merc" ? `merc_${slot}` : slot;
+}
+
+function normalizeSlot(slot) {
+  // returns unprefixed category for filtering/validation
+  return slot.startsWith("merc_") ? slot.replace("merc_", "") : slot;
+}
+
+function openRunewordPicker(slot, context = "player") {
+  // `slot` must be unprefixed here (e.g., "weapon")
+  const slotId = getSlotId(context, slot);
+  const picker = document.getElementById(`popover_${slotId}`);
+  if (!picker) return;
+
+  picker.innerHTML = "";
+
+  const slotCategory = slot; // already unprefixed
+  const className = context === "merc" ? merc?.class_name : character?.class_name;
+  const lowerClass = className?.toLowerCase();
+
+  const availableRunewords = Object.values(runewordProperties).filter(rw => {
+    // Normal case: must be in allowed categories
+    let allowed = rw.allowedCategories.includes(slotCategory);
+
+    // Exception: allow certain classes to equip weapons in offhand
+    if (!allowed && slotCategory === "offhand" && rw.allowedCategories.includes("weapon")) {
+      if (lowerClass === "barbarian") {
+        allowed = true; // any weapon
+      } else if (lowerClass === "assassin") {
+        // assassins can only dual wield claws, 3 sockets max
+        const isClaw = (rw.allowedTypes?.includes("claw") || rw.allowedGroups?.includes("weapon"));
+        if (isClaw && rw.sockets <= 3) {
+          allowed = true;
+        }
+      }
+    }
+
+    if (!allowed) return false;
+
+    // Exile only makes sense for Paladin class
+    if (rw.name.toLowerCase() === "exile" && lowerClass !== "paladin") return false;
+
+    // Claw-only assassin runewords (redundant but keeps safety)
+    const assassinOnly = ["chaos", "mosaic", "pattern", "pattern2"];
+    if (assassinOnly.includes(rw.name.toLowerCase()) && lowerClass !== "assassin") return false;
+
+    return true;
+  });
+
+  availableRunewords.forEach(rw => {
+    const rwDiv = document.createElement("div");
+    rwDiv.className = "runeword-option";
+    rwDiv.textContent = rw.name;
+    rwDiv.onmouseenter = () => showRunewordBases(rw, slot, rwDiv, context);
+    rwDiv.onclick = () => showRunewordBases(rw, slot, rwDiv, context);
+    picker.appendChild(rwDiv);
+  });
+
+  picker.style.display = "block";
+}
+
+
+function attachRunewordHover(selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+
+  // Determine context + unprefixed slot from the selectId
+  // Examples:
+  //  - dropdown_weapon         -> context "player", slot "weapon"
+  //  - dropdown_merc_weapon    -> context "merc",   slot "weapon"
+  const isMerc = selectId.startsWith("dropdown_merc_");
+  const context = isMerc ? "merc" : "player";
+//  const slot = isMerc ? selectId.replace("dropdown_merc_", "") : selectId.replace("dropdown_", "");
+  const slot = selectId.replace("dropdown_", "");
+  const popover = document.getElementById(`popover_${getSlotId(context, slot)}`);
+
+  select.addEventListener("mousemove", () => {
+    const option = select.options[select.selectedIndex];
+    if (option && option.value === "[runeword]") {
+      if (popover) popover.style.display = "block";
+      openRunewordPicker(slot, context); // pass unprefixed slot + correct context
+    } else {
+      if (popover) popover.style.display = "none";
+    }
+  });
+
+  // Keep if you want delayed hide behavior on mouseleave
+  select.addEventListener("mouseleave", () => {
+    // if (popover) popover.style.display = "none";
+  });
+}
+
+document.addEventListener("click", (e) => {
+  const popovers = document.querySelectorAll(".popover");
+  popovers.forEach(p => {
+    if (!p.contains(e.target) && !p.previousElementSibling?.contains?.(e.target)) {
+      p.style.display = "none";
+    }
+  });
+
+  const basePanel = document.getElementById("runeword-bases");
+  if (basePanel && !basePanel.contains(e.target)) {
+    basePanel.remove();
+  }
+});
+
+function hideRunewordPopover(slot, context = "player") {
+  const slotId = getSlotId(context, slot);
+  const picker = document.getElementById(`popover_${slotId}`);
+  if (picker) picker.style.display = "none";
+}
+
+function showFilteredRuneword(slot, text, context = "player") {
+  const slotId = getSlotId(context, slot);
+  const popover = document.getElementById(`popover_${slotId}`);
+  if (popover) {
+    popover.textContent = text;
+    popover.style.display = "block";
+  }
+}
+
+function hideFilteredRuneword(slot, context = "player") {
+  const slotId = getSlotId(context, slot);
+  const popover = document.getElementById(`popover_${slotId}`);
+  if (popover) popover.style.display = "none";
+}
+
+function positionPopoverRelative(dropdown, popover) {
+  popover.style.position = "absolute";
+  popover.style.top = (dropdown.offsetTop) + "px";
+  popover.style.left = (dropdown.offsetLeft + dropdown.offsetWidth + 5) + "px";
+  popover.style.minWidth = dropdown.offsetWidth + "px";
+  popover.style.zIndex = 999;
+}
+
+function showRunewordBases(runeword, slot, anchorElement, context = "player") {
+  // slot is unprefixed
+  const basePanelOld = document.getElementById("runeword-bases");
+  if (basePanelOld) {
+    const prevActive = document.querySelector(".runeword-option.active");
+    if (prevActive) prevActive.classList.remove("active");
+    basePanelOld.remove();
+  }
+
+  const basePanel = document.createElement("div");
+  basePanel.id = "runeword-bases";
+  basePanel.className = "sidepanel";
+  anchorElement.classList.add("active");
+
+  const charRef = context === "merc" ? merc : character;
+
+  const availableBases = Object.entries(bases).filter(([key, item]) =>
+    isRunewordValidForBase(runeword, item, slot, key, charRef) // pass charRef
+  );
+
+  availableBases.forEach(([key]) => {
+    const baseDiv = document.createElement("div");
+    baseDiv.className = "base-option";
+    baseDiv.textContent = key.replace(/_/g, " ");
+    baseDiv.onclick = () => selectRuneword(slot, runeword, key, context);
+    basePanel.appendChild(baseDiv);
+  });
+
+  const rect = anchorElement.getBoundingClientRect();
+  const dropdownRect = anchorElement.parentElement.getBoundingClientRect();
+  basePanel.style.position = "absolute";
+  basePanel.style.top = `${dropdownRect.top + window.scrollY}px`;
+  basePanel.style.left = `${rect.right}px`;
+
+  document.body.appendChild(basePanel);
+
+  const removePanelIfOutside = () => {
+    setTimeout(() => {
+      if (!basePanel.matches(':hover') && !anchorElement.matches(':hover')) {
+        basePanel.remove();
+        anchorElement.classList.remove("active");
+      }
+    }, 100);
+  };
+
+  anchorElement.addEventListener("mouseleave", removePanelIfOutside);
+  basePanel.addEventListener("mouseleave", removePanelIfOutside);
+}
+
+function isRunewordValidForBase(runeword, base, slotCategory, baseKey, charRef) {
+  const className = charRef?.class_name?.toLowerCase();
+
+  // --- 1) Category gate ---
+  // Treat offhand slot as its own category unless dual-wield applies.
+  let effectiveCategory = slotCategory;
+
+  if (slotCategory === "offhand" && className) {
+    // Barbs can offhand any weapon
+    if (className === "barbarian" && base.group === "weapon") {
+      effectiveCategory = "weapon";
+    }
+    // Assassins can offhand claws only
+    else if (className === "assassin" && base.type === "claw" && runeword.sockets <= 3) {
+      effectiveCategory = "weapon";
+    }
+    // Otherwise shields/other offhand items keep "offhand" category
+  }
+
+  if (runeword.allowedCategories?.length > 0 &&
+      !runeword.allowedCategories.includes(effectiveCategory)) {
+    return false;
+  }
+
+  // --- 2) Any-of matching against type/subtype/group/name ---
+  let match = false;
+  if (runeword.allowedTypes?.includes(base.type)) match = true;
+  if (runeword.allowedSubtypes?.includes(base.subtype)) match = true;
+  if (runeword.allowedGroups?.includes(base.group)) match = true;
+  if (runeword.allowedNames?.includes(baseKey)) match = true;
+
+  // Base-level class restriction
+  if (base.only && base.only.length > 0 && match === true) {
+    if (!className || base.only.toLowerCase() !== className) {
+      return false;
+    }
+  }
+
+  // Exile must be Paladin-only shields
+  if (runeword.name.toLowerCase() === "exile") {
+    if (!(base.only && base.only.toLowerCase() === "paladin")) return false;
+  }
+
+  // --- 3) If restrictions exist but no match, reject ---
+  const hasRestrictions =
+    (runeword.allowedTypes?.length ||
+     runeword.allowedSubtypes?.length ||
+     runeword.allowedGroups?.length ||
+     runeword.allowedNames?.length) > 0;
+
+  if (hasRestrictions && !match) return false;
+
+  // --- 4) Sockets ---
+  if (!base.max_sockets || base.max_sockets < runeword.sockets) return false;
+
+  return true;
+}
+
+
+
+
+function flattenRuneword(runeword, baseItem) {
+  const displayBase = baseItem.replace(/_/g, " ");
+  const flat = {
+    rarity: "rw",
+    name: `${runeword.name} ­ ­ - ­ ­ ${displayBase}`,
+    type: bases[baseItem].type,
+    base: displayBase,
+    runewordStats: runeword.stats,
+    runes: runeword.runes,
+    cskill: runeword.cskill || [],
+  };
+  Object.assign(flat, runeword.stats);
+
+  // Keep a little metadata if you need it later
+  ["allowedTypes", "allowedCategories"].forEach(k => {
+    if (runeword[k]) flat[k] = runeword[k];
+  });
+
+  return flat;
+}
+
+function selectRuneword(slot, runeword, baseItem, context = "player") {
+  // slot is unprefixed; equip functions expect unprefixed group names.
+  const flatRuneword = flattenRuneword(runeword, baseItem);
+
+  // IMPORTANT: equipMerc() looks up items in `equipment[slot]`,
+  // so we must store the constructed runeword in `equipment`, not `mercEquipment`.
+  if (!equipment[slot]) equipment[slot] = {};
+  equipment[slot][flatRuneword.name] = flatRuneword;
+
+  if (context === "merc") {
+    equipMerc(slot, flatRuneword.name);
+  } else {
+    equip(slot, flatRuneword.name);
+  }
+
+  // Update the dropdown's [runeword] option label
+  const slotId = getSlotId(context, slot);
+  const dropdown = document.getElementById(`dropdown_${slotId}`);
+  if (dropdown) {
+    const rwOption = dropdown.querySelector(`option[value="[runeword]"]`);
+    if (rwOption) rwOption.textContent = flatRuneword.name;
+  }
+
+  const basePanel = document.getElementById("runeword-bases");
+  if (basePanel) basePanel.remove();
+}
+
+
+
+
+
+
 
 
 

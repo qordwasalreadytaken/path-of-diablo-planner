@@ -40,10 +40,11 @@
 <script type="text/javascript" src="./data/skills/vanilla/paladin.js"></script>
 <script type="text/javascript" src="./data/skills/vanilla/sorceress.js"></script>
 <script type="text/javascript" src="./data/skills/vanilla/universal_skills.js"></script>
-<!--<script type="text/javascript" src="./data/functions.js"></script>-->
+<!--<script type="text/javascript" src="./data/functions.js"></script> -->
 <script type="text/javascript" src="./data/quicklinks.js"></script>
 <script type="text/javascript" src="./data/custom.js"></script>
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>-->
+<script type="text/javascript" src="./data/runeword_properties.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script> -->
 
 </head>
 
@@ -95,10 +96,24 @@
       <div class="nav-dropdown-content-item"><div class="nav-text">
         <label>&nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="file" id="fileToLoad" onchange="loadFileAsText()"></input></label>
       </div></div>
-      <div class="nav-dropdown-content-item" onclick="window.location = url='https://build.pathofdiablo.com'"><div class="nav-text">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Reload&nbsp;&nbsp;</label>
-      </div></div>
-      <div class="nav-dropdown-content-item" onclick="exportEquippedToCSV()"><div class="nav-text">
+    <div class="nav-dropdown-content-item" onclick="window.location = 'https://build.pathofdiablo.com'">
+      <div class="nav-text"><label>&nbsp;&nbsp;&nbsp;&nbsp;Reload&nbsp;&nbsp;</label></div>
+    </div>
+
+    <!-- Class switch submenu -->
+    <div class="nav-dropdown-content-item nav-dropdown-submenu">
+      <div class="nav-text"><label>&nbsp;&nbsp;&nbsp;&nbsp;Switch Class →&nbsp;&nbsp;</label></div>
+      <div class="nav-dropdown-submenu-content">
+        <div class="nav-dropdown-content-item" onclick="switchClass('amazon')"><div class="nav-text"><label>Amazon</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('assassin')"><div class="nav-text"><label>Assassin</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('barbarian')"><div class="nav-text"><label>Barbarian</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('druid')"><div class="nav-text"><label>Druid</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('necromancer')"><div class="nav-text"><label>Necromancer</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('paladin')"><div class="nav-text"><label>Paladin</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('sorceress')"><div class="nav-text"><label>Sorceress</label></div></div>
+      </div>
+    </div>      
+	<div class="nav-dropdown-content-item" onclick="exportEquippedToCSV()"><div class="nav-text">
         <label>&nbsp;&nbsp;&nbsp;&nbsp;Export CSV&nbsp;&nbsp;</label>
       </div></div>
 	  <div class="nav-dropdown-content-item">
@@ -162,6 +177,20 @@
         <input id="running" type="checkbox" name="running" onclick="return toggleRunning(this);">
         <label for="running">&nbsp;&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
       </div></div>
+    <!-- Class switch submenu -->
+    <div class="nav-dropdown-content-item nav-dropdown-submenu">
+      <div class="nav-text"><label>&nbsp;&nbsp;&nbsp;&nbsp;Switch Class Keeping Equipment&nbsp;&nbsp;</label></div>
+      <div class="nav-dropdown-submenu-content">
+        <div class="nav-dropdown-content-item" onclick="switchClass('amazon')"><div class="nav-text"><label>Amazon</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('assassin')"><div class="nav-text"><label>Assassin</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('barbarian')"><div class="nav-text"><label>Barbarian</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('druid')"><div class="nav-text"><label>Druid</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('necromancer')"><div class="nav-text"><label>Necromancer</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('paladin')"><div class="nav-text"><label>Paladin</label></div></div>
+        <div class="nav-dropdown-content-item" onclick="switchClass('sorceress')"><div class="nav-text"><label>Sorceress</label></div></div>
+      </div>
+    </div>      
+
     </div>
   </div>
 <!--	filled via loadMonsters()
@@ -171,12 +200,19 @@
     </div>
   </div>
 -->
-  <div class="nav-dropdown">
-    <button class="nav-dropbtn" style="cursor:pointer;" onClick="location.href='https://github.com/GreenDude120/path-of-diablo-planner/tree/master?tab=readme-ov-file#contribute'"><a href="https://github.com/GreenDude120/path-of-diablo-planner/tree/master?tab=readme-ov-file#contribute">Contribute</a></button>
-  </div>
+	<div class="nav-dropdown">
+	<button
+		class="nav-dropbtn"
+		style="cursor:pointer;"
+		title="Visit our GitHub to report issues, suggest features, or contribute to the project"
+		onClick="location.href='https://github.com/GreenDude120/path-of-diablo-planner/tree/master?tab=readme-ov-file#contribute'">
+		Contribute
+	</button>
+	</div>
+
 
   <div class="nav-dropdown">
-    <button class="nav-dropbtn">Shortcuts</button>
+    <button class="nav-dropbtn">Shortcuts & Tips</button>
     <div class="nav-dropdown-content">
       <div class="nav-dropdown-content-item" ><div class="nav-text">
         <label>&nbsp;&nbsp;&nbsp;&nbsp;General: Right click to remove an item, including removing from sockets&nbsp;&nbsp;</label>
@@ -218,8 +254,35 @@
 			<label>&nbsp;&nbsp;&nbsp;&nbsp;Items: SHIFT + left click an item to toggle ethereal/not ethereal&nbsp;&nbsp;</label>
 			</div></div>		
 		<div class="nav-dropdown-content-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Shortcut to import: https://build.pathofdiablo.com/?import=charactername&nbsp;&nbsp;</label>
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;You can import live characters using the "import" menu&nbsp;&nbsp;</label>
 			</div></div>		
+		<div class="nav-dropdown-content-item">
+		<div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Shareable shortcut to import a character:&nbsp;</label>
+			<input
+			type="text"
+			value="https://build.pathofdiablo.com/?import=charactername"
+			readonly
+			onclick="copyToClipboard(this);"
+			style="width: 350px; cursor: pointer;"
+			/>
+		</div>
+		</div>
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Not all items and properties are supported by importing&nbsp;&nbsp;</label>
+			</div></div>
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Build planner has no way to know what charms an imported character uses, so it takes a guess&nbsp;&nbsp;</label>
+			</div></div>
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Switch classes without losing equipment in the Character menu button&nbsp;&nbsp;</label>
+			</div></div>
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;Get a friendly PoD short link to the current page with the Short Link button&nbsp;&nbsp;</label>
+			</div></div>
+		<div class="nav-dropdown-content-item"><div class="nav-text">
+			<label>&nbsp;&nbsp;&nbsp;&nbsp;The new Runeword Picker allows you create runewords in the base of your choosing&nbsp;&nbsp;</label>
+			</div></div>
 		</div>
 	</div>
 <!--
@@ -234,21 +297,58 @@
   </div>
 -->
   <div class="nav-dropdown">
-    <button class="nav-dropbtn">Patch 22 Updates</button>
+    <button class="nav-dropbtn">Patch Updates</button>
     <div class="nav-dropdown-content">
       <div class="nav-dropdown-content-item" ><div class="nav_difficulty">
-        <label>&nbsp;&nbsp;&nbsp;&nbsp;Patch 22 item changes have been added, but some changed skills remain incorrect.&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;If you've got updated skill data (min-max damage, AR, mana cost for each level, etc.) and &nbsp;&nbsp;&nbsp; <br> &nbsp;&nbsp;&nbsp;&nbsp;are willing to share, please let us know and we'll add it here<br>&nbsp;&nbsp;</label>
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;Patch changes have been added, but some data might be incorrect.&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;If you've got updated skill data (min-max damage, AR, mana cost for each level, etc.) and &nbsp;&nbsp;&nbsp; <br> &nbsp;&nbsp;&nbsp;&nbsp;are willing to share, please let us know and we'll add it here<br>&nbsp;&nbsp;</label>
       </div></div>	
 	</div></div>
 
-  <div class="nav-dropdown">
-	<button class="nav-dropbtn" style="cursor:pointer;" id="importtest" title="Import has limited support for magic, rare, or crafted items, &#013Synthesized items might spawn missing properties, you can add them on the right ">Character Import</a></button>
+	<div class="nav-dropdown">
+	<button 
+		class="nav-dropbtn" 
+		id="importtest" 
+		title="Import has limited support for magic, rare, or crafted items. 
+Imported items might spawn missing properties, you can add them on the right."
+		style="cursor:pointer;"
+	>
+		Character Import
+	</button>
 	<div class="nav-dropdown-content">
-		<div class="nav-dropdown-content-item" id="nav_difficulty"><div class="nav-difficulty">&nbsp;&nbsp;&nbsp;Enter Character Name and click the button &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;<input type="text" name="importname" class="nav-dropdown-content-item" id="importname"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br><br>&nbsp;<input type="button" value="Import Whole Character" onClick="importChar()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" value="Just the Synth" onClick="justthesynth()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>&nbsp;
+		<div class="nav-dropdown-content-item">
+		
+		<label for="importname">Enter Character Name:</label><br>
+		<input 
+			type="text" 
+			id="importname" 
+			name="importname" 
+			autocomplete="new-password" 
+			class="nav-dropdown-input"
+		><br><br>
+		
+		<label>
+			<input type="checkbox" id="assumeCharms">
+			Assume charms (Torch, Anni, and skillers)
+		</label><br><br>
+		
+		<input 
+			type="button" 
+			value="Import Whole Character" 
+			onClick="importChar()"
+			class="import-button"
+		>
+		<input 
+			type="button" 
+			value="Just the Synth" 
+			onClick="justthesynth()"
+			class="import-button"
+		>
+		</div>
+	</div>
+	</div>
 
-</div><br><br></div></div></div>
   <div class="nav-dropdown">
-	<button class="nav-dropbtn" style="cursor:pointer;" id="createLink" title="Get a short link ">Short Link</a></button> <!-- <pre id="output"></pre> -->
+	<button class="nav-dropbtn" style="cursor:pointer;" id="createLink" title="Get a short link ">Short Link</button> 
   </div>
 <div id="popup" style="
   display: none;
@@ -414,16 +514,40 @@
 <!--	Equipment Menus 	-->
 <div class="dropdown" id="equipment">
 <div id="equipment_a" class="equipment">
-<select class="dropdown" id="dropdown_helm" onChange="equip('helm', this.value)" onContextMenu="equip('helm', 'helm')"></select>
-<select class="dropdown" id="dropdown_armor" onChange="equip('armor', this.value)" onContextMenu="equip('armor', 'armor')"></select>
+<!--<select class="dropdown" id="dropdown_helm" onChange="equip('helm', this.value)" onContextMenu="equip('helm', 'helm')"></select>-->
+    <div class="dropdown-wrapper">
+      <select class="dropdown" id="dropdown_helm" 
+              onChange="equip('helm', this.value)" 
+              onContextMenu="equip('helm', 'helm')"></select>
+      <div class="popover" id="popover_helm"></div>
+    </div>
+<!--<select class="dropdown" id="dropdown_armor" onChange="equip('armor', this.value)" onContextMenu="equip('armor', 'armor')"></select>-->
+    <div class="dropdown-wrapper">
+      <select class="dropdown" id="dropdown_armor" 
+              onChange="equip('armor', this.value)" 
+              onContextMenu="equip('armor', 'armor')"></select>
+      <div class="popover" id="popover_armor"></div>
+    </div>
 <select class="dropdown" id="dropdown_gloves" onChange="equip('gloves', this.value)" onContextMenu="equip('gloves', 'gloves')"></select>
 <select class="dropdown" id="dropdown_boots" onChange="equip('boots', this.value)" onContextMenu="equip('boots', 'boots')"></select>
 <select class="dropdown" id="dropdown_belt" onChange="equip('belt', this.value)" onContextMenu="equip('belt', 'belt')"></select>
 <select class="dropdown" id="dropdown_amulet" onChange="equip('amulet', this.value)" onContextMenu="equip('amulet', 'amulet')"></select>
 <select class="dropdown" id="dropdown_ring1" onChange="equip('ring1', this.value)" onContextMenu="equip('ring1', 'ring1')"></select>
 <select class="dropdown" id="dropdown_ring2" onChange="equip('ring2', this.value)" onContextMenu="equip('ring2', 'ring2')"></select>
-<select class="dropdown" id="dropdown_weapon" onChange="equip('weapon', this.value)" onContextMenu="equip('weapon', 'weapon')"></select>
-<select class="dropdown" id="dropdown_offhand" onChange="equip('offhand', this.value)" onContextMenu="equip('offhand', 'offhand')"></select>
+<!--<select class="dropdown" id="dropdown_weapon" onChange="equip('weapon', this.value)" onContextMenu="equip('weapon', 'weapon')"></select>-->
+<div class="dropdown-wrapper">
+  <select class="dropdown" id="dropdown_weapon"
+          onChange="equip('weapon', this.value)"
+          onContextMenu="equip('weapon', 'weapon')"></select>
+  <div class="dropdown popover" id="popover_weapon"></div>
+</div>
+<!--<select class="dropdown" id="dropdown_offhand" onChange="equip('offhand', this.value)" onContextMenu="equip('offhand', 'offhand')"></select>-->
+<div class="dropdown-wrapper">
+  <select class="dropdown" id="dropdown_offhand"
+          onChange="equip('offhand', this.value)"
+          onContextMenu="equip('offhand', 'offhand')"></select>
+  <div class="dropdown popover" id="popover_offhand"></div>
+</div>
 <br><br>
 </div>
 <select class="dropdown" id="dropdown_charms" onChange="addCharm(this.value)"></select>
@@ -431,8 +555,20 @@
 <select class="dropdown" id="dropdown_socketables" onChange="addSocketable(this.value)"></select>
 <br><br>
 <select class="dropdown" id="dropdown_mercenary" onChange="setMercenary(this.value)" onContextMenu="setMercenary('none')"></select>
-<select class="dropdown" id="dropdown_merc_helm" onChange="equipMerc('helm', this.value)" onContextMenu="equipMerc('helm', 'helm')"></select>
+<select class="dropdown" id="dropdown_merc_helm" onChange="equipMerc('helm', this.value)" onContextMenu="equipMerc('helm', 'helm')"></select> 
+<!--    <div class="dropdown-wrapper">
+      <select class="dropdown" id="dropdown_merc_helm" 
+              onChange="equipMerc('hels', this.value)" 
+              onContextMenu="equipMerc('armor', 'armor')"></select>
+      <div class="dropdown popover" id="popover_merc_helm"></div>
+    </div> -->
 <select class="dropdown" id="dropdown_merc_armor" onChange="equipMerc('armor', this.value)" onContextMenu="equipMerc('armor', 'armor')"></select>
+<!--    <div class="dropdown-wrapper">
+      <select class="dropdown" id="dropdown_merc_armor" 
+              onChange="equipMerc('armor', this.value)" 
+              onContextMenu="equipMerc('armor', 'armor')"></select>
+      <div class="dropdown popover" id="popover_merc_armor"></div>
+    </div>-->
 <select class="dropdown" id="dropdown_merc_weapon" onChange="equipMerc('weapon', this.value)" onContextMenu="equipMerc('weapon', 'weapon')"></select>
 <select class="dropdown" id="dropdown_merc_offhand" onChange="equipMerc('offhand', this.value)" onContextMenu="equipMerc('offhand', 'offhand')"></select>
 <div id="merc_space"></div>
@@ -589,7 +725,6 @@
 			<div id="disclaimer"><a><font color=red size="2">This is Qords playground, things here might not exist in game or in the officil build planner </font color></a><a id="disclaimer"></a><br></div>
 	<div class="gray" id="skill_details_inactive"></div>
 	</div> <!-- /skill details -->
-
 <!--		stats		-->
 <div class="gray" id="stats">
 <div id="stats_main_columns">
@@ -626,6 +761,17 @@
 	<font size="2">+ Magic Damage: </font><font size="2" id="mdamage"></font><br>
 	<font size="2">+ Phys Damage: </font><font size="2" id="physicalDamage"></font><br><br>
 
+	<font size="2">Faster Run/Walk: </font><font size="2" id="frw"></font><br>
+	<font size="2">Speed: </font><font size="2" id="velocity"></font><br><br>
+	
+	<font size="2">Poison Reduction: </font><font size="2" id="poison_reduction"></font><br>
+	<font size="2">Curse Reduction: </font><font size="2" id="curse_reduction"></font><br><br>
+
+<!--	<font size="2" id="wa_label" style="visibility:hidden;">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br><br> -->
+	<font size="2" id="wa_label">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br>
+
+
+	<br><br>	
 	<font size="2">Breakpoints: </font> <br>
 	<font size="2">Faster Hit Recovery:<br> </font><font size="2" id="fhr_bp"></font><br>
 	<font size="2">Faster Cast Rate:<br> </font><font size="2" id="fcr_bp"></font><br>
@@ -683,50 +829,8 @@
 </div>
 <br>
 <div class="stat-text-wrapper stat-3" id="stats_column_1">
-	<font size="2">Life Leech: </font><font size="2" id="life_leech"></font><br>
-	<font size="2">Mana Leech: </font><font size="2" id="mana_leech"></font><br><br>
-
-	<font size="2">Life per Hit: </font><font size="2" id="life_per_hit"></font><br>
-	<font size="2">Mana per Hit: </font><font size="2" id="mana_per_hit"></font><br><br>
-
-	<font size="2">Life per Kill: </font><font size="2" id="life_per_kill"></font><br>
-	<font size="2">Mana per Kill: </font><font size="2" id="mana_per_kill"></font><br><br>
-
-	<font size="2">Life Regen: </font><font size="2" id="life_regen"></font><br>
-	<font size="2">Mana Regen: </font><font size="2" id="mana_regen"></font><br><br>
-
-	<font size="2">Fire Pierce: </font><font size="2" id="fpierce"></font><br>
-	<font size="2">Cold Pierce: </font><font size="2" id="cpierce"></font><br>
-	<font size="2">Lightning Pierce: </font><font size="2" id="lpierce"></font><br>
-	<font size="2">Poison Pierce: </font><font size="2" id="ppierce"></font><br>
-	<font size="2">Magic Pierce: </font><font size="2" id="mpierce"></font><br><br>
-
-<!--<font size="2" id="enemy_fres" style="visibility:hidden;">Enemy Fire Resist: </font><font size="2" id="enemy_fres"></font><br> -->
-	<font size="2">Enemy Fire Resist: </font><font size="2" id="enemy_fres"></font><br>
-	<font size="2">Enemy Cold Resist: </font><font size="2" id="enemy_cres"></font><br>
-	<font size="2">Enemy Lightning Resist: </font><font size="2" id="enemy_lres"></font><br>
-	<font size="2">Enemy Poison Resist: </font><font size="2" id="enemy_pres"></font><br>
-	<font size="2">Enemy Magic Resist: </font><font size="2" id="enemy_mres"></font><br>
-	<font size="2">Enemy Physical Resist: </font><font size="2" id="enemy_physRes"></font><br><br>
-
-	<font size="2">Faster Run/Walk: </font><font size="2" id="frw"></font><br>
-	<font size="2">Speed: </font><font size="2" id="velocity"></font><br><br>
-	
-	<font size="2">Poison Reduction: </font><font size="2" id="poison_reduction"></font><br>
-	<font size="2">Curse Reduction: </font><font size="2" id="curse_reduction"></font><br><br>
-
-	<font size="2">Magic Find: </font><font size="2" id="mf"></font><br>
-	<font size="2">Gold Find: </font><font size="2" id="gf"></font><br><br>
-	
-	<font size="2">Damage to Mana: </font><font size="2" id="damage_to_mana"></font><br>
-	<font size="2">Thorns: </font><font size="2" id="thorns"></font><br><br>
-
-	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br><br>
-
-	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
 
 	<!--	<font size="2">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br><br> -->
-	<font size="2" id="wa_label" style="visibility:hidden;">Chance to release WA: </font><font size="2" id="totalwhirly"></font><br><br>
 	<!--
 	<font size="2">Flat DR: </font><font size="2" id="damage_reduced"></font>
 -->	
@@ -747,16 +851,36 @@
 	<font size="3">Mana: </font><font size="3" id="mana"></font><br>
 	<font size="3">Stamina: </font><font size="3" id="stamina"></font><br>
 	<font size="3">Defense: </font><font size="3" id="defense"></font><br>
-	<font size="3" id="block_label" style="visibility:hidden;">Block Chance: </font><font size="3" id="block"></font><br><br>
+<!--	<font size="3" id="block_label" style="visibility:hidden;">Block Chance: </font><font size="3" id="block"></font><br><br> -->
+	<font size="3" id="block_label">Block Chance: </font><font size="3" id="block"></font><br><br>
 
 	<font size="2">Faster Hit Recovery: </font><font size="2" id="fhr"></font><br>
+	<font size="2">Faster Block Rate: </font><font size="2" id="fbr"></font><br>
 
-<br><br>
+    <br>
 	<font size="2">Fire Resist: </font><font size="2" id="fres"></font><br>
 	<font size="2">Cold Resist: </font><font size="2" id="cres"></font><br>
 	<font size="2">Lightning Resist: </font><font size="2" id="lres"></font><br>
 	<font size="2">Poison Resist: </font><font size="2" id="pres"></font><br>
 	<font size="2">Magic Resist: </font><font size="2" id="mres"></font><br><br>	
+
+	<font size="2">Fire Pierce: </font><font size="2" id="fpierce"></font><br>
+	<font size="2">Cold Pierce: </font><font size="2" id="cpierce"></font><br>
+	<font size="2">Lightning Pierce: </font><font size="2" id="lpierce"></font><br>
+	<font size="2">Poison Pierce: </font><font size="2" id="ppierce"></font><br>
+	<font size="2">Magic Pierce: </font><font size="2" id="mpierce"></font><br><br>
+	<br>
+	<font size="2">Life Leech: </font><font size="2" id="life_leech"></font><br>
+	<font size="2">Life per Hit: </font><font size="2" id="life_per_hit"></font><br>
+	<font size="2">Life per Kill: </font><font size="2" id="life_per_kill"></font><br>
+	<font size="2">Life Regen: </font><font size="2" id="life_regen"></font><br>
+	<br>
+<!--	<font size="2" id="eseff_label" style="visibility:hidden;">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
+	<font size="2" id="esprcnt_label" style="visibility:hidden;">ES Efficiency: </font><font size="2" id="eseff"></font><br><br> -->
+	<font size="2" id="eseff_label">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
+	<font size="2" id="esprcnt_label">ES Efficiency: </font><font size="2" id="eseff"></font><br><br>
+
+
 </div>
 
 <div class="stat-text-wrapper stat-6" id="stats_column_4">
@@ -774,8 +898,31 @@
 	<br>
 	<font size="2">Magic Absorb: </font><font size="2" id="mabsorb"></font><br>
 	<br>
-	<font size="2" id="eseff_label" style="visibility:hidden;">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
-	<font size="2" id="esprcnt_label" style="visibility:hidden;">ES Efficiency: </font><font size="2" id="eseff"></font><br><br>
+	<font size="2">Enemy Fire Resist: </font><font size="2" id="enemy_fres"></font><br>
+	<font size="2">Enemy Cold Resist: </font><font size="2" id="enemy_cres"></font><br>
+	<font size="2">Enemy Lightning Resist: </font><font size="2" id="enemy_lres"></font><br>
+	<font size="2">Enemy Poison Resist: </font><font size="2" id="enemy_pres"></font><br>
+	<font size="2">Enemy Magic Resist: </font><font size="2" id="enemy_mres"></font><br>
+	<font size="2">Enemy Physical Resist: </font><font size="2" id="enemy_physRes"></font><br><br>
+	<font size="2">Mana Leech: </font><font size="2" id="mana_leech"></font><br>
+	<font size="2">Mana per Hit: </font><font size="2" id="mana_per_hit"></font><br>
+	<font size="2">Mana per Kill: </font><font size="2" id="mana_per_kill"></font><br>
+	<font size="2">Mana Regen: </font><font size="2" id="mana_regen"></font><br>
+	<br>
+	<font size="2">Magic Find: </font><font size="2" id="mf"></font><br>
+	<font size="2">Gold Find: </font><font size="2" id="gf"></font><br><br>
+	
+	<font size="2">Damage to Mana: </font><font size="2" id="damage_to_mana"></font><br>
+	<font size="2">Thorns: </font><font size="2" id="thorns"></font><br><br>
+
+	<font size="2">Cooldown Reduction: </font><font size="2" id="cdr"></font><br><br>
+
+
+
+
+
+
+
 	<br>
 
 	<font size="2" id="f4"></font><br>
@@ -820,11 +967,7 @@
 <div id="version_spacing" style="display:none; height:370px; width:869px; color:gray;"></div>
 
 </div>	<!-- /interface -->
-
 <div class="stat-text-wrapper stat-7" id="stats_column_7" >
-	<br>
-<button id="copyShortLink">Copy Short Tacos URL</button>
-
 	<br>
 	<p>Give items custom stats - Beta</p>
 	<br>
@@ -850,6 +993,7 @@
 	<select class="dropdown" id="statDropdown" style="width: 350px;"></select>
 	<input type="number" id="statValue" placeholder="Value">
 	<button onclick="addCustomStat()">Add Stat</button>
+	<button onclick="larzuk()">Larzuk Q: +1 Socket</button>
 	<br>
 	<div id="itemSummary" style="margin-top: 10px; padding: 10px; border: 1px solid #999; background: #222; color: #eee; width: 350px;">
 		<strong>Item Summary:</strong>

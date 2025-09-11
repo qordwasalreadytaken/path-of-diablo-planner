@@ -5932,7 +5932,8 @@ async function importChar() {
 	//let builderurl = "https://build.pathofdiablo.com/?v=PoD&"
 	//let builderurl = "https://build.pathofdiablo.com/?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
 	//let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&quests=1&coupling=1&synthwep=0&autocast=1&"
-	let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&"
+	//let builderurl = "file:///home/derek/Desktop/path-of-diablo-planner/index.html?v=2&"
+	let builderurl = `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, "/")}index.html?v=2&`;
 	let data; 
 	function normalizeText(text) {
 		return text.replace(/[\u00A0\u200B\u200C\u200D\uFEFF\u2011]/g, '').trim(); // Removes invisible spaces

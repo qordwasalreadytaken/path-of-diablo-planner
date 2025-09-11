@@ -245,7 +245,7 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 	{name:"Que-Hegan's Wisdom", req_level:51, all_skills:1, e_def:160, mana_per_kill:3, fcr:20, fhr:20, mDamage_reduced:10, energy:15, base:"Mage Plate"},
 	{name:"Rattlecage", req_level:29, defense:200, cblow:25, flee_on_hit:40, ar:45, base:"Gothic Plate", img:"Rattlecage"},
 	{name:"Rockfleece", req_level:28, e_def:130, pdr:10, strength:5, damage_reduced:5, req:-10, base:"Field Plate", img:"Rockfleece"},
-	{not:["sorceress"], name:"Ormus' Robes", req_level:75, skill_Warmth:3, defense:20, fcr:20, cDamage:15, fDamage:15, lDamage:15, mana_regen:15, base:"Dusk Shroud", img:"Ormus'_Robes"},
+	{name:"Ormus' Robes", req_level:75, skill_Warmth:3, defense:20, fcr:20, cDamage:15, fDamage:15, lDamage:15, mana_regen:15, base:"Dusk Shroud", img:"Ormus'_Robes"},
 	{name:"Shaftstop", req_level:38, defense:220, pdr:30, missile_defense:250, life:60, base:"Mesh Armor"},
 	{name:"Skin of the Flayed One", req_level:31, e_def:190, autorepair:1, life_leech:7, life_replenish:25, thorns:15, durability_extra:30, base:"Demonhide Armor", img:"Skin_of_the_Flayed_One"},
 	{name:"Skin of the Vipermagi", req_level:29, all_skills:1, e_def:120, fcr:30, mDamage_reduced:13, all_res:35, base:"Serpentskin Armor", img:"Skin_of_the_Vipermagi"},

@@ -1,23 +1,61 @@
 import os
 import json
 import datetime
+from urllib.parse import urlencode
 
 # --- CONFIG ---
 SNAPSHOT_DIR = "snapshots"
 INDEX_FILE = "index.json"
 CHARACTER_FILE = "sc_ladder.json"   # or hc_ladder.json
-BASE_IMPORT_URL = "https://build.pathofdiablo.com/?"  # change if needed
+BASE_IMPORT_PATH = "https://build.pathofdiablo.com/?"  # change if needed
+GAME_VERSION = 2                    # PoD-specific features
 
-# Stub: your existing "import character → final URL" function
-def build_final_url(character):
-    """
-    Convert character data into the full builder URL.
-    Replace this stub with your existing import logic.
-    """
-    # Example only
-    return f"{BASE_IMPORT_URL}class={character['class'].lower()}&level={character['level']}"
+# Replace with however you pass global settings in your builder
+SETTINGS = {
+    "parameters": 1,
+    "coupling": 0,
+    "synthwep": 0,
+    "autocast": 0,
+}
 
 
+# --- URL BUILDER (real implementation) ---
+def build_final_url(character, settings=SETTINGS, game_version=GAME_VERSION, base_path=BASE_IMPORT_PATH):
+    params = {}
+
+    # Core stats
+    param_quests = int(character.get("quests_completed", 0)) or 0
+    param_run = int(character.get("running", 0)) or 0
+
+    params["class"] = character["Class"].lower()
+    params["level"] = int(character["Stats"]["Level"])
+    params["difficulty"] = int(character.get("difficulty", 0))
+    params["quests"] = param_quests
+    params["strength"] = int(character["Stats"].get("Strength", 0))
+    params["dexterity"] = int(character["Stats"].get("Dexterity", 0))
+    params["vitality"] = int(character["Stats"].get("Vitality", 0))
+    params["energy"] = int(character["Stats"].get("Energy", 0))
+    params["url"] = int(settings.get("parameters", 0))
+    params["coupling"] = int(settings.get("coupling", 0))
+    params["synthwep"] = int(settings.get("synthwep", 0))
+
+    if game_version == 2:
+        params["running"] = param_run
+        params["autocast"] = int(settings.get("autocast", 0))
+
+    # Skills: expected as a list of levels
+    skill_levels = character.get("Skills", [])
+    skill_string = "".join(f"{lvl:02d}" for lvl in skill_levels)
+    params["skills"] = skill_string
+
+    # TODO: adapt the following sections once you confirm how your ladder JSON represents
+    # equipped items, corruptions, socketed, effects, mercenary, golem, charms, etc.
+    # For now we’ll leave them out to avoid breaking things.
+
+    return f"{base_path}?{urlencode(params, doseq=True)}"
+
+
+# --- JSON helpers ---
 def load_json(filename):
     if not os.path.exists(filename):
         return {}
@@ -30,10 +68,11 @@ def save_json(filename, data):
         json.dump(data, f, indent=2)
 
 
+# --- Main collector ---
 def main():
-    today = datetime.date.today().isoformat()  # e.g. "2025-09-08"
+    today = datetime.date.today().isoformat()  # e.g. "2025-09-11"
 
-    # Load character data (however you normally get it)
+    # Load ladder character data
     characters = load_json(CHARACTER_FILE)
 
     # Make sure output dir exists
@@ -42,7 +81,7 @@ def main():
     # Build snapshot for today
     snapshot = {}
     for char in characters:
-        name = char.get("name")
+        name = char.get("Name")
         if not name:
             continue
         url = build_final_url(char)

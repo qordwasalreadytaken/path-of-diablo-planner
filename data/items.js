@@ -1114,8 +1114,8 @@ var unequipped = {			strength:0, dexterity:0, vitality:0, energy:0, life:0, mana
 //	{rarity:"craft", name:"Qord's Obsession - A Josko Leg", req_level:69, skill_Cold_Mastery:3, skill_Fire_Mastery:3, skill_Warmth:3, all_skills:4, fcr:65, knockback:1, vitality:10, energy:10, mana_regen:30, gf:75, mf:30, mana_regen:200, discount:25, gf_per_level:5, mf_per_level:2.5, twoHanded:1, type:"staff", base:"Archon Staff", obsessiontheory:1, img:"Wirt's_Leg"},
 //	{rarity:"craft", name:"Qordmaker", req_level:65, itd:1, sockets:5, ctc:[[18,24,"Volcano","on striking"],[5,27,"Molten Boulder","on striking"],[21,25,"Nova","on attack"],[100,45,"Meteor","when you die"]], twoHanded:1, type:"bow", base:"Qord Bow", pod_changes:1, easymathdmg:1, img:"Widowmaker"},
 //	{rarity:"craft", name:"Qord has Faith", req_level:65, aura:"Fanaticism", aura_lvl:15, all_skills:2, e_damage:330, itd:1, ar_bonus:300, damage_vs_undead:75, ar_vs_undead:50, fDamage_min:120, fDamage_max:120, all_res:15, gf:75, reanimate:4, twoHanded:1, type:"bow", base:"Qord Bow", pod_changes:1, easymathdmg:1, img:"Widowmaker"},
-	{rarity:"Magic", name:"Imported magic Weapon", req_level:64, cplaceholder:1, type:"mace", img:"Wirt's_Leg"},
-	{rarity:"Rare", name:"Imported rare Weapon", req_level:64, cplaceholder:1, type:"mace", img:"Wirt's_Leg"},
+	{rarity:"magic", name:"Imported magic Weapon", req_level:64, cplaceholder:1, type:"mace", img:"Wirt's_Leg"},
+	{rarity:"rare", name:"Imported rare Weapon", req_level:64, cplaceholder:1, type:"mace", img:"Wirt's_Leg"},
 	{rarity:"craft", name:"Imported crafted Weapon", req_level:64, cplaceholder:1, type:"mace", img:"Wirt's_Leg"},
 	{only:"", rarity:"craft", name:"Custom Weapon", req_level:64, type:"mace", img:"Wirt's_Leg"},
 	

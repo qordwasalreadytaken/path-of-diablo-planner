@@ -1,5 +1,5 @@
 document.getElementById('searchBtn').addEventListener('click', async () => {
-  const name = document.getElementById('charName').value.trim();
+  const name = document.getElementById('charName').value.trim().toLowerCase(); // normalize input
   const resultsDiv = document.getElementById('results');
   resultsDiv.innerHTML = '';
 
@@ -12,7 +12,13 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
     const indexRes = await fetch('index.json');
     const index = await indexRes.json();
 
-    const dates = index[name];
+    // normalize keys of index.json once
+    const normalizedIndex = {};
+    for (const key in index) {
+      normalizedIndex[key.toLowerCase()] = index[key];
+    }
+
+    const dates = normalizedIndex[name];
     if (!dates) {
       resultsDiv.textContent = `No snapshots found for "${name}".`;
       return;
@@ -23,8 +29,15 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
     for (const date of dates) {
       const snapRes = await fetch(`snapshots/${date}.json`);
       const snap = await snapRes.json();
-      if (snap[name]) {
-        allData.push(snap[name]);
+
+      // normalize snapshot keys too
+      const normalizedSnap = {};
+      for (const key in snap) {
+        normalizedSnap[key.toLowerCase()] = snap[key];
+      }
+
+      if (normalizedSnap[name]) {
+        allData.push(normalizedSnap[name]);
       }
     }
 

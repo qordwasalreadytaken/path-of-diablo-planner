@@ -493,8 +493,11 @@ def save_json(filename, data):
 # --- Main collector ---
 def main():
 #    DateTime_in_ISOFormat = datetime.datetime.now()
-    today = datetime.date.today().isoformat()  # e.g. "2025-09-11"
 #    today = DateTime_in_ISOFormat.isoformat("#", "hours")
+#    today = datetime.date.today().isoformat()  # e.g. "2025-09-11"
+#    today = datetime.datetime.now().isoformat()  # e.g. "2025-09-11"
+    now = datetime.datetime.now()
+    today = now.strftime("%Y-%m-%dT%H")    
     # Load ladder character data
     characters = load_json(CHARACTER_FILE)
 

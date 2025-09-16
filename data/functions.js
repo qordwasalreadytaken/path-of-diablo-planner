@@ -504,6 +504,7 @@ function getBaseId(base_name) {
 
 // loadParams - load character details from URL parameters
 // ---------------------------------
+
 function loadParams() {
     checkShorturl();
 
@@ -606,21 +607,53 @@ function loadParams() {
     character.skillpoints = character.level-1 + Math.max(0, character.quests_completed*12) - spent_skillpoints;
     character.statpoints = (character.level-1)*5 + Math.max(0, character.quests_completed*15) - param_str - param_dex - param_vit - param_ene;
 
-    // --- Equip items and apply multi-properties ---
-    for (let group in param_equipped) {
-        let eqData = param_equipped[group];
-        if (!eqData || eqData.name === "none") continue;
+	// --- Equip items and apply multi-properties ---
+	for (let group in param_equipped) {
+		let eqData = param_equipped[group];
+		if (!eqData || eqData.name === "none") continue;
 
-        equip(group, eqData.name); // equip base item
+		// Step 1: equip the base item
+		equip(group, eqData.name);
 
-        // assign colon-based properties
-        for (let key in eqData) {
-            if (["name","tier","corruption","others"].includes(key)) continue;
-            equipped[group][key] = eqData[key];
+        // 🔹 Update dropdown UI to show item name
+        const slotId = getSlotId("player", group);
+        const dropdown = document.getElementById(`dropdown_${slotId}`);
+        if (dropdown) {
+            const opt = dropdown.querySelector(`option[value="[custom]"]`);
+            if (opt) opt.textContent = eqData.name;
         }
 
-        // optionally handle sockets, tier upgrades, corruptions here as before
-    }
+		// Step 2: apply tier/corruption if needed
+		if (eqData.tier) equipped[group].tier = eqData.tier;
+		if (eqData.corruption) equipped[group].corruption = eqData.corruption;
+
+		// Step 3: apply colon-based properties AFTER equip
+		for (let key in eqData) {
+			if (["name","tier","corruption","others"].includes(key)) continue;
+
+            let val = eqData[key];
+            const numericVal = parseFloat(val);
+            const isNumeric = !isNaN(numericVal);
+
+            if (isNumeric) {
+                if (!equipped[group][key]) equipped[group][key] = 0;
+                equipped[group][key] += numericVal;
+
+                if (!character[key]) character[key] = 0;
+                character[key] += numericVal;
+            } else {
+                equipped[group][key] = val;
+                if (!character[key]) character[key] = val;
+            }
+		}
+
+		// Step 4: handle any non-colon extras (legacy params or socketables)
+		if (eqData.others) {
+			for (let seg of eqData.others) {
+				addSocketable(seg);
+			}
+		}
+	}
 
     // --- Apply charms, mercenary, iron golem, effects ---
     for (let i = 0; i < param_charms.length; i++) addCharm(param_charms[i]);
@@ -637,6 +670,8 @@ function loadParams() {
     updateAllEffects();
     updateURLDebounced();
 }
+
+
 
 
 

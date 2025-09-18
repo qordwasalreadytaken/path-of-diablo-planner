@@ -507,169 +507,187 @@ function getBaseId(base_name) {
 
 function loadParams() {
     checkShorturl();
+    const params = new URLSearchParams(window.location.search);
 
-    // --- Basic character stats ---
-    var spent_skillpoints = 0;
-    var param_level = Math.floor(Math.max(1, Math.min(99, ~~params.get('level'))));
-    var param_diff = ~~params.get('difficulty');
-    var param_quests = ~~params.get('quests');
-    var param_run = ~~params.get('running');
-    var param_str = Math.max(0, Math.min(505, ~~params.get('strength')));
-    var param_dex = Math.max(0, Math.min(505, ~~params.get('dexterity')));
-    var param_vit = Math.max(0, Math.min(505, ~~params.get('vitality')));
-    var param_ene = Math.max(0, Math.min(505, ~~params.get('energy')));
-    var param_url = ~~params.get('url');
-    var param_coupling = params.has('coupling') ? params.get('coupling') : 1;
-    var param_synthwep = params.has('synthwep') ? params.get('synthwep') : 1;
-    var param_autocast = params.has('autocast') ? params.get('autocast') : 1;
-    var param_skills = params.has('skills') ? params.get('skills') : '0'.repeat(skills.length * 2);
-    var param_charms = params.has('charm') ? params.getAll('charm') : [];
-    var param_effects = params.has('effect') ? params.getAll('effect') : [];
-    var param_mercenary = params.has('mercenary') ? params.get('mercenary').split(',') : 'none';
-    var param_irongolem = params.has('irongolem') ? params.get('irongolem') : 'none';
-    var param_selected = params.has('selected') ? params.get('selected').split(',') : [" ­ ­ ­ ­ Skill 1"," ­ ­ ­ ­ Skill 2"];
-
-    // --- Colon-aware equipment parsing ---
-    var param_equipped = {};
-    for (let group of Object.keys(corruptsEquipped)) {
-        if (!params.has(group)) continue;
-
-        let segments = params.get(group).split(',');
-        param_equipped[group] = {};
-        param_equipped[group].name = segments[0];
-        param_equipped[group].tier = segments[1];
-        param_equipped[group].corruption = segments[2];
-
-        // parse remaining fields
-        for (let i = 3; i < segments.length; i++) {
-            let seg = segments[i];
-            if (seg.includes(':')) {
-                let [statKey, value] = seg.split(/:(.+)/); // split on first colon only
-                try {
-                    value = JSON.parse(decodeURIComponent(value));
-                } catch (e) {
-                    console.error("Failed to parse property:", seg, e);
-                    continue;
-                }
-                param_equipped[group][statKey] = value;
-            } else {
-                if (!param_equipped[group].others) param_equipped[group].others = [];
-                param_equipped[group].others.push(seg);
-            }
+    // --- Parse runewords ---
+    let runewordMap = {};
+    const rwParam = params.get("runewords");
+    if (rwParam) {
+        try {
+            runewordMap = JSON.parse(decodeURIComponent(rwParam));
+            console.log("✅ Parsed runewords from URL:", runewordMap);
+        } catch (e) {
+            console.warn("❌ Failed to parse runewords param:", e);
         }
     }
 
-    // --- Apply character stats ---
-    if (param_quests != 1) param_quests = 0;
-    if (param_run != 1) param_run = 0;
-    if ((param_str + param_dex + param_vit + param_ene) > (5 * param_level + 15 * param_quests)) {
-        param_str = param_dex = param_vit = param_ene = 0;
-    }
+    // --- Character stats ---
+    let spentSkillpoints = 0;
+    character.level = Math.floor(Math.max(1, Math.min(99, ~~params.get('level'))));
+    character.strength_added = Math.max(0, Math.min(505, ~~params.get('strength')));
+    character.dexterity_added = Math.max(0, Math.min(505, ~~params.get('dexterity')));
+    character.vitality_added = Math.max(0, Math.min(505, ~~params.get('vitality')));
+    character.energy_added = Math.max(0, Math.min(505, ~~params.get('energy')));
+    character.quests_completed = ~~params.get('quests') || 0;
+    character.running = ~~params.get('running') || 0;
 
-    character.level = param_level;
-    character.strength_added = param_str;
-    character.dexterity_added = param_dex;
-    character.vitality_added = param_vit;
-    character.energy_added = param_ene;
-
-    if ([1, 2, 3].includes(param_diff)) {
-        document.getElementById("difficulty"+param_diff).checked = true;
-        changeDifficulty(param_diff);
-    }
-    if (param_run == 1) {
-        document.getElementById("running").checked = true;
-        toggleRunning(param_run);
-        character.running = 1;
-    }
-    if (param_quests == 1) {
-        document.getElementById("quests").checked = true;
-        character.quests_completed = param_quests;
-        character.life += 60;
-        character.fRes += 30;
-        character.cRes += 30;
-        character.lRes += 30;
-        character.pRes += 30;
-    }
-
-    if (param_url == 1) {
-        document.getElementById("parameters").checked = true;
-        toggleParameters(param_url);
-        settings.parameters = 1;
-        params.set('url', ~~settings.parameters);
-        window.history.replaceState({}, '', `${location.pathname}?${params}`);
-    }
-
-    // --- Set skill levels ---
+    const param_skills = params.has('skills') ? params.get('skills') : '0'.repeat(skills.length*2);
     for (let s = 0; s < skills.length; s++) {
         skills[s].level = ~~(param_skills[s*2] + param_skills[s*2+1]);
-        spent_skillpoints += skills[s].level;
+        spentSkillpoints += skills[s].level;
     }
-    character.skillpoints = character.level-1 + Math.max(0, character.quests_completed*12) - spent_skillpoints;
-    character.statpoints = (character.level-1)*5 + Math.max(0, character.quests_completed*15) - param_str - param_dex - param_vit - param_ene;
-
-	// --- Equip items and apply multi-properties ---
-	for (let group in param_equipped) {
-		let eqData = param_equipped[group];
-		if (!eqData || eqData.name === "none") continue;
-
-		// Step 1: equip the base item
-		equip(group, eqData.name);
-
-        // 🔹 Update dropdown UI to show item name
-        const slotId = getSlotId("player", group);
-        const dropdown = document.getElementById(`dropdown_${slotId}`);
-        if (dropdown) {
-            const opt = dropdown.querySelector(`option[value="[custom]"]`);
-            if (opt) opt.textContent = eqData.name;
-        }
-
-		// Step 2: apply tier/corruption if needed
-		if (eqData.tier) equipped[group].tier = eqData.tier;
-		if (eqData.corruption) equipped[group].corruption = eqData.corruption;
-
-		// Step 3: apply colon-based properties AFTER equip
-		for (let key in eqData) {
-			if (["name","tier","corruption","others"].includes(key)) continue;
-
-            let val = eqData[key];
-            const numericVal = parseFloat(val);
-            const isNumeric = !isNaN(numericVal);
-
-            if (isNumeric) {
-                if (!equipped[group][key]) equipped[group][key] = 0;
-                equipped[group][key] += numericVal;
-
-                if (!character[key]) character[key] = 0;
-                character[key] += numericVal;
-            } else {
-                equipped[group][key] = val;
-                if (!character[key]) character[key] = val;
-            }
-		}
-
-		// Step 4: handle any non-colon extras (legacy params or socketables)
-		if (eqData.others) {
-			for (let seg of eqData.others) {
-				addSocketable(seg);
-			}
-		}
-	}
-
-    // --- Apply charms, mercenary, iron golem, effects ---
-    for (let i = 0; i < param_charms.length; i++) addCharm(param_charms[i]);
-    if (param_mercenary !== "none") setMercenary(param_mercenary[0]);
-    if (param_irongolem !== "none") setIronGolem(param_irongolem);
-    // ...apply effects as before...
+    character.skillpoints = character.level-1 + character.quests_completed*12 - spentSkillpoints;
+    character.statpoints = (character.level-1)*5 + character.quests_completed*15
+        - character.strength_added - character.dexterity_added - character.vitality_added - character.energy_added;
 
     // --- Selected skills ---
-    selectedSkill[0] = param_selected[0];
-    selectedSkill[1] = param_selected[1];
+    selectedSkill[0] = params.has('selected') ? params.get('selected').split(',')[0] : " ­ ­ ­ ­ Skill 1";
+    selectedSkill[1] = params.has('selected') ? params.get('selected').split(',')[1] : " ­ ­ ­ ­ Skill 2";
 
-    // --- Final updates ---
+    // --- Charms ---
+    const param_charms = params.has('charm') ? params.getAll('charm') : [];
+    for (let c of param_charms) addCharm(c);
+
+    // --- Mercenary / Golem ---
+    const param_mercenary = params.has('mercenary') ? params.get('mercenary').split(',') : ['none'];
+    const param_irongolem = params.has('irongolem') ? params.get('irongolem') : 'none';
+    if (param_mercenary[0] !== 'none') setMercenary(param_mercenary[0]);
+    if (param_irongolem !== 'none') setIronGolem(param_irongolem);
+
+    // --- Standard equipment ---
+    let param_equipped = {};
+    for (let group of Object.keys(corruptsEquipped)) {
+        if (!params.has(group)) continue;
+        let segments = params.get(group).split(',');
+        param_equipped[group] = {
+            name: segments[0],
+            tier: segments[1],
+            corruption: segments[2],
+            props: {},
+            sockets: [],
+            flags: []
+        };
+        for (let i = 3; i < segments.length; i++) {
+            let seg = segments[i];
+            if (!seg) continue;
+            if (seg.includes(':')) {
+                let [key,val] = seg.split(/:(.+)/);
+                if (key.toLowerCase() === "sockets") {
+                    param_equipped[group].socketCount = parseInt(val) || 0;
+                    continue;
+                }
+                try { val = JSON.parse(decodeURIComponent(val)); } catch(e){ continue; }
+                param_equipped[group].props[key] = val;
+            } else if (/sockets?/i.test(seg)) {
+                param_equipped[group].flags.push(seg);
+            } else {
+                param_equipped[group].sockets.push(seg);
+            }
+        }
+    }
+
+    // --- Custom slots ---
+    const equipGroups = ["helm","armor","gloves","boots","belt","amulet","ring1","ring2","weapon","offhand"];
+    const customSlots = {};
+    // --- Handle custom_* URL params ---
+    for (let group of equipGroups) {
+        const key = `custom_${group}`;
+        if (!params.has(key)) continue;
+
+        try {
+            const data = JSON.parse(decodeURIComponent(params.get(key)));
+            customSlots[group] = data;
+            if (!equipped[group]) equipped[group] = {};
+            equipped[group].custom = data;
+
+if (data.rarity === "rw") {
+    const rwName = data.rwName || data.name.split(" ­ ­ - ­ ­ ")[0]; // extract "Bulwark"
+    const rw = runewordProperties[rwName];
+
+    if (rw) {
+        console.log("selectRuneword (custom) for", group, rwName);
+        selectRuneword(group, rw, data.baseKey || data.base);
+    } else {
+        console.warn(`Runeword "${rwName}" not found in dictionary`);
+    }
+} else {
+    // normal custom item
+    equipItemDirectly({
+        Worn: group,
+        QualityCode: data.rarity,
+        Title: data.name,
+        Tag: data.base,
+        PropertyList: data.props || [],
+        custom: data
+    });
+}
+
+
+
+
+        } catch (e) {
+            console.warn(`Failed to parse ${key}:`, e);
+        }
+    }
+
+    applyCustomSlots(customSlots);
+
+    // --- Runewords override ---
+    if (Object.keys(runewordMap).length > 0) {
+        for (let slot in runewordMap) {
+            const rw = runewordMap[slot];
+            if (!rw) continue;
+			console.log("kicking off equipItemDirectly after applyCustomSlots for ",rw)
+            equipItemDirectly({
+                Worn: slot,
+                QualityCode: "q_runeword",
+                Title: rw.name,
+                Tag: rw.base,
+                PropertyList: rw.props || [],
+            });
+        }
+    }
+
+    // --- Equip legacy / standard items if not overridden ---
+    // --- Equip legacy / standard items if not overridden ---
+    for (let group in param_equipped) {
+        if (runewordMap[group]) continue; // skip runewords already applied
+        const eqData = param_equipped[group];
+        if (!eqData || eqData.name === "none") continue;
+
+        // Detect runewords from legacy slots
+        if (runewordProperties[eqData.name]) {
+            console.log("selectRuneword (legacy) for", eqData.name);
+//            selectRuneword(group, eqData.name, eqData.tier || "none");
+//			selectRuneword(group, runewordProperties[data.name], data.base);
+			if (data.name && runewordProperties[data.name]) {
+				const rw = runewords[data.name];
+				if (rw) {
+					selectRuneword(group, rw);
+				} else {
+					console.warn(`Runeword "${data.name}" not found in runewords dict`);
+				}
+			}
+            continue;
+        }
+
+        console.log("kicking off equip from loadParams for", eqData.name);
+        equip(group, eqData.name);
+
+        if (eqData.tier) equipped[group].tier = eqData.tier;
+        if (eqData.corruption) equipped[group].corruption = eqData.corruption;
+        if (eqData.socketCount) equipped[group].socketCount = eqData.socketCount;
+        for (let key in eqData.props) equipped[group][key] = eqData.props[key];
+        for (let sock of eqData.sockets) addSocketable(sock);
+    }
+
+
+    // --- Update UI & final refresh ---
     updateSkills();
     updateAllEffects();
     updateURLDebounced();
 }
+
 
 
 
@@ -5717,21 +5735,40 @@ function buildCharacterURL(character, settings) {
     }
     params.set("skills", skillString);
 
-    // --- Items / equips ---
-    if (game_version === 2) {
-        params.set("selected", selectedSkill[0] + "," + selectedSkill[1]);
-        for (let group in corruptsEquipped) {
-            let eq = equipped[group];
-            let corr = corruptsEquipped[group];
-            let socked = socketed[group] || { items: [] };
+	// --- Items / equips ---
+	if (game_version === 2) {
+		params.set("selected", selectedSkill[0] + "," + selectedSkill[1]);
 
-            let value = [eq.name, eq.tier, corr.name];
-            for (let item of socked.items) {
-                value.push(item.name);
-            }
-            params.set(group, value.join(","));
-        }
+    // --- Standard items / equips ---
+    for (let group in corruptsEquipped) {
+        let eq = equipped[group];
+        let corr = corruptsEquipped[group];
+        let socked = socketed[group] || { items: [] };
+
+        // Old style for backwards compatibility
+        let value = [eq.name, eq.tier, corr.name];
+        for (let item of socked.items) value.push(item.name);
+        params.set(group, value.join(","));
     }
+
+	// --- Custom slots (new) ---
+	for (let group in equipped) {
+		let eq = equipped[group];
+		if (!eq || !eq.custom) continue;
+
+		// Store the internal base (not just the display name)
+		const safeCustom = {
+			...eq.custom,
+			baseKey: eq.baseKey || eq.base || eq.tag || null  // internal base reference
+		};
+
+		console.log("adding to url :", group, safeCustom);
+//		params.set(`custom_${group}`, encodeURIComponent(JSON.stringify(safeCustom)));
+		params.set(`custom_${group}`, JSON.stringify(safeCustom));		
+	}
+
+    return `${location.pathname}?${params.toString()}`;
+	}
 
     // --- Effects ---
     for (let id in effects) {
@@ -5776,10 +5813,10 @@ function buildCharacterURL(character, settings) {
 }
 
 function updateURL() {
-    if (settings.parameters === 1) {
+//    if (settings.parameters === 1 || settings.parameters === 2) {
         const newURL = buildCharacterURL(character, settings);
         window.history.replaceState({}, "", newURL);
-    }
+//    }
 }
 
 // 	getmmmpl
@@ -8219,8 +8256,8 @@ document.addEventListener('DOMContentLoaded', () => {
 //	const expiration = now + 60 * 60 * 24 * 365; // 1 year
 
     try {
-//      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-      const res = await fetch('https://b.pathofdiablo.com/api/proxy-create-link', {
+      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+//      const res = await fetch('https://b.pathofdiablo.com/api/proxy-create-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -8338,6 +8375,10 @@ function restoreAuraDisplayDamage(effects, id) {
 // Start runeword creator functions //
 //////////////////////////////////////
 //////////////////////////////////////
+
+function isRuneword(name) {
+    return runewordProperties.hasOwnProperty(name);
+}
 
 function getSlotId(context, slot) {
   // slot should be UNprefixed ("weapon","offhand","helm","armor")
@@ -8587,6 +8628,10 @@ function isRunewordValidForBase(runeword, base, slotCategory, baseKey, charRef) 
 
 
 function flattenRuneword(runeword, baseItem) {
+    if (!runeword) {
+        console.warn("flattenRuneword called with undefined runeword");
+        return null;
+    }	
   const displayBase = baseItem.replace(/_/g, " ");
   const flat = {
     rarity: "rw",
@@ -8608,30 +8653,208 @@ function flattenRuneword(runeword, baseItem) {
 }
 
 function selectRuneword(slot, runeword, baseItem, context = "player") {
-  // slot is unprefixed; equip functions expect unprefixed group names.
-  const flatRuneword = flattenRuneword(runeword, baseItem);
+    const flatRuneword = flattenRuneword(runeword, baseItem);
 
-  // IMPORTANT: equipMerc() looks up items in `equipment[slot]`,
-  // so we must store the constructed runeword in `equipment`, not `mercEquipment`.
-  if (!equipment[slot]) equipment[slot] = {};
-  equipment[slot][flatRuneword.name] = flatRuneword;
+    // Store the base so buildCharacterURL can write it back out
+    flatRuneword.base = baseItem;
 
-  if (context === "merc") {
-    equipMerc(slot, flatRuneword.name);
-  } else {
-    equip(slot, flatRuneword.name);
-  }
+    // --- Add custom object for URL serialization ---
+    flatRuneword.custom = {
+        name: flatRuneword.name,
+        base: flatRuneword.base,
+        rarity: "rw",
+        props: flatRuneword.runewordStats || {}
+    };
 
-  // Update the dropdown's [runeword] option label
-  const slotId = getSlotId(context, slot);
-  const dropdown = document.getElementById(`dropdown_${slotId}`);
-  if (dropdown) {
-    const rwOption = dropdown.querySelector(`option[value="[runeword]"]`);
-    if (rwOption) rwOption.textContent = flatRuneword.name;
-  }
+    if (!equipment[slot]) equipment[slot] = {};
+    equipment[slot].custom = flatRuneword.custom;  // <-- this is what buildCharacterURL looks for
+    equipment[slot][flatRuneword.name] = flatRuneword;
 
-  const basePanel = document.getElementById("runeword-bases");
-  if (basePanel) basePanel.remove();
+    // Equip the item
+    if (context === "merc") {
+        equipMerc(slot, flatRuneword.name);
+    } else {
+        equip(slot, flatRuneword.name);
+        updateURLDebounced();
+    }
+
+    // Update dropdown UI if present
+    const slotId = getSlotId(context, slot);
+    const dropdown = document.getElementById(`dropdown_${slotId}`);
+    if (dropdown) {
+        const rwOption = dropdown.querySelector(`option[value="[runeword]"]`);
+        if (rwOption) rwOption.textContent = flatRuneword.name;
+    }
+
+    // Remove the runeword base panel if it exists
+    const basePanel = document.getElementById("runeword-bases");
+    if (basePanel) basePanel.remove();
+
+    console.log("✅ Equipped runeword with custom data for URL:", flatRuneword.custom);
+}
+
+
+
+
+
+///////////////////////////
+// Begin adding custom to url function
+
+	// --- helpers ---
+	function resolveRunewordByName(name) {
+	return Object.values(runewordProperties)
+		.find(rw => rw.name.toLowerCase() === String(name).toLowerCase());
+	}
+
+	function resolveBaseKey(tag) {
+	if (!tag) return null;
+
+	// Normalize "Dusk Shroud" → "Dusk_Shroud"
+	let key = tag.replace(/ /g, "_");
+
+	// Direct match
+	if (bases[key]) return key;
+
+	// Case-insensitive fallback
+	const found = Object.keys(bases).find(
+		k => k.toLowerCase() === key.toLowerCase()
+	);
+	return found || null;
+	}
+
+
+	
+function equipItemDirectly(item) {
+    const pendingPropertyLists = {};
+    const slotMapping = { body:"armor", weapon1:"weapon", weapon2:"offhand", helmet:"helm" };
+    const rawSlot = item.Worn;
+
+    // Skip swap weapons
+    if (rawSlot.startsWith("sweapon")) return;
+    const slot = slotMapping[rawSlot] || rawSlot;
+    let equipName = item.Title;
+    const offhandtag = item.Tag;
+
+    switch (item.QualityCode) {
+        case "q_runeword": {
+            const rw = resolveRunewordByName(item.Title);
+            const baseKey = resolveBaseKey(item.Tag);
+            if (!rw || !bases[baseKey]) break;
+
+            const equipSlot = slotMapping[item.Worn] || item.Worn;
+            const displayBase = baseKey.replace(/_/g, " ");
+            const flatRuneword = {
+                rarity: "rw",
+                name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
+                type: bases[baseKey].type,
+                base: displayBase,
+                runewordStats: rw.stats,
+                runes: rw.runes,
+                cskill: rw.cskill || [],
+                ...rw.stats
+            };
+            ["allowedTypes","allowedCategories"].forEach(k => {
+                if (rw[k]) flatRuneword[k] = rw[k];
+            });
+
+            if (!equipment[equipSlot]) equipment[equipSlot] = {};
+            equipment[equipSlot].custom = {
+                name: flatRuneword.name,
+                base: flatRuneword.base,
+                rarity: "rw",
+                props: flatRuneword.runewordStats
+            };
+            equipment[equipSlot][flatRuneword.name] = flatRuneword;
+
+            equip(equipSlot, flatRuneword.name);
+
+            const dropdown = document.getElementById(`dropdown_${equipSlot}`);
+            if (dropdown) {
+                const rwOption = dropdown.querySelector(`option[value="*"]`);
+                if (rwOption) rwOption.textContent = flatRuneword.name;
+            }
+
+            console.log(`✅ Equipped runeword: ${flatRuneword.name} in slot: ${equipSlot}`);
+            break; // do not return here — continue to apply rest of import logic
+        }
+
+        case "q_unique":
+        case "q_set":
+            equipName = item.Title;
+            break;
+
+        case "q_magic":
+        case "q_rare":
+        case "q_crafted":
+            equipName = offhandtag === "Bolts" || offhandtag === "Arrows"
+                ? `Imported ${item.QualityCode.slice(2)} ${offhandtag}`
+                : `Imported ${item.QualityCode.slice(2)} ${formatSlotName(slot)}`;
+            break;
+    }
+
+    // Save property lists for crafted/magic/rare
+    if (item.PropertyList && ["q_magic","q_rare","q_crafted"].includes(item.QualityCode)) {
+        pendingPropertyLists[slot] = item.PropertyList;
+        console.log(`✅ Stashed PropertyList for slot ${slot}`, item.PropertyList);
+    }
+
+    // Fallback generic dropdown flow
+    const dropdownId = `dropdown_${slot}`;
+    const dropdown = document.getElementById(dropdownId);
+    if (dropdown) {
+        dropdown.value = equipName;
+        dropdown.dispatchEvent(new Event("change"));
+        console.log(`Dropdown updated and change event triggered 3: ${dropdownId} -> ${equipName}`);
+    } else {
+        console.warn(`Dropdown not found for slot: ${slot}`);
+    }
+
+    // Delay apply properties
+    setTimeout(() => {
+        if (pendingPropertyLists[slot]) {
+            if (!equipped[slot]) {
+                console.warn(`❌ No item equipped in slot: ${slot} to apply properties`);
+                return;
+            }
+            equipped[slot].PropertyList = pendingPropertyLists[slot];
+            console.log(`✅ Injected PropertyList into equipped[${slot}]`, equipped[slot].PropertyList);
+            applyMatchedProperties(slot);
+            delete pendingPropertyLists[slot];
+        }
+    }, 0);
+}
+
+function applyCustomSlots(customSlots) {
+    for (let group in customSlots) {
+        const data = customSlots[group];
+        if (!data) continue;
+
+        if (data.rarity === "rw") {
+            // Runeword → use equipItemDirectly
+            equipItemDirectly({
+                Worn: group,
+                Title: data.name,
+                Tag: data.base,
+                QualityCode: "q_runeword",
+                PropertyList: data.props || {}
+            });
+        } else {
+            // Standard equip
+            equip(group, data.name);
+
+            // Apply custom properties
+            if (data.props) {
+                for (let key in data.props) {
+                    const val = data.props[key];
+                    if (!equipped[group][key]) equipped[group][key] = 0;
+                    equipped[group][key] += val;
+
+                    if (!character[key]) character[key] = 0;
+                    character[key] += val;
+                }
+            }
+        }
+    }
 }
 
 

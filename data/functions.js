@@ -8256,8 +8256,8 @@ document.addEventListener('DOMContentLoaded', () => {
 //	const expiration = now + 60 * 60 * 24 * 365; // 1 year
 
     try {
-      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
-//      const res = await fetch('https://b.pathofdiablo.com/api/proxy-create-link', {
+//      const res = await fetch('https://sink.actuallyiamqord.workers.dev/api/proxy-create-link', {
+      const res = await fetch('https://b.pathofdiablo.com/api/proxy-create-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

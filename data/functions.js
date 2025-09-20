@@ -6412,113 +6412,149 @@ async function importChar() {
 
 
 	// --- global stash so multiple calls can resolve properly ---
-//	const pendingPropertyLists = {};
+	//	const pendingPropertyLists = {};
 
 	function equipItemDirectly(item) {
-		const slotMapping = { body:"armor", weapon1:"weapon", weapon2:"offhand", helmet:"helm" };
-		const rawSlot = item.Worn;
+		// single pendingPropertyLists object scoped to this invocation (captured by the timeout)
+		const pendingPropertyLists = {};
 
-		if (rawSlot.startsWith("sweapon")) return; // skip swap
+		const slotMapping = { body: "armor", weapon1: "weapon", weapon2: "offhand", helmet: "helm" };
+		const rawSlot = (item && item.Worn) || "";
+
+		// ignore swap weapons
+		if (typeof rawSlot === "string" && rawSlot.startsWith("sweapon")) {
+			console.log("Skipping swap weapon slot:", rawSlot);
+			return;
+		}
+
 		const slot = slotMapping[rawSlot] || rawSlot;
-		let equipName = item.Title;
-		const offhandtag = item.Tag;
+		let equipName = item.Title || "none";
+		const offhandtag = item.Tag || "";
 
-		switch (item.QualityCode) {
-			case "q_runeword": {
-				const rw = resolveRunewordByName(item.Title);
-				const baseKey = resolveBaseKey(item.Tag);
-				if (!rw || !bases[baseKey]) break;
+		// ---- Runeword handling: equip once and return immediately ----
+		if (item.QualityCode === "q_runeword") {
+			const rw = resolveRunewordByName(item.Title);
+			const baseKey = resolveBaseKey(item.Tag);
 
-				const equipSlot = slotMapping[item.Worn] || item.Worn;
-				const displayBase = baseKey.replace(/_/g, " ");
-				const flatRuneword = {
-					rarity: "rw",
-					name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
-					type: bases[baseKey].type,
-					base: displayBase,
-					runewordStats: rw.stats,
-					runes: rw.runes,
-					cskill: rw.cskill || [],
-					...rw.stats
-				};
-				["allowedTypes","allowedCategories"].forEach(k => {
-					if (rw[k]) flatRuneword[k] = rw[k];
-				});
-
-				if (!equipment[equipSlot]) equipment[equipSlot] = {};
-				equipment[equipSlot].custom = {
-					name: flatRuneword.name,
-					base: flatRuneword.base,
-					rarity: "rw",
-					props: flatRuneword.runewordStats
-				};
-				equipment[equipSlot][flatRuneword.name] = flatRuneword;
-
-				equip(equipSlot, flatRuneword.name);
-//				selectRuneword(equipSlot, latRuneword.name);
-
-				const dropdown = document.getElementById(`dropdown_${equipSlot}`);
-				if (dropdown) {
-					const rwOption = dropdown.querySelector(`option[value="*"]`);
-					if (rwOption) rwOption.textContent = flatRuneword.name;
-//					selectRuneword(equipSlot, latRuneword.name);
-				}
-
-				console.log(`✅ Equipped runeword: ${flatRuneword.name} in slot: ${equipSlot}`);
-				break;
+			if (!rw || !bases[baseKey]) {
+				console.warn("Runeword or base not found for import:", item.Title, item.Tag);
+				return;
 			}
 
+			const displayBase = baseKey.replace(/_/g, " ");
+			const flatRuneword = {
+				rarity: "rw",
+				name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
+				type: bases[baseKey].type,
+				base: displayBase,
+				baseKey: baseKey,
+				runewordStats: rw.stats,
+				runes: rw.runes,
+				cskill: rw.cskill || [],
+				...rw.stats
+			};
+			["allowedTypes", "allowedCategories"].forEach(k => { if (rw[k]) flatRuneword[k] = rw[k]; });
+
+			if (!equipment[slot]) equipment[slot] = {};
+			// store custom runeword metadata so buildCharacterURL / loadParams can use it later
+			equipment[slot].custom = {
+				name: flatRuneword.name,
+				base: flatRuneword.base,
+				baseKey: flatRuneword.baseKey,
+				rarity: "rw",
+				props: flatRuneword.runewordStats || {}
+			};
+			equipment[slot][flatRuneword.name] = flatRuneword;
+
+			console.log(`Import: equipping runeword ${flatRuneword.name} -> slot ${slot}`);
+			// Equip directly (call your equip implementation)
+			equip(slot, flatRuneword.name);
+
+			// Update dropdown label (don't dispatch change — we already did the equip)
+			try {
+				// prefer the app helper if available
+				setDropdownToItem(getSlotId("player", slot), flatRuneword.name);
+			} catch (e) {
+				try {
+					const dd = document.getElementById(`dropdown_${slot}`);
+					if (dd) {
+						// attempt to find placeholder option and update its text
+						const starOpt = Array.from(dd.options).find(o => o.value === "*" || o.value === "");
+						if (starOpt) starOpt.text = flatRuneword.name;
+					}
+				} catch (e2) { /* best-effort only */ }
+			}
+
+			// done — return so we DON'T fall through and re-equip via dropdown handlers
+			return;
+		}
+
+		// ---- Non-runeword: translate names for uniques/sets/magic/rare/crafted ----
+		switch (item.QualityCode) {
 			case "q_unique":
 			case "q_set":
-				equipName = item.Title;
+				equipName = item.Title || equipName;
 				break;
 
 			case "q_magic":
 			case "q_rare":
 			case "q_crafted":
-				equipName = offhandtag === "Bolts" || offhandtag === "Arrows"
+				equipName = (offhandtag === "Bolts" || offhandtag === "Arrows")
 					? `Imported ${item.QualityCode.slice(2)} ${offhandtag}`
 					: `Imported ${item.QualityCode.slice(2)} ${formatSlotName(slot)}`;
-
-				// stash props for later application
-				if (item.PropertyList) {
-					pendingPropertyLists[slot] = item.PropertyList;
-					console.log(`✅ Stashed PropertyList for slot ${slot}`, item.PropertyList);
-				}
+				break;
+			default:
+				// leave equipName as-is for everything else
 				break;
 		}
 
-		// dropdown equip fallback
+		// If the API provided a PropertyList for an imported magic/rare/crafted item,
+		// stash it and apply after equipping (like your previous flow).
+		if (item.PropertyList && ["q_magic", "q_rare", "q_crafted"].includes(item.QualityCode)) {
+			pendingPropertyLists[slot] = item.PropertyList;
+			console.log(`Import: stashed PropertyList for slot ${slot}`, item.PropertyList);
+		}
+
+		// ---- Equip the item: direct approach (avoid dispatchEvent to prevent duplicate equip) ----
+		// Try to set the dropdown value if present (UI), but DO NOT dispatch change.
+		// Instead, call equip(...) directly so we control exactly what happens.
 		const dropdownId = `dropdown_${slot}`;
 		const dropdown = document.getElementById(dropdownId);
 		if (dropdown) {
 			dropdown.value = equipName;
-			dropdown.dispatchEvent(new Event("change"));
-			console.log(`Dropdown updated and change event triggered: ${dropdownId} -> ${equipName}`);
+			// best-effort: update option text if needed
+			try { setDropdownToItem(getSlotId("player", slot), equipName); } catch (e) { /* ignore */ }
 		} else {
-			console.warn(`Dropdown not found for slot: ${slot}`);
+			console.warn(`Import: dropdown not found for slot ${slot} (id=${dropdownId})`);
 		}
 
-		// Delay apply properties (replace your old setTimeout block)
+		// Call equip directly instead of triggering the dropdown event (avoids re-entrancy)
+		try {
+			console.log(`Import: calling equip(${slot}, ${equipName})`);
+			equip(slot, equipName);
+		} catch (e) {
+			console.error("Import: equip() threw:", e);
+		}
+
+		// ---- Delayed application of PropertyList (apply stats → update UI) ----
 		setTimeout(() => {
 			if (pendingPropertyLists[slot]) {
-				// store the raw API PropertyList on the equipped item so applyMatchedProperties can parse it
-				equipped[slot].PropertyList = pendingPropertyLists[slot];
-
-				// applyMatchedProperties mutates equipped[slot] and character with normalized stat keys
-				applyMatchedProperties(slot);
-
-				// build normalized props from the PropertyList and save as custom_<slot> in the URL
-				try {
-					saveImportedItemToUrl(slot, pendingPropertyLists[slot]);
-				} catch (err) {
-					console.error("Failed saving imported custom item to URL for slot", slot, err);
+				if (!equipped[slot]) {
+					console.warn(`Import: nothing equipped in slot ${slot} to apply pending properties`);
+					return;
 				}
-
+				equipped[slot].PropertyList = pendingPropertyLists[slot];
+				console.log(`Import: applying pending properties to equipped[${slot}]`, equipped[slot].PropertyList);
+				applyMatchedProperties(slot);
 				delete pendingPropertyLists[slot];
+
+				// Optionally: persist this imported custom item immediately into the URL.
+				// If you want this behaviour, call your saveCustomItemToUrl(slot) here.
+				// saveCustomItemToUrl(slot);
 			}
 		}, 0);
 	}
+
 
 	function saveCustomItemToUrl(slot) {
 		const params = new URLSearchParams(window.location.search);
@@ -9173,104 +9209,146 @@ function selectRuneword(slot, runeword, baseItem, context = "player") {
 
 	
 function equipItemDirectly(item) {
+    // single pendingPropertyLists object scoped to this invocation (captured by the timeout)
     const pendingPropertyLists = {};
-    const slotMapping = { body:"armor", weapon1:"weapon", weapon2:"offhand", helmet:"helm" };
-    const rawSlot = item.Worn;
 
-    // Skip swap weapons
-    if (rawSlot.startsWith("sweapon")) return;
+    const slotMapping = { body: "armor", weapon1: "weapon", weapon2: "offhand", helmet: "helm" };
+    const rawSlot = (item && item.Worn) || "";
+
+    // ignore swap weapons
+    if (typeof rawSlot === "string" && rawSlot.startsWith("sweapon")) {
+        console.log("Skipping swap weapon slot:", rawSlot);
+        return;
+    }
+
     const slot = slotMapping[rawSlot] || rawSlot;
-    let equipName = item.Title;
-    const offhandtag = item.Tag;
+    let equipName = item.Title || "none";
+    const offhandtag = item.Tag || "";
 
-    switch (item.QualityCode) {
-        case "q_runeword": {
-            const rw = resolveRunewordByName(item.Title);
-            const baseKey = resolveBaseKey(item.Tag);
-            if (!rw || !bases[baseKey]) break;
+    // ---- Runeword handling: equip once and return immediately ----
+    if (item.QualityCode === "q_runeword") {
+        const rw = resolveRunewordByName(item.Title);
+        const baseKey = resolveBaseKey(item.Tag);
 
-            const equipSlot = slotMapping[item.Worn] || item.Worn;
-            const displayBase = baseKey.replace(/_/g, " ");
-            const flatRuneword = {
-                rarity: "rw",
-                name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
-                type: bases[baseKey].type,
-                base: displayBase,
-                runewordStats: rw.stats,
-                runes: rw.runes,
-                cskill: rw.cskill || [],
-                ...rw.stats
-            };
-            ["allowedTypes","allowedCategories"].forEach(k => {
-                if (rw[k]) flatRuneword[k] = rw[k];
-            });
-
-            if (!equipment[equipSlot]) equipment[equipSlot] = {};
-            equipment[equipSlot].custom = {
-                name: flatRuneword.name,
-                base: flatRuneword.base,
-                rarity: "rw",
-                props: flatRuneword.runewordStats
-            };
-            equipment[equipSlot][flatRuneword.name] = flatRuneword;
-
-            equip(equipSlot, flatRuneword.name);
-
-            const dropdown = document.getElementById(`dropdown_${equipSlot}`);
-            if (dropdown) {
-                const rwOption = dropdown.querySelector(`option[value="*"]`);
-                if (rwOption) rwOption.textContent = flatRuneword.name;
-            }
-
-            console.log(`✅ Equipped runeword: ${flatRuneword.name} in slot: ${equipSlot}`);
-            break; // do not return here — continue to apply rest of import logic
+        if (!rw || !bases[baseKey]) {
+            console.warn("Runeword or base not found for import:", item.Title, item.Tag);
+            return;
         }
 
+        const displayBase = baseKey.replace(/_/g, " ");
+        const flatRuneword = {
+            rarity: "rw",
+            name: `${rw.name} ­ ­ - ­ ­ ${displayBase}`,
+            type: bases[baseKey].type,
+            base: displayBase,
+            baseKey: baseKey,
+            runewordStats: rw.stats,
+            runes: rw.runes,
+            cskill: rw.cskill || [],
+            ...rw.stats
+        };
+        ["allowedTypes", "allowedCategories"].forEach(k => { if (rw[k]) flatRuneword[k] = rw[k]; });
+
+        if (!equipment[slot]) equipment[slot] = {};
+        // store custom runeword metadata so buildCharacterURL / loadParams can use it later
+        equipment[slot].custom = {
+            name: flatRuneword.name,
+            base: flatRuneword.base,
+            baseKey: flatRuneword.baseKey,
+            rarity: "rw",
+            props: flatRuneword.runewordStats || {}
+        };
+        equipment[slot][flatRuneword.name] = flatRuneword;
+
+        console.log(`Import: equipping runeword ${flatRuneword.name} -> slot ${slot}`);
+        // Equip directly (call your equip implementation)
+        equip(slot, flatRuneword.name);
+
+        // Update dropdown label (don't dispatch change — we already did the equip)
+        try {
+            // prefer the app helper if available
+            setDropdownToItem(getSlotId("player", slot), flatRuneword.name);
+        } catch (e) {
+            try {
+                const dd = document.getElementById(`dropdown_${slot}`);
+                if (dd) {
+                    // attempt to find placeholder option and update its text
+                    const starOpt = Array.from(dd.options).find(o => o.value === "*" || o.value === "");
+                    if (starOpt) starOpt.text = flatRuneword.name;
+                }
+            } catch (e2) { /* best-effort only */ }
+        }
+
+        // done — return so we DON'T fall through and re-equip via dropdown handlers
+        return;
+    }
+
+    // ---- Non-runeword: translate names for uniques/sets/magic/rare/crafted ----
+    switch (item.QualityCode) {
         case "q_unique":
         case "q_set":
-            equipName = item.Title;
+            equipName = item.Title || equipName;
             break;
 
         case "q_magic":
         case "q_rare":
         case "q_crafted":
-            equipName = offhandtag === "Bolts" || offhandtag === "Arrows"
+            equipName = (offhandtag === "Bolts" || offhandtag === "Arrows")
                 ? `Imported ${item.QualityCode.slice(2)} ${offhandtag}`
                 : `Imported ${item.QualityCode.slice(2)} ${formatSlotName(slot)}`;
             break;
+        default:
+            // leave equipName as-is for everything else
+            break;
     }
 
-    // Save property lists for crafted/magic/rare
-    if (item.PropertyList && ["q_magic","q_rare","q_crafted"].includes(item.QualityCode)) {
+    // If the API provided a PropertyList for an imported magic/rare/crafted item,
+    // stash it and apply after equipping (like your previous flow).
+    if (item.PropertyList && ["q_magic", "q_rare", "q_crafted"].includes(item.QualityCode)) {
         pendingPropertyLists[slot] = item.PropertyList;
-        console.log(`✅ Stashed PropertyList for slot ${slot}`, item.PropertyList);
+        console.log(`Import: stashed PropertyList for slot ${slot}`, item.PropertyList);
     }
 
-    // Fallback generic dropdown flow
+    // ---- Equip the item: direct approach (avoid dispatchEvent to prevent duplicate equip) ----
+    // Try to set the dropdown value if present (UI), but DO NOT dispatch change.
+    // Instead, call equip(...) directly so we control exactly what happens.
     const dropdownId = `dropdown_${slot}`;
     const dropdown = document.getElementById(dropdownId);
     if (dropdown) {
         dropdown.value = equipName;
-        dropdown.dispatchEvent(new Event("change"));
-        console.log(`Dropdown updated and change event triggered 3: ${dropdownId} -> ${equipName}`);
+        // best-effort: update option text if needed
+        try { setDropdownToItem(getSlotId("player", slot), equipName); } catch (e) { /* ignore */ }
     } else {
-        console.warn(`Dropdown not found for slot: ${slot}`);
+        console.warn(`Import: dropdown not found for slot ${slot} (id=${dropdownId})`);
     }
 
-    // Delay apply properties
+    // Call equip directly instead of triggering the dropdown event (avoids re-entrancy)
+    try {
+        console.log(`Import: calling equip(${slot}, ${equipName})`);
+        equip(slot, equipName);
+    } catch (e) {
+        console.error("Import: equip() threw:", e);
+    }
+
+    // ---- Delayed application of PropertyList (apply stats → update UI) ----
     setTimeout(() => {
         if (pendingPropertyLists[slot]) {
             if (!equipped[slot]) {
-                console.warn(`❌ No item equipped in slot: ${slot} to apply properties`);
+                console.warn(`Import: nothing equipped in slot ${slot} to apply pending properties`);
                 return;
             }
             equipped[slot].PropertyList = pendingPropertyLists[slot];
-            console.log(`✅ Injected PropertyList into equipped[${slot}]`, equipped[slot].PropertyList);
+            console.log(`Import: applying pending properties to equipped[${slot}]`, equipped[slot].PropertyList);
             applyMatchedProperties(slot);
             delete pendingPropertyLists[slot];
+
+            // Optionally: persist this imported custom item immediately into the URL.
+            // If you want this behaviour, call your saveCustomItemToUrl(slot) here.
+            // saveCustomItemToUrl(slot);
         }
     }, 0);
 }
+
 
 function applyCustomSlots(customSlots) {
     for (let group in customSlots) {

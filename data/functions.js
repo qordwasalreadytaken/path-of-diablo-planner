@@ -6072,9 +6072,6 @@ function buildCharacterURL(character, settings) {
         }
     }
 
-
-
-
     return `${location.pathname}?${params.toString()}`;
 }
 
@@ -6197,7 +6194,12 @@ TooltipElementimporttest = document.getElementById("importtest");
 // global stash for imported property lists
 let pendingPropertyLists = {};
 async function importChar() {
-	
+const equipGroups = ["helm","armor","gloves","boots","belt","amulet","ring1","ring2","weapon","offhand"];
+for (let group of equipGroups) {
+    if (equipment[group]) {
+        delete equipment[group].custom;
+    }
+}	
 	reset("Sorceress")
     // Get the textbox input value
     let characterName = document.getElementById('importname').value.trim();
@@ -7254,6 +7256,7 @@ function equipItemDirectly(item) {
 				console.warn(`❌ No synth match found for "${key}: ${value}"`);
 			}
 		});
+	updateURLDebounced()
 	}
 
 

@@ -638,7 +638,7 @@ var bases = {	// Note: damage_vs_undead:50 is included for blunt weapons, but ot
 	// other? (unneeded with current implementation)
 	//Arrows:{group:"offhand", type:"quiver"},
 	//Bolts:{group:"offhand", type:"quiver"},
-	//Amulet:{group:"amulet", type:"amulet"},
+	Amulet:{group:"amulet", type:"amulet", itemcode:"amu"},
 	//Ring:{group:"ring", type:"ring"},
 };
 

@@ -801,7 +801,9 @@ function parseLegacyEquipment(params) {
                     } catch (err) {
                         console.error(`Failed to socket ${name} into ${slot}`, err);
                     }
-                }
+					}
+					// Found and applied the matching item — stop searching to avoid duplicate application
+					break;
             }
         }
     }
@@ -6593,10 +6595,10 @@ function equipItemDirectly(item) {
         equip(slot, flatRuneword.name);
 
         // Update dropdown label (don't dispatch change — we already did the equip)
-        try {
-            // prefer the app helper if available
-            setDropdownToItem(getSlotId("player", slot), flatRuneword.name);
-        } catch (e) {
+		try {
+			// prefer the app helper if available
+			setDropdownToItem(getSlotId("player", slot), flatRuneword.name, true);
+		} catch (e) {
             try {
                 const dd = document.getElementById(`dropdown_${slot}`);
                 if (dd) {
@@ -9270,9 +9272,22 @@ function selectRuneword(slot, runeword, baseItem, context = "player") {
         props: flatRuneword.runewordStats || {}
     };
 
-    if (!equipment[slot]) equipment[slot] = {};
-    equipment[slot].custom = flatRuneword.custom;  // <-- this is what buildCharacterURL looks for
-    equipment[slot][flatRuneword.name] = flatRuneword;
+	// Normalize equipment[slot] to an array if needed and remove duplicates before inserting
+	if (!Array.isArray(equipment[slot])) {
+		const arr = [];
+		if (equipment[slot] && typeof equipment[slot] === 'object') {
+			for (let k in equipment[slot]) {
+				if (k === 'custom') continue;
+				const v = equipment[slot][k];
+				if (v && v.name) arr.push(v);
+			}
+		}
+		equipment[slot] = arr;
+	}
+
+	equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatRuneword.name));
+	equipment[slot].unshift(flatRuneword);
+	equipment[slot].custom = flatRuneword.custom;  // <-- this is what buildCharacterURL looks for
 
     // Equip the item
     if (context === "merc") {
@@ -9290,7 +9305,8 @@ function selectRuneword(slot, runeword, baseItem, context = "player") {
         if (rwOption) rwOption.textContent = flatRuneword.name;
 //		dropdown.textContent = flatRuneword.name;
     }
-	setDropdownToItem(slotId, flatRuneword.name)
+	// update dropdown label without dispatching change to avoid re-triggering equip
+	setDropdownToItem(slotId, flatRuneword.name, true)
     // Remove the runeword base panel if it exists
     const basePanel = document.getElementById("runeword-bases");
     if (basePanel) basePanel.remove();
@@ -9516,46 +9532,46 @@ function applyCustomSlots(customSlots) {
  * Tries: option.value === itemName, option.text === itemName,
  * then updates runeword-like option labels if present.
  */
-function setDropdownToItem(slotId, itemName) {
-    const dropdown = document.getElementById(`dropdown_${slotId}`);
-    if (!dropdown) return;
+function setDropdownToItem(slotId, itemName, suppressDispatch = false) {
+	const dropdown = document.getElementById(`dropdown_${slotId}`);
+	if (!dropdown) return;
 
-    // normalize for comparisons
-    const target = String(itemName || "").trim();
+	// normalize for comparisons
+	const target = String(itemName || "").trim();
 
-    // 1) exact match on option.value
-    for (let i = 0; i < dropdown.options.length; i++) {
-        if (String(dropdown.options[i].value).trim() === target) {
-            dropdown.selectedIndex = i;
-            // dispatch change (will be suppressed if load is in progress)
-            dropdown.dispatchEvent(new Event("change"));
-            return;
-        }
-    }
+	// 1) exact match on option.value
+	for (let i = 0; i < dropdown.options.length; i++) {
+		if (String(dropdown.options[i].value).trim() === target) {
+			dropdown.selectedIndex = i;
+			// dispatch change (will be suppressed if load is in progress)
+			if (!suppressDispatch) dropdown.dispatchEvent(new Event("change"));
+			return;
+		}
+	}
 
-    // 2) match on visible text content
-    for (let i = 0; i < dropdown.options.length; i++) {
-        if (String(dropdown.options[i].textContent || dropdown.options[i].innerText).trim() === target) {
-            dropdown.selectedIndex = i;
-            dropdown.dispatchEvent(new Event("change"));
-            return;
-        }
-    }
+	// 2) match on visible text content
+	for (let i = 0; i < dropdown.options.length; i++) {
+		if (String(dropdown.options[i].textContent || dropdown.options[i].innerText).trim() === target) {
+			dropdown.selectedIndex = i;
+			if (!suppressDispatch) dropdown.dispatchEvent(new Event("change"));
+			return;
+		}
+	}
 
-    // 3) runeword / dynamic option fallback: find option with a special value and update its label
-    // (some dropdowns have option[value="[runeword]"] or option[value="*"] for dynamic names)
-    const dynamicOpt = dropdown.querySelector('option[value="[runeword]"], option[value="*"], option[data-dynamic="runeword"]');
-    if (dynamicOpt) {
-        dynamicOpt.textContent = itemName;
-        // select that option
-        dropdown.value = dynamicOpt.value;
-        dropdown.dispatchEvent(new Event("change"));
-        return;
-    }
+	// 3) runeword / dynamic option fallback: find option with a special value and update its label
+	// (some dropdowns have option[value="[runeword]"] or option[value="*"] for dynamic names)
+	const dynamicOpt = dropdown.querySelector('option[value="[runeword]"], option[value="*"], option[data-dynamic="runeword"]');
+	if (dynamicOpt) {
+		dynamicOpt.textContent = itemName;
+		// select that option
+		dropdown.value = dynamicOpt.value;
+		if (!suppressDispatch) dropdown.dispatchEvent(new Event("change"));
+		return;
+	}
 
-    // 4) last resort, set value and dispatch change — might not match an option but keeps behavior consistent
-    dropdown.value = itemName;
-    dropdown.dispatchEvent(new Event("change"));
+	// 4) last resort, set value and dispatch change — might not match an option but keeps behavior consistent
+	dropdown.value = itemName;
+	if (!suppressDispatch) dropdown.dispatchEvent(new Event("change"));
 }
 
 /**

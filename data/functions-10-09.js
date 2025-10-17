@@ -252,7 +252,6 @@ function resetCharms() {
 			character[old_affix] -= equipped[group][charm][old_affix]
 			equipped[group][charm][old_affix] = unequipped[old_affix]
 		}
-
 	}
 	for (let s = 1; s < inv[0]["in"].length; s++) { inv[0]["in"][s] = "" }
 	for (let t = 1; t < inv.length; t++) {
@@ -645,43 +644,7 @@ function loadParams() {
         const dropdown = document.getElementById(`dropdown_${slot}`);
         if (dropdown) {
             dropdown.value = itemName;
-			// When loading from URL we must avoid triggering the dropdown's
-			// change handler (which calls equip again). Use suppressDispatch
-			// so setDropdownToItem updates the UI silently. Some dropdowns
-			// use dynamic/runeword-like options or a blank option (value="")
-			// to represent imported/custom items — update the visible label
-			// so the UI reflects the newly equipped item even though we
-			// don't dispatch the change event.
-			try {
-				setDropdownToItem(getSlotId("player", slot), itemName, true);
-
-				// Ensure visible text matches equipped item (handles dynamic options)
-				const displayName = (equipped[slot] && (equipped[slot].name || equipped[slot].Title)) || itemName || slot;
-				// If the selected option exists, update its text
-				if (dropdown.selectedIndex >= 0 && dropdown.options[dropdown.selectedIndex]) {
-					const opt = dropdown.options[dropdown.selectedIndex];
-					if ((opt.textContent || opt.innerText).trim() !== String(displayName).trim()) {
-						try { opt.textContent = displayName; } catch (e) { opt.innerText = displayName; }
-					}
-				} else {
-					// fallback: if there's a dynamic/runeword option, update its label
-					const dynamicOpt = dropdown.querySelector('option[value="[runeword]"], option[value="*"], option[data-dynamic="runeword"]');
-					if (dynamicOpt) {
-						dynamicOpt.textContent = displayName;
-						dropdown.value = dynamicOpt.value;
-					} else {
-						// final fallback: insert or update a blank option at the top
-						let blankOpt = Array.from(dropdown.options).find(o => o.value === "" || o.value === "*");
-						if (!blankOpt) {
-							blankOpt = document.createElement('option');
-							blankOpt.value = "";
-							dropdown.add(blankOpt, dropdown.options[0] || null);
-						}
-						try { blankOpt.textContent = displayName; } catch (e) { blankOpt.innerText = displayName; }
-						dropdown.value = blankOpt.value;
-					}
-				}
-			} catch (e) { }
+            try { setDropdownToItem(getSlotId("player", slot), itemName); } catch (e) { }
         }
     }
 
@@ -855,148 +818,129 @@ if (rarity === "rw" || name.includes(" - ")) {
 
 
 
-		// --- Imported / Custom items with inline props ---
+        // --- Imported / Custom items with inline props ---
 		if (/^(Imported|Custom)/i.test(name)) {
 			const display = name; // keep exact label, e.g. "Imported normal weapon"
 
-			// Special-case: Imported <rarity> <BaseName> should recreate the flat base.
-			// Accept common rarities (normal, high, magic, rare, crafted)
-			const mImport = /^Imported\s+(normal|high|magic|rare|crafted)\s+(.+)$/i.exec(display);
-			if (mImport) {
-				const parsedRarity = (mImport[1] || "").toLowerCase();
-				const baseName = (mImport[2] || "").trim();
-				// Use flattenBaseItem with the parsed rarity so the flattened base has correct metadata
-				const flatBase = flattenBaseItem(baseName, parsedRarity === 'high' ? 'high' : parsedRarity);
+			// If this is an "Imported normal <BaseName>", recreate the flat base
+			// so equip() / dropdown selection can find and equip it like the importer.
+			const mNormal = /^Imported\s+normal\s+(.+)$/i.exec(display);
+			if (mNormal) {
+				const baseName = (mNormal[1] || '').trim();
+				console.log(`[loadParams] Slot '${slot}' detected Imported normal item. Extracted baseName: '${baseName}' from display: '${display}'`);
+				const flatBase = flattenBaseItem(baseName);
 				if (flatBase) {
-					// Ensure equipment[slot] is an array and doesn't already contain this base
-					if (!Array.isArray(equipment[slot])) equipment[slot] = [];
-					equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatBase.name));
-					equipment[slot].unshift(flatBase);
-					Object.defineProperty(equipment[slot], "custom", {
-						value: {
-							name: flatBase.name,
-							base: flatBase.base,
-							baseKey: canonicalBaseKey(baseName),
-							rarity: parsedRarity,
-							// Keep only a lightweight props mapping so URL serialization
-							// remains compact and loadParams can recreate the base.
-							props: { base: flatBase.base }
-						},
-						enumerable: false,
-						writable: true,
-						configurable: true
-					});
-
-					// Equip the base so subsequent code (socketing/props) applies to it
-					equip(slot, flatBase.name);
-					try { updateURLDebounced(); } catch(e) {}
-				}
-			}
-			safeEquip(slot, display);
-			handleCorruption(slot, corruption);
-
-			// parts contains socket names followed by optional prop tokens (k:v)
-			// Ensure we only pass pure socket names to handleSocketables so prop
-			// tokens aren't misinterpreted as socketable names.
-			const socketTokens = parts.filter(p => !p.includes(":")).map(p => p.trim()).filter(p => p !== "");
-			if (socketTokens.length) handleSocketables(slot, socketTokens);
-
-			// --- Parse any trailing key:value props (e.g. ias:30,ed:50) ---
-			const propPairs = parts.filter(p => p.includes(":"));
-            if (propPairs.length) {
-                const props = {};
-                for (const pair of propPairs) {
-                    const [k, v] = pair.split(":").map(s => s.trim());
-					if (!k || v === undefined) continue;
-					// support arrays encoded with "|" (used by build/save helpers)
-					if (String(v).includes("|")) {
-						const arr = String(v).split("|").map(x => (x === "" ? x : (isNaN(x) ? x : Number(x))));
-						props[k] = arr;
-					} else {
-						props[k] = (v !== "" && !isNaN(v)) ? Number(v) : v;
-					}
-                }
-
-                // Attach to equipped item
-                if (!equipped[slot]) equipped[slot] = {};
-                equipped[slot].props = Object.assign({}, equipped[slot].props || {}, props);
-
-					// If props include base:<BaseName>, ensure we recreate and equip that base
-					if (props.base) {
-						const baseName = String(props.base).trim();
-						const flatBase = flattenBaseItem(baseName);
-						if (flatBase) {
-							if (!Array.isArray(equipment[slot])) equipment[slot] = [];
-							equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatBase.name));
-							equipment[slot].unshift(flatBase);
-							Object.defineProperty(equipment[slot], "custom", {
-								value: { name: flatBase.name, base: flatBase.base, rarity: "normal", props: { base: flatBase.base } },
-								enumerable: false,
-								writable: true,
-								configurable: true
-							});
-							// Equip the base so subsequent code applies to it
-							equip(slot, flatBase.name);
-							try { updateURLDebounced(); } catch (e) {}
-						}
-					}
-                console.log(`Loaded imported props for ${slot}:`, props);
-
-                // Optional: stash for later serialization
-                if (!equipped[slot].custom) equipped[slot].custom = {};
-                equipped[slot].custom.props = props;
-				// resilient copy for URL-building
-				persistedInlineProps[slot] = Object.assign({}, persistedInlineProps[slot] || {}, props);
-				try { console.debug(`[persistedInlineProps] set for ${slot}:`, persistedInlineProps[slot]); } catch(e) {}
-
-				// Apply these inline properties to the equipped item so stats take effect
-				try {
-					if (typeof applyInlinePropsToEquipped === 'function') {
-						applyInlinePropsToEquipped(slot, props);
-					} else {
-						// fallback simple application
-						for (const pk in props) {
-							const pv = props[pk];
-							if (pk === 'ctc' || pk === 'cskill') {
-								if (!Array.isArray(equipped[slot][pk])) equipped[slot][pk] = [];
-								if (Array.isArray(pv)) {
-									// merge arrays
-									for (const v of pv) equipped[slot][pk].push(v);
-								} else {
-									equipped[slot][pk].push(pv);
-								}
-							} else if (typeof pv === 'number') {
-								equipped[slot][pk] = (equipped[slot][pk] || 0) + pv;
-								character[pk] = (character[pk] || 0) + pv;
-							} else if (Array.isArray(pv) && pv.every(x => typeof x === 'number')) {
-								// sum numeric arrays into the stat
-								const sum = pv.reduce((a,b)=>a+(Number(b)||0),0);
-								equipped[slot][pk] = (equipped[slot][pk] || 0) + sum;
-								character[pk] = (character[pk] || 0) + sum;
-							} else {
-								equipped[slot][pk] = pv;
+					console.log(`[loadParams] flattenBaseItem succeeded for baseName '${baseName}':`, flatBase);
+					// normalize equipment[slot] into an array if needed
+					if (!Array.isArray(equipment[slot])) {
+						const arr = [];
+						if (equipment[slot] && typeof equipment[slot] === 'object') {
+							for (let k in equipment[slot]) {
+								if (k === 'custom') continue;
+								const v = equipment[slot][k];
+								if (v && v.name) arr.push(v);
 							}
 						}
-						try { updateSelectedItemSummary(slot); } catch(e){}
-						try { update(); } catch(e){}
-						// Mark that inline props were applied so rehydration won't double-apply
-						if (!equipped[slot]) equipped[slot] = {};
-						equipped[slot]._propsApplied = true;
+						equipment[slot] = arr;
 					}
-				} catch (err) {
-					console.warn(`loadParams: failed applying inline props for slot ${slot}`, err);
+					// remove any existing matching entries and add our flat base
+					equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatBase.name));
+					equipment[slot].unshift(flatBase);
+					console.log(`[loadParams] Inserted flatBase into equipment['${slot}']:`, equipment[slot]);
+					// store metadata so URL/build functions can reuse it
+					try {
+						Object.defineProperty(equipment[slot], 'custom', {
+							value: {
+								name: flatBase.name,
+								base: flatBase.base,
+								rarity: 'normal',
+								props: flatBase
+							},
+							enumerable: false,
+							writable: true,
+							configurable: true
+						});
+						console.log(`[loadParams] Defined equipment['${slot}'].custom metadata.`);
+					} catch (e) { console.warn(`[loadParams] Failed to defineProperty for equipment['${slot}'].custom`, e); }
+				} else {
+					console.warn(`[loadParams] flattenBaseItem FAILED for baseName '${baseName}'.`);
 				}
+			}
 
-				// Ensure URL persists normalized inline props (rewrite slot param)
-				try { saveImportedItemToUrl(slot); } catch(e) { /* non-fatal */ }
+			// Trigger the dropdown change so the normal equip path runs (same as equipItemDirectly)
+			const dropdown = document.getElementById(`dropdown_${slot}`);
+			if (dropdown) {
+				dropdown.value = display;
+				dropdown.dispatchEvent(new Event('change'));
+				console.log(`[loadParams] Dispatched dropdown change for slot '${slot}' with value '${display}'.`);
+				// Defensive: sometimes equip() is called earlier with an empty value
+				// which clears the slot. Force an equip call shortly after the
+				// dropdown dispatch to ensure the imported item is actually applied.
+				setTimeout(() => {
+					try {
+						console.log(`[loadParams] Forcing equip('${slot}', '${display}') after dropdown dispatch`);
+						equip(slot, display);
+					} catch (e) {
+						console.warn(`[loadParams] Forced equip failed for slot '${slot}'`, e);
+					}
+				}, 10);
+			} else {
+				// Fallback to safeEquip if dropdown not present
+				console.warn(`[loadParams] Dropdown for slot '${slot}' not found. Falling back to safeEquip.`);
+				safeEquip(slot, display);
+			}
 
-				// Defensive: ensure persisted props are applied to the equipped object
-				// Note: rehydrateInlineProps will skip if _propsApplied is true (set above)
-				try { rehydrateInlineProps(slot); } catch(e) {}
-            }
+			handleCorruption(slot, corruption);
+			handleSocketables(slot, sockets);
 
-            continue;
-        }
+			// --- Parse any trailing props token. Prefer the braced form props={k:v;k2:v2}
+			// which avoids accidental comma-splitting. Fall back to legacy comma
+			// separated key:val tokens if present.
+			let props = {};
+			for (const token of parts) {
+				if (!token) continue;
+				const m = token.match(/^props=\{(.+)\}$/i);
+				if (m) {
+					const inner = m[1];
+					const pairs = inner.split(/;+/).map(s => s.trim()).filter(Boolean);
+					for (const pair of pairs) {
+						const [k, v] = pair.split(':').map(s => s.trim());
+						if (!k) continue;
+						if (v && v.includes('|')) {
+							props[k] = v.split('|').map(val => isNaN(val) ? val : Number(val));
+						} else if (v !== undefined) {
+							props[k] = isNaN(v) ? v : Number(v);
+						}
+					}
+					break; // done — prefer braced token
+				}
+			}
+			// Legacy fallback: comma/colon tokens (older URLs)
+			if (Object.keys(props).length === 0) {
+				const propPairs = parts.filter(p => p.includes(':'));
+				for (const pair of propPairs) {
+					const [k, v] = pair.split(':').map(s => s.trim());
+					if (!k) continue;
+					if (v && v.includes('|')) {
+						props[k] = v.split('|').map(val => isNaN(val) ? val : Number(val));
+					} else if (v !== undefined) {
+						props[k] = isNaN(v) ? v : Number(v);
+					}
+				}
+			}
+			if (Object.keys(props).length) {
+				console.log(`[loadParams] Parsed inline props for slot '${slot}':`, props);
+				// stash to apply after the dropdown equipping completes
+				pendingInlineProps[slot] = Object.assign({}, pendingInlineProps[slot] || {}, props);
+				console.log(`[loadParams] Stashed inline props for slot '${slot}':`, pendingInlineProps[slot]);
+				// Also set custom.props for visibility
+				if (!equipped[slot]) equipped[slot] = {};
+				if (!equipped[slot].custom) equipped[slot].custom = {};
+				equipped[slot].custom.props = Object.assign({}, equipped[slot].custom.props || {}, props);
+			}
+
+			continue;
+		}
 
 
         // --- Unique / Set / Base ---
@@ -1004,12 +948,42 @@ if (rarity === "rw" || name.includes(" - ")) {
         handleCorruption(slot, corruption);
         handleSocketables(slot, sockets);
 
-        // --- Normalize for URL consistency ---
+		// Note: trailing inline prop parsing is handled only for items whose
+		// display name includes "Imported" (the earlier branch above). Do not
+		// parse generic trailing tokens here to avoid affecting non-imported items.
+
+		// --- Normalize for URL consistency ---
         const eq = equipped[slot];
         eq.corruption = eq.corruption || corruption || (eq.socketCount ? "+Sockets" : "none");
         eq.socketCount = sockets.length;
         eq.sockets = sockets.slice();
         eq.props = eq.props || {};
+
+		// Apply inline props to equipped item and character totals so they take effect
+		// but only for items that include 'Imported' in their display name so
+		// we don't accidentally re-apply props for normal/unique items.
+		try {
+			const nameLower = String(eq && (eq.name || eq.Title || (eq.custom && eq.custom.name) || '')).toLowerCase();
+			const isImported = nameLower.includes('imported');
+			if (isImported && eq.props && !eq._propsApplied) {
+				for (const pk in eq.props) {
+					if (!Object.prototype.hasOwnProperty.call(eq.props, pk)) continue;
+					const pv = eq.props[pk];
+					if (Array.isArray(pv)) {
+						if (!Array.isArray(eq[pk])) eq[pk] = [];
+						eq[pk] = eq[pk].concat(pv);
+					} else if (typeof pv === 'number') {
+						eq[pk] = (eq[pk] || 0) + pv;
+						character[pk] = (character[pk] || 0) + pv;
+					} else {
+						eq[pk] = pv;
+					}
+				}
+				eq._propsApplied = true;
+			}
+		} catch (err) {
+			console.warn(`loadParams: failed applying inline props for slot ${slot}`, err);
+		}
 
 		// Ensure base damage reflects ethereal status (match live equip behavior)
 		try {
@@ -1103,6 +1077,42 @@ for (let i = 0; i < param_charms.length; i++) {
 	try {
 		update();
 	} catch (e) { /* fallback */ }
+
+	// Apply any inline props that were stashed while equipping imported items
+	try {
+		for (const slot in pendingInlineProps) {
+			if (!Object.prototype.hasOwnProperty.call(pendingInlineProps, slot)) continue;
+			const props = pendingInlineProps[slot];
+			if (!props || !equipped[slot]) {
+				console.warn(`[loadParams] Skipping pendingInlineProps for slot '${slot}' (missing props or equipped item).`);
+				continue;
+			}
+			console.log(`[loadParams] Applying pending inline props for slot '${slot}':`, props);
+			for (const k in props) {
+				if (!Object.prototype.hasOwnProperty.call(props, k)) continue;
+				const v = props[k];
+				if (Array.isArray(v)) {
+					if (!Array.isArray(equipped[slot][k])) equipped[slot][k] = [];
+					equipped[slot][k] = equipped[slot][k].concat(v);
+				} else if (typeof v === 'number') {
+					equipped[slot][k] = (equipped[slot][k] || 0) + v;
+					character[k] = (character[k] || 0) + v;
+				} else {
+					equipped[slot][k] = v;
+				}
+			}
+			// Persist a `props` object for URL builders
+			equipped[slot].props = Object.assign({}, equipped[slot].props || {}, props);
+			// Update UI and save inline props as inline URL when appropriate
+			try { updateSelectedItemSummary(slot); } catch (e) { console.warn(`[loadParams] updateSelectedItemSummary failed for slot '${slot}'`, e); }
+			try { saveImportedItemToUrl(slot); } catch (e) { console.warn(`[loadParams] saveImportedItemToUrl failed for slot '${slot}'`, e); }
+		}
+	} catch (e) {
+		console.warn('[loadParams] Failed to apply pending inline props', e);
+	} finally {
+		// Clear stash
+		for (const s in pendingInlineProps) { delete pendingInlineProps[s]; }
+	}
 
 	window._loadingParams = false;
 	updateURLDebounced();
@@ -1273,16 +1283,9 @@ function equipMerc(group, val) {
 //	val: name of item
 // ---------------------------------
 function equip(group, val) {
-	console.log("[DEBUG equip] Equip function kicked off for", group, val);
-	// If equip is invoked with an empty string, capture a stack trace to find the caller
-	if (val === "" || (typeof val === 'string' && val.trim().length === 0)) {
-		try {
-			throw new Error(`equip-empty-title for group=${group}`);
-		} catch (e) {
-			console.warn('[DEBUG equip] equip called with empty title; stack trace follows:');
-			if (e && e.stack) console.warn(e.stack);
-		}
-	}
+// Diagnostic: log when equip is invoked
+	console.log(`[equip] called for group='${group}' val='${val}'`);
+//	console.log("Equip function kicked off for ", group, val);
 //	console.log("Char STR= ", character.strength, character.strength_added);
 	
     if (val === "[runeword]") {
@@ -1312,8 +1315,10 @@ function equip(group, val) {
 	// check if item was imported from a different category (offhand weapons)
 	var src_group = group;
 	var found = 0;
+	console.log(`[equip] initial src_group='${src_group}'`);
 	if (group == "offhand") { for (item in equipment[group]) { if (equipment[group][item].name == val) { found = 1 } } }
 	if (found == 0 && group == "offhand") { src_group = "weapon" }
+	console.log(`[equip] resolved src_group='${src_group}' (found=${found}) for requested val='${val}')`);
 	if (group == "weapon") {applyCustomED('weapon')}
 	var itemType = "";
 	var twoHanded = 0;
@@ -1379,14 +1384,14 @@ function equip(group, val) {
 	}
 	// reset item object, to preserve normal affix order
 	equipped[group] = {name:"none",tier:0}
-	console.debug(`[DEBUG equip] Reset equipped[${group}] to 'none'`);
 //	if (group == "weapon" || group == "offhand") { equipped[group].type = ""}
 //	if (group == "weapon") { equipped[group].twoHanded = 0 ;applyCustomED('weapon');}	// this line may be unnecessary
 	if (group == "weapon") { equipped[group].twoHanded = 0 ;}	// this line may be unnecessary
 	// add affixes to character
 	for (item in equipment[src_group]) {
 		if (equipment[src_group][item].name == val) {
-			console.debug(`[DEBUG equip] Found matching equipment[${src_group}][${item}].name == '${val}' -> applying affixes`);
+			console.log(`[equip] Found match in equipment['${src_group}'][${item}] name='${equipment[src_group][item].name}'`);
+			console.log(`[equip] item object:`, equipment[src_group][item]);
 		
 			// add affixes from base item
 			if (typeof(equipment[src_group][item]["base"]) != 'undefined') {
@@ -1510,6 +1515,43 @@ function equip(group, val) {
 		}
 	}
 	// add set bonuses
+
+	// If loadParams stashed inline props for this slot but equip ran later
+	// (race), apply them here immediately so they aren't lost. This ensures
+	// pendingInlineProps are applied at the moment the item is actually
+	// equipped (rather than relying on a post-load sweep which can run
+	// before async dispatch-based equips complete).
+	try {
+		if (pendingInlineProps && pendingInlineProps[group] && equipped[group]) {
+			const props = pendingInlineProps[group];
+			console.log(`[equip] Applying pendingInlineProps for slot '${group}':`, props);
+			for (const k in props) {
+				if (!Object.prototype.hasOwnProperty.call(props, k)) continue;
+				const v = props[k];
+				if (Array.isArray(v)) {
+					if (!Array.isArray(equipped[group][k])) equipped[group][k] = [];
+					equipped[group][k] = equipped[group][k].concat(v);
+				} else if (typeof v === 'number') {
+					equipped[group][k] = (equipped[group][k] || 0) + v;
+					character[k] = (character[k] || 0) + v;
+				} else {
+					equipped[group][k] = v;
+				}
+			}
+			// persist into the custom props blob for visibility and future URL builds
+			if (!equipped[group].custom) equipped[group].custom = {};
+			equipped[group].custom.props = Object.assign({}, equipped[group].custom.props || {}, props);
+			// Also keep a first-class .props object so URL builders pick it up
+			equipped[group].props = Object.assign({}, equipped[group].props || {}, props);
+			// mark applied so we don't double-apply later
+			equipped[group]._propsApplied = true;
+			try { updateSelectedItemSummary(group); } catch (e) { /* ignore */ }
+			try { saveImportedItemToUrl(group); } catch (e) { console.warn('equip: saveImportedItemToUrl failed', e); }
+			delete pendingInlineProps[group];
+		}
+	} catch (e) {
+		console.warn('[equip] Failed applying pendingInlineProps', e);
+	}
 	if (set_bonuses != "") {
 		set_after = character[set];
 		if (set_before < set_after) {
@@ -4021,11 +4063,8 @@ function equipmentHover(group) {
 	else if (equipped[group].rarity == "magic") { textColor = "Blue" }
 	else if (equipped[group].rarity == "rare") { textColor = "Yellow" }
 	else if (equipped[group].rarity == "craft") { textColor = "Orange" }
-	else if (equipped[group].rarity == "crafted") { textColor = "Orange" }
 	else if ((equipped[group].rarity == "common" || equipped[group].rarity == "rw") && equipped[group].ethereal == 1) { textColor = "Gray" }
-	else if ((equipped[group].rarity == "high" || equipped[group].rarity == "rw") && equipped[group].ethereal == 1) { textColor = "Gray" }
-	else if ((equipped[group].rarity == "normal" || equipped[group].rarity == "rw") && equipped[group].ethereal == 1) { textColor = "Gray" }
-	else if (equipped[group].rarity == "common" || equipped[group].rarity == "high" || equipped[group].rarity == "normal" || equipped[group].rarity == "rw") { textColor = "White" }
+	else if (equipped[group].rarity == "common" || equipped[group].rarity == "rw") { textColor = "White" }
 	document.getElementById("item_name").style.color = colors[textColor]
 	document.getElementById("tooltip_inventory").style.display = "block"
 	
@@ -4046,7 +4085,6 @@ function equipmentHover(group) {
 		document.getElementById("tooltip_inventory").style.left = offset_x+"px"
 	}
 	if (name == "") { document.getElementById("tooltip_inventory").style.left = 950+"px" }
-//	console.log("Hover pup up rarity: " + equipped[group].name+ equipped[group].rarity);
 }
 
 // equipmentOut - stops showing equipment info (mouse-over ends)
@@ -6408,22 +6446,47 @@ for (let slot of [
     for (let s of socketed[slot].items) arr.push(s.name || "none");
   }
 
-	// --- Inline props for Imported/Custom ---
-		// include props if present on eq.props or eq.custom.props (imported items)
-		// fallback to persistedInlineProps[slot] if the runtime equipped object was reassigned
-		const inlinePropsSource = (eq && eq.props && Object.keys(eq.props).length) ? eq.props
-				: (eq.custom && eq.custom.props && Object.keys(eq.custom.props).length) ? eq.custom.props
-				: (persistedInlineProps[slot] && Object.keys(persistedInlineProps[slot]).length) ? persistedInlineProps[slot]
-				: null;
-		if (inlinePropsSource) {
-		try { console.debug(`[buildCharacterURL] inlinePropsSource for ${slot}:`, inlinePropsSource); } catch(e) {}
-		const propList = Object.entries(inlinePropsSource)
-			.map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("|") : v}`)
-			.join(",");
-		if (propList) {
-			arr.push(propList);
+  // --- Inline props for Imported/Custom ---
+	// Only inline props for items that are imported. This avoids inlining
+	// numeric affixes from normal/unique items which would bloat the URL.
+	const displayName = String((eq && (eq.name || eq.Title || (eq.custom && eq.custom.name))) || '');
+	const isImportedForUrl = displayName.toLowerCase().includes('imported');
+	let propsToInline = null;
+	if (isImportedForUrl) {
+		// Merge derived props from PropertyList (if present) and explicit eq.props
+		// giving precedence to eq.props so programmatic inline props are preserved.
+		let derived = {};
+		if (Array.isArray(eq.PropertyList) && eq.PropertyList.length) {
+			try {
+				derived = buildPropsFromPropertyList(eq.PropertyList) || {};
+			} catch (err) {
+				console.warn(`buildCharacterURL: failed to build props from PropertyList for ${slot}`, err);
+				derived = {};
+			}
+		}
+		propsToInline = Object.assign({}, derived, (eq.props && Object.keys(eq.props).length) ? eq.props : {});
+
+		// If no PropertyList/props, fallback to numeric fields already applied
+		if ((!propsToInline || Object.keys(propsToInline).length === 0)) {
+			const numericProps = {};
+			for (const k in eq) {
+				if (["name","base","baseKey","rarity","tier","corruption","socketCount","PropertyList","Title","Worn","QualityCode","img"].includes(k)) continue;
+				const v = eq[k];
+				if (typeof v === 'number' && v !== 0) numericProps[k] = v;
+				else if (Array.isArray(v) && (k === 'ctc' || k === 'cskill')) numericProps[k] = v.slice();
+			}
+			if (Object.keys(numericProps).length) propsToInline = numericProps;
+		}
+
+		if (propsToInline && Object.keys(propsToInline).length) {
+			const propList = Object.entries(propsToInline)
+				.map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("|") : v}`)
+				.join(";");
+			arr.push(`props={${propList}}`);
 			console.log(`✅ Added props for ${slot}:`, propList);
 		}
+	} else {
+		// not imported — do not inline props
 	}
 
   // --- Set URL parameter ---
@@ -6592,7 +6655,7 @@ TooltipElementimporttest = document.getElementById("importtest");
 
 //async function importChar() {
 //let characterName = document.getElementById('importname').value
-//let characterName = "necrosallsuck"
+//let characterName = "SCplebsHalfMap"
 //let characterData;
 
 //=========================================================================================================================
@@ -6601,7 +6664,7 @@ TooltipElementimporttest = document.getElementById("importtest");
 // Get character name from the ui
 // global stash for imported property lists
 
-function flattenBaseItem(baseName, rarity = "normal") {
+function flattenBaseItem(baseName) {
 	if (!baseName) return null;
 	const baseKey = baseName.replace(/ /g, "_");
 	const base = bases[baseKey] || bases[baseName] || bases[baseName.toLowerCase()];
@@ -6613,11 +6676,8 @@ function flattenBaseItem(baseName, rarity = "normal") {
 	// clone base to avoid mutating the master list
 	const flat = { ...base };
 
-	flat.rarity = rarity;
-	// For display purposes treat 'high' items as 'normal' so imported names
-	// read consistently as "Imported normal <Base>" for both normal/high.
-	const nameRarity = (rarity === 'high' || rarity === 'normal') ? 'normal' : rarity;
-	flat.name = `Imported ${nameRarity} ${baseName}`;
+	flat.rarity = "normal";
+	flat.name = `Imported normal ${baseName}`;
 	flat.base = baseName;
 	flat.type = base.type || "";
 	flat.__is_custom_base = true;
@@ -6629,64 +6689,9 @@ function flattenBaseItem(baseName, rarity = "normal") {
 }
 
 
-
 const pendingPropertyLists = {};
-// resilient storage for inline props parsed from URL/import so they aren't lost
-// if equipped[slot] is later reassigned
-const persistedInlineProps = {};
-
-/**
- * Re-apply persisted inline props (if any) to an equipped slot.
- * Safe and idempotent: will not double-apply if _propsApplied flag is set.
- */
-function rehydrateInlineProps(slot) {
-	try {
-		if (!slot) return;
-		const stash = persistedInlineProps[slot];
-		if (!stash || typeof stash !== 'object' || Object.keys(stash).length === 0) return;
-		if (!equipped[slot]) equipped[slot] = {};
-		// Avoid reapplying multiple times
-		if (equipped[slot]._propsApplied) return;
-
-		// Merge into equipped[slot].props and equipped[slot].custom.props
-		equipped[slot].props = Object.assign({}, equipped[slot].props || {}, stash);
-		if (!equipped[slot].custom) equipped[slot].custom = {};
-		equipped[slot].custom.props = Object.assign({}, equipped[slot].custom.props || {}, stash);
-
-		// Apply numeric/array/ctc/cskill props to equipped and character
-		if (typeof applyInlinePropsToEquipped === 'function') {
-			applyInlinePropsToEquipped(slot, stash);
-		} else {
-			for (const pk in stash) {
-				const pv = stash[pk];
-				if (pk === 'ctc' || pk === 'cskill') {
-					if (!Array.isArray(equipped[slot][pk])) equipped[slot][pk] = [];
-					if (Array.isArray(pv)) {
-						for (const v of pv) equipped[slot][pk].push(v);
-					} else {
-						equipped[slot][pk].push(pv);
-					}
-				} else if (typeof pv === 'number') {
-					equipped[slot][pk] = (equipped[slot][pk] || 0) + pv;
-					character[pk] = (character[pk] || 0) + pv;
-				} else if (Array.isArray(pv) && pv.every(x => typeof x === 'number')) {
-					const sum = pv.reduce((a,b)=>a+(Number(b)||0),0);
-					equipped[slot][pk] = (equipped[slot][pk] || 0) + sum;
-					character[pk] = (character[pk] || 0) + sum;
-				} else {
-					equipped[slot][pk] = pv;
-				}
-			}
-		}
-
-		equipped[slot]._propsApplied = true;
-		try { updateSelectedItemSummary(slot); } catch(e){}
-		try { update(); } catch(e){}
-		console.debug(`[rehydrateInlineProps] applied persisted props for ${slot}:`, stash);
-	} catch (err) {
-		console.warn(`rehydrateInlineProps failed for ${slot}`, err);
-	}
-}
+// pendingInlineProps: temporary stash for inline key:val props parsed from URL
+const pendingInlineProps = {};
 
 async function importChar() {
 //	reset("sorceress")
@@ -6725,7 +6730,7 @@ for (let group of equipGroups) {
 	}
 
 	// API call to get character
-	//characterName = "PIG_ASN"
+	//characterName = "SCplebsHalfMap"
 	if (characterName) {
 		console.log("Character Name:", characterName);
 		
@@ -6777,16 +6782,9 @@ for (let group of equipGroups) {
 	//    character.class = characterData.Class;
 		character.level = characterData.Stats.Level;
 		character.strength = characterData.Stats.Strength
-		character.strength_added = characterData.Stats.Strength - character.starting_strength;
-		character.dexterity = characterData.Stats.Dexterity;
-		character.dexterity_added = characterData.Stats.Dexterity - character.starting_dexterity;
-		character.vitality = characterData.Stats.Vitality;
-		character.vitality_added = characterData.Stats.Vitality - character.starting_vitality;
-		character.energy = characterData.Stats.Energy;
-		character.energy_added = characterData.Stats.Energy - character.starting_energy;
-		console.debug("Str:", character.strength_added, character.strength, character.starting_strength);
-//		updateStats()
-//		updateURLDebounced()
+		character.dexterity = characterData.Stats.Dexterity
+		character.vitality = characterData.Stats.Vitality
+		character.energy = characterData.Stats.Energy
 		// Loop through equipped items and equip them directly
 		characterData.Equipped.forEach(item => {
 			if (item.SynthesisedFrom && item.SynthesisedFrom.length > 0) {
@@ -6984,14 +6982,8 @@ for (let group of equipGroups) {
 			for (const mm of arrMatches) {
 				if (!mm || !mm.statKey) continue;
 				const k = mm.statKey;
-				// prefer explicit mm.value, else fallback to numericFallback
-				let v = (mm.value !== undefined && mm.value !== null) ? mm.value : numericFallback;
-
-				// If matcher found a statKey but there is no numeric value (flag/boolean),
-				// treat it as a presence flag and set to 1.
-				if ((v === null || v === undefined) && mm.statKey) {
-					v = 1;
-				}
+				// prefer explicit mm.value, else fallback to mm.value-like shape, else numeric fallback
+				const v = (mm.value !== undefined && mm.value !== null) ? mm.value : numericFallback;
 
 				if (k === "ctc" || k === "cskill") {
 					if (!props[k]) props[k] = [];
@@ -7001,6 +6993,7 @@ for (let group of equipGroups) {
 					if (typeof v === "number") {
 						props[k] = (props[k] || 0) + v;
 					} else {
+						// for non-numeric matched values (rare), store raw parsed value
 						props[k] = v;
 					}
 				}
@@ -7010,7 +7003,70 @@ for (let group of equipGroups) {
 		return props;
 	}
 
+	// Save an imported item by inlining its properties into the slot CSV parameter
+	// instead of creating a separate custom_<slot> JSON blob.
+	function saveImportedItemToUrl(slot, PropertyList = null) {
+		const params = new URLSearchParams(window.location.search);
+		const eq = equipped[slot];
+		if (!eq) return;
 
+		// canonical name/title
+		const title = eq.name || eq.Title || (`Imported ${(eq.QualityCode||"").replace(/^q_/, "")} ${typeof formatSlotName === 'function' ? formatSlotName(slot) : slot}`);
+
+		// Build props: derive from PropertyList if available, then merge with eq.props
+		// so that inline-applied properties in eq.props take precedence. Only if the
+		// merged result is empty do we fall back to scanning numeric fields on eq.
+		let derived = {};
+		if (PropertyList && PropertyList.length) {
+			derived = buildPropsFromPropertyList(PropertyList);
+		} else if (eq.PropertyList && eq.PropertyList.length) {
+			derived = buildPropsFromPropertyList(eq.PropertyList);
+		}
+
+		// Merge derived props with any explicit eq.props (eq.props overrides derived)
+		let props = Object.assign({}, derived || {}, (eq.props && typeof eq.props === 'object') ? eq.props : {});
+
+		// If merged props is empty, fallback to scanning numeric fields on the equipped item
+		if (!props || Object.keys(props).length === 0) {
+			props = {};
+			for (const k in eq) {
+				if (["name","base","baseKey","rarity","tier","corruption","socketCount","PropertyList","Title","Worn","QualityCode"].includes(k)) continue;
+				const v = eq[k];
+				if (typeof v === "number" && v !== 0) props[k] = v;
+				else if (Array.isArray(v) && (k === "ctc" || k === "cskill")) props[k] = v.slice();
+			}
+		}
+
+		// Debug: show what we derived and what we ultimately saved
+		try { console.debug(`[saveImportedItemToUrl] slot=${slot} derivedProps=`, derived, 'eq.props=', eq.props, 'mergedProps=', props); } catch(e){}
+		console.log(`saveImportedItemToUrl: built props for slot ${slot}:`, props);
+
+		// sockets list (names)
+		const sockets = (socketed[slot] && Array.isArray(socketed[slot].items))
+			? socketed[slot].items.map(s => s.name).filter(Boolean)
+			: (eq.sockets || []);
+
+		// Build CSV-style slot value (match buildCharacterURL format)
+		const arr = [title, eq.tier || 0, eq.corruption || "none"];
+
+		// Inline sockets
+		if (sockets && sockets.length) {
+			for (const s of sockets) arr.push(s || "none");
+		}
+
+		// Inline props as key:val pairs joined by commas (single token)
+		if (props && Object.keys(props).length > 0) {
+				// Encode inline props as a single braced token to avoid comma-splitting
+				const propList = Object.entries(props).map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("|") : v}`).join(";");
+				arr.push(`props={${propList}}`);
+		}
+
+		// Replace the slot parameter in the URL with our inline CSV
+		params.set(slot, arr.join(","));
+		const newUrl = `${window.location.pathname}?${params.toString()}`;
+		window.history.replaceState({}, "", newUrl);
+		console.debug(`Saved imported ${slot} to URL (inlined):`, arr.join(","));
+	}
 
 
 	function addMatchedPropsToUrl(slot) {
@@ -7109,41 +7165,6 @@ for (let group of equipGroups) {
     const displayName = equippedItem.name || equippedItem.Title || (equippedItem.custom && equippedItem.custom.name) || slot || "unknown";
 //    console.log(`🔄 UI refreshed for item: ${displayName}`, equippedItem.PropertyList, equippedItem.PropertyList);
     console.log(`🔄 UI refreshed for item: ${displayName}`);
-}
-
-// Apply a normalized props object to an equipped item and update character stats/UI
-function applyInlinePropsToEquipped(slot, props) {
-	if (!slot || !props || !equipped[slot]) return;
-	const eq = equipped[slot];
-
-	// Merge into visible props store
-	eq.props = Object.assign({}, eq.props || {}, props);
-
-	// Apply numeric/stat properties to equipped item and character totals
-	for (const k in props) {
-		const v = props[k];
-		if (k === 'ctc' || k === 'cskill') {
-			if (!Array.isArray(eq[k])) eq[k] = [];
-			if (Array.isArray(v)) eq[k].push(...v);
-			else eq[k].push(v);
-			continue;
-		}
-
-		if (typeof v === 'number') {
-			eq[k] = (eq[k] || 0) + v;
-			character[k] = (character[k] || 0) + v;
-		} else if (Array.isArray(v) && v.every(x => typeof x === 'number')) {
-			const sum = v.reduce((a,b)=>a+(Number(b)||0),0);
-			eq[k] = (eq[k] || 0) + sum;
-			character[k] = (character[k] || 0) + sum;
-		} else {
-			// non-numeric property, store for visibility
-			eq[k] = v;
-		}
-	}
-
-	try { updateSelectedItemSummary(slot); } catch(e) {}
-	try { update(); } catch(e) {}
 }
 
 
@@ -7822,9 +7843,6 @@ function equipItemDirectly(item) {
 
 			applyMatchedProperties(slot);
 			delete pendingPropertyLists[slot]; // Clean up
-
-			// Rehydrate any persisted inline props (defensive)
-			try { rehydrateInlineProps(slot); } catch(e) {}
 		}
 	}, 0);
 }
@@ -7877,9 +7895,6 @@ function applyMatchedProperties(slot) {
     updateSelectedItemSummary(equippedItem);
 	saveImportedItemToUrl(slot, equipped[slot].PropertyList);
     update();
-	// Mark applied to avoid duplicate application on reload
-	if (!equipped[slot]) equipped[slot] = {};
-	equipped[slot]._propsApplied = true;
     console.log(`🔄 UI refreshed for item: ${equippedItem.Title}`);
 }
 
@@ -9699,9 +9714,6 @@ function equipItemDirectly(item) {
             equipName = item.Title || equipName;
             break;
 
-        case "q_normal":
-        case "q_high":
-			item.rarity = "common"; // ensure rarity is set for normal items
         case "q_magic":
         case "q_rare":
         case "q_crafted":
@@ -9711,6 +9723,14 @@ function equipItemDirectly(item) {
 				console.log("Import: equipName for magic/rare/crafted:", equipName, slot, item);
             break;
 
+        case "q_normal":
+        case "q_high":
+			
+			default:
+				// Use Title if it exists, otherwise generic Imported normal <slot>
+				equipName = item.Title || `Imported normal ${formatSlotName(slot)}`;
+				console.log("Import: equipName for normal item:", equipName, slot, item);
+				break;
     }
 
     // Stash PropertyList if present
@@ -9740,16 +9760,14 @@ function equipItemDirectly(item) {
 			}
 
 			// **Force the exact name for crafted helmet as requested**
-//			if (item.QualityCode === "q_crafted" && slot === "helm") {
-//				equipped[slot].name  = "Imported crafted Helmet";
-//				equipped[slot].Title = "Imported crafted Helmet";
-//			} else {
+			if (item.QualityCode === "q_crafted" && slot === "helm") {
+				equipped[slot].name  = "Imported crafted Helmet";
+				equipped[slot].Title = "Imported crafted Helmet";
+			} else {
 				// Normal fallback name (preserve whatever importItem returned)
-				// Normalize 'high' to 'normal' for display consistency.
-				const normRarity = ((item.QualityCode || "").replace(/^q_/, "") === 'high') ? 'normal' : (item.QualityCode || "").replace(/^q_/, "");
-				equipped[slot].name  = equipName || item.Title || (`Imported ${normRarity} ${item.Tag}`);
+				equipped[slot].name  = equipName || item.Title || (`Imported ${(item.QualityCode||"").replace(/^q_/,"")} ${formatSlotName(slot)}`);
 				equipped[slot].Title = equipped[slot].name;
-//			}
+			}
 
 			// Keep some metadata so other code (summary / save / UI) works
 			equipped[slot].QualityCode = item.QualityCode;
@@ -9772,65 +9790,59 @@ function equipItemDirectly(item) {
 			});
 
 			// If it's a normal item, ensure it's in equipment[slot] and UI dropdowns
-// For all non-unique / non-set items, identify and equip their true base
-if (["q_normal", "q_high", "q_magic", "q_rare", "q_crafted"].includes(item.QualityCode)) {
-    // Try to resolve the base from Tag (e.g., "Diadem", "War Gauntlets")
-    const baseKey = resolveBaseKey(item.Tag);
-    const base = bases[baseKey];
+			if (item.QualityCode === "q_normal" || item.QualityCode === "q_high") {
+			// --- Handle normal items (non-unique, non-set, non-magic/rare/crafted) ---
+			//    const baseName = item.name || item.base || item.itemBase;
+				const baseName = item.Title ;
+				
+				const base = bases[baseName];
 
-    if (!base) {
-        console.warn(`No valid base found for slot "${slot}" (Tag=${item.Tag}, baseKey=${baseKey})`);
-    } else {
-        console.log(`Import: equipping base ${baseKey} for ${item.QualityCode} in slot ${slot}`);
+				if (!base) {
+					console.warn(`No valid base found for slot "${slot}" (baseName=${baseName})`);
+			//        continue;
+				}
+			console.log(`Import: equipping normal base ${baseName} in slot ${slot}`);
 
-//        const flatBase = flattenBaseItem(baseKey);
-const rarity = (item.QualityCode || "").replace(/^q_/, "");
-const flatBase = flattenBaseItem(baseKey, rarity);
+				const flatBase = flattenBaseItem(baseName);
+			//	if (!flatBase) continue;
 
-        // Normalize equipment[slot]
-        if (!Array.isArray(equipment[slot])) {
-            const arr = [];
-            if (equipment[slot] && typeof equipment[slot] === "object") {
-                for (let k in equipment[slot]) {
-                    if (k === "custom") continue;
-                    const v = equipment[slot][k];
-                    if (v && v.name) arr.push(v);
-                }
-            }
-            equipment[slot] = arr;
-        }
+	// --- ensure equipment[slot] is normalized (same pattern as selectRuneword)
+	if (!Array.isArray(equipment[slot])) {
+		const arr = [];
+		if (equipment[slot] && typeof equipment[slot] === "object") {
+			for (let k in equipment[slot]) {
+				if (k === "custom") continue;
+				const v = equipment[slot][k];
+				if (v && v.name) arr.push(v);
+			}
+		}
+		equipment[slot] = arr;
+	}
 
-        // Remove any existing items with the same name
-        equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatBase.name));
+	// Remove any existing items with the same name
+	equipment[slot] = equipment[slot].filter(it => !(it && it.name === flatBase.name));
 
-        // Add the imported base item at front
-        equipment[slot].unshift(flatBase);
+	// Add our imported base item at front
+	equipment[slot].unshift(flatBase);
 
-        // Store metadata so URL/build functions can reuse it
-		// Store only a minimal, URL-friendly props object (avoid embedding
-		// the entire flattened base object which can contain nested values)
-		Object.defineProperty(equipment[slot], "custom", {
-			value: {
-				name: flatBase.name,
-				base: flatBase.base,
-				baseKey: baseKey,
-				rarity: (item.QualityCode || "").replace(/^q_/, ""),
-				// Keep a lightweight props map so buildCharacterURL / saveImportedItemToUrl
-				// can reliably inline the base name (e.g. base:Diadem) into the URL.
-				props: { base: flatBase.base }
-			},
-			enumerable: false,
-			writable: true,
-			configurable: true
-		});
+	// Store metadata so URL/build functions can reuse it
+	Object.defineProperty(equipment[slot], "custom", {
+		value: {
+			name: flatBase.name,
+			base: flatBase.base,
+			rarity: "normal",
+			props: flatBase
+		},
+		enumerable: false,
+		writable: true,
+		configurable: true
+	});
 
-        // Equip visually + functionally
-        equip(slot, flatBase.name);
-        console.log("✅ Equipped base item:", flatBase);
-    }
+	// Equip visually + functionally
+	equip(slot, flatBase.name);
+	updateURLDebounced();
 
-    // Save URL immediately so item stats can attach correctly later
-    updateURLDebounced();
+	console.log("✅ Equipped base item:", flatBase);
 }
 
 
@@ -9874,6 +9886,13 @@ const flatBase = flattenBaseItem(baseKey, rarity);
 			}
 
 			console.log(`Import: applying pending properties to equipped[${slot}]`, equipped[slot].PropertyList);
+			try {
+				const derived = buildPropsFromPropertyList(equipped[slot].PropertyList || []);
+				console.log(`Import: derived props from injected PropertyList for slot ${slot}:`, derived);
+				// merge derived into equipped[slot].props for visibility
+				if (!equipped[slot].props) equipped[slot].props = {};
+				equipped[slot].props = Object.assign({}, equipped[slot].props, derived);
+			} catch (e) { console.warn('Import: failed to derive props from PropertyList', e); }
 			applyMatchedProperties(slot);
 
 			// Defensive: some code paths later reset equipped[slot] to a default 'none'.
@@ -9991,6 +10010,7 @@ function buildPropsFromPropertyList(PropertyList) {
 	for (const propTextRaw of PropertyList) {
 		const propText = String(propTextRaw).trim();
 		if (!propText) continue;
+		console.log(`buildPropsFromPropertyList: parsing property text:`, propText);
 
 		// try to get matches via your existing matcher (guarded: may be undefined)
 		let matches = [];
@@ -10034,6 +10054,7 @@ function buildPropsFromPropertyList(PropertyList) {
 			}
 		}
 	}
+	console.log('buildPropsFromPropertyList: result props=', props);
 
 	return props;
 }
@@ -10055,129 +10076,62 @@ function buildPropsFromPropertyList(PropertyList) {
 	}
 
 
-function applyMatchedProperties(slot) {
-    const equippedItem = equipped[slot];
-    if (!equippedItem) {
-        console.warn(`❌ No equipped item found in slot: ${slot}`);
-        return;
-    }
+	function applyMatchedProperties(slot) {
+		if (!equipped[slot]) {
+			console.warn(`❌ No equipped item found in slot: ${slot}`);
+			return;
+		}
+		const equippedItem = equipped[slot];
 
-    // Ensure PropertyList exists
-    if (!Array.isArray(equippedItem.PropertyList)) {
-        equippedItem.PropertyList = [];
-    }
+		// Rename generic items if needed. Use equippedItem (not an undefined `item`).
+		if (equippedItem && equippedItem.PropertyList && Array.isArray(equippedItem.PropertyList)) {
+			// If this item was originally imported from API and had QualityCode metadata
+			// it may have been stashed in pendingPropertyLists already; preserve that.
+			pendingPropertyLists[slot] = equippedItem.PropertyList;
+			console.log(`✅ Stashed PropertyList for slot ${slot}`, equippedItem.PropertyList);
+		}
 
-    // --- Detect name-based markers and ensure they're in PropertyList and props ---
-    const name = equippedItem.name || equippedItem.Title || "";
-    if (/^imported\s+/i.test(name)) {
-        // ensure props exists
-        if (!equippedItem.props) equippedItem.props = {};
-        equippedItem.props.cplaceholder = 1;
+		equippedItem.PropertyList.forEach(propText => {
+			const matches = findMatchingStat(propText, stats);
+			if (!matches || matches.length === 0) {
+//				console.warn(`❌ No match for: "${propText}"`);
+				return;
+			}
 
-        const rarMatch = name.match(/^Imported\s+(\w+)/i);
-        if (rarMatch && !equippedItem.props.rarity) {
-            equippedItem.props.rarity = rarMatch[1].toLowerCase();
-        }
+			// If we can extract a number from the propertyText, do it once here
+			const numericValue = parseInt(propText.match(/[-+]?\d+/)?.[0], 10) || 0;
 
-        // Ensure textual tokens live in PropertyList (so other code sees them as well)
-        if (!equippedItem.PropertyList.some(p => /^imported:1$/i.test(String(p)))) {
-            equippedItem.PropertyList.push("cplaceholder:1");
-            equippedItem.cplaceholder = 1;
-        }
-        if (equippedItem.props.rarity && !equippedItem.PropertyList.some(p => /^rarity:/i.test(String(p)))) {
-            equippedItem.PropertyList.push(`rarity:${equippedItem.props.rarity}`);
-			equippedItem.rarity = equippedItem.props.rarity;
-        }
-    }
+		matches.forEach(({ statKey, value }) => {
+			if (statKey === "ctc") {
+				if (!Array.isArray(equippedItem.ctc)) equippedItem.ctc = [];
+				equippedItem.ctc.push(value);
+				console.log(`✅ Added CTC:`, value);
+			} else if (statKey === "cskill") {
+				if (!Array.isArray(equippedItem.cskill)) equippedItem.cskill = [];
+				equippedItem.cskill.push(value);
+				console.log(`✅ Added Charged Skill:`, value);
+			} else {
+				const valueToApply = typeof value === "number" ? value : numericValue;
+				equippedItem[statKey] = (equippedItem[statKey] || 0) + valueToApply;
+				character[statKey] = (character[statKey] || 0) + valueToApply;
+			}
+		});
 
-    // --- Preserve and stash raw PropertyList copy (so other code has access) ---
-    pendingPropertyLists[slot] = equippedItem.PropertyList.slice();
-    console.log(`✅ Stashed PropertyList for slot ${slot}`, pendingPropertyLists[slot]);
-
-    // --- Apply textual PropertyList --> item stats (existing behavior) ---
-    equippedItem.PropertyList.forEach(propText => {
-        const matches = findMatchingStat(propText, stats);
-        if (!matches || matches.length === 0) return;
-
-        const numericValue = parseInt(String(propText).match(/[-+]?\d+/)?.[0], 10) || 0;
-
-        matches.forEach(({ statKey, value }) => {
-            // value might be a number or something derived by findMatchingStat
-            const valueToApply = (typeof value === "number") ? value : numericValue;
-
-            if (statKey === "ctc") {
-                if (!Array.isArray(equippedItem.ctc)) equippedItem.ctc = [];
-                equippedItem.ctc.push(valueToApply);
-            } else if (statKey === "cskill") {
-                if (!Array.isArray(equippedItem.cskill)) equippedItem.cskill = [];
-                equippedItem.cskill.push(valueToApply);
-            } else {
-                equippedItem[statKey] = (equippedItem[statKey] || 0) + valueToApply;
-                character[statKey] = (character[statKey] || 0) + valueToApply;
-            }
-        });
-    });
-
-    // --- After applying properties, merge numeric/array stats into props for URL serialization ---
-    // Build a finalProps object by merging existing equippedItem.props with numeric/array stats from equippedItem
-    const finalProps = Object.assign({}, equippedItem.props || {});
-
-    // Keys to exclude from being copied into props
-    const excludeKeys = new Set([
-        "name","Title","base","baseKey","group","type","itemcode",
-        "rarity","tier","corruption","socketCount","PropertyList","props",
-        "__is_custom_base","ctc","cskill" // ctc/cskill handled as arrays separately if needed
-    ]);
-
-    for (const k in equippedItem) {
-        if (!Object.prototype.hasOwnProperty.call(equippedItem, k)) continue;
-        if (excludeKeys.has(k)) continue;
-
-        const v = equippedItem[k];
-        if (typeof v === "number" && v !== 0) {
-            // Copy numeric stats (life, all_skills, damage_min, etc.)
-            finalProps[k] = v;
-        } else if (Array.isArray(v) && (k === "ctc" || k === "cskill")) {
-            // Keep arrays for special keys
-            finalProps[k] = v.slice();
-        }
-    }
-
-	// Keep internal placeholder keys (like 'cplaceholder') deterministic.
-	// Removing-then-readding them was fragile (could be lost by intervening mutations
-	// or cause confusing console snapshots). Instead, explicitly preserve known
-	// meta flags from equippedItem.props into finalProps.
-	if (equippedItem.props) {
-		if (equippedItem.props.imported) finalProps.imported = equippedItem.props.imported;
-		if (equippedItem.props.rarity) finalProps.rarity = equippedItem.props.rarity;
-		if (equippedItem.props.cplaceholder) finalProps.cplaceholder = equippedItem.props.cplaceholder; equippedItem.cplaceholder = equippedItem.props.cplaceholder;
-	}
-
-    // Persist so buildCharacterURL will see the merged set
-	// Persist and snapshot-log (use JSON.stringify to avoid live-object expansion)
-	persistedInlineProps[slot] = finalProps;
-	try { console.log(`[persistedInlineProps] saved in applyMatchedProperties for ${slot}:`, JSON.parse(JSON.stringify(persistedInlineProps[slot]))); } catch(e) { console.log(`[persistedInlineProps] saved in applyMatchedProperties for ${slot}:`, persistedInlineProps[slot]); }
-
-	// Also keep equippedItem.props in sync (so future runtime code sees it)
-	equippedItem.props = Object.assign({}, finalProps);
-	try { console.log(`(snapshot) equipped[${slot}].props after applyMatchedProperties:`, JSON.parse(JSON.stringify(equippedItem.props))); } catch(e) { console.log(`(snapshot) equipped[${slot}].props after applyMatchedProperties:`, equippedItem.props); }
-
-    // --- UI updates ---
+		});
+    // Update UI with the slot (updateSelectedItemSummary expects a slot id in most other places)
     try {
         updateSelectedItemSummary(slot);
     } catch (e) {
-        try { updateSelectedItemSummary(equippedItem); } catch (e2) { /* ignore */ }
+        // fallback: if updateSelectedItemSummary ever accepts an item object, try that
+        try { updateSelectedItemSummary(equippedItem); } catch(e2) { /* ignore */ }
     }
     update();
 
+    // Robust display name for logs
     const displayName = equippedItem.name || equippedItem.Title || (equippedItem.custom && equippedItem.custom.name) || slot || "unknown";
-    console.log(`🔄 UI refreshed for item: ${displayName}`, equippedItem);
+//    console.log(`🔄 UI refreshed for item: ${displayName}`, equippedItem.PropertyList, equippedItem.PropertyList);
+    console.log(`🔄 UI refreshed for item: ${displayName}`);
 }
-
-
-
-
-
 
 	function findMatchingStat(propertyText, stats) {
 //		console.log(`Checking property: "${propertyText}" against stats`);
@@ -10185,14 +10139,6 @@ function applyMatchedProperties(slot) {
 		if (afterKillStat) {
 			return [afterKillStat];
 		}
-
-//		const importstat = "imported: 1";
-//		if (propertyText == importstat) {
-//			return {
-//				statKey: "imported",
-//				value: 1
-//			};
-//		}
 
 		const ctcParsed = parseChanceToCast(propertyText);
 		if (ctcParsed) {
@@ -10291,48 +10237,18 @@ function applyMatchedProperties(slot) {
 		if (!eq) return;
 
 		// canonical name/title
-		// eq.name can be transiently 'none' due to ordering; prefer a stable source when available
-		let title = eq.name || eq.Title || "";
-		if (!title || title === "none" || String(title).trim().length === 0) {
-			// Try persistedInlineProps (from applyMatchedProperties or prior saves)
-			const p = persistedInlineProps[slot] || {};
-			if (p && p.base) {
-				const rarity = (p.rarity || (eq && eq.rarity) || "normal");
-				title = `Imported ${rarity} ${p.base}`;
-			}
-		}
-		if (!title || title === "none" || String(title).trim().length === 0) {
-			// Try the first equipment option (most imports unshift the flattened base into equipment[slot][0])
-			try {
-				const first = Array.isArray(equipment[slot]) && equipment[slot][0] ? equipment[slot][0] : null;
-				if (first && (first.name || (first.custom && first.custom.name))) {
-					title = first.name || (first.custom && first.custom.name) || title;
-				} else if (first && first.base) {
-					const rarity = (first.rarity || (eq && eq.rarity) || "normal");
-					title = `Imported ${rarity} ${first.base}`;
-				}
-			} catch (e) { /* defensive */ }
-		}
-		if (!title || title === "none" || String(title).trim().length === 0) {
-			// final fallback: construct something predictable so loadParams has a chance
-			title = `Imported normal ${typeof formatSlotName === 'function' ? formatSlotName(slot) : slot}`;
-		}
+		const title = eq.name || eq.Title || (`Imported ${(eq.QualityCode||"").replace(/^q_/, "")} ${typeof formatSlotName === 'function' ? formatSlotName(slot) : slot}`);
 
 		// build props — prefer parsing PropertyList if provided; else use eq.PropertyList if present,
-		// Prefer parsed PropertyList → eq.PropertyList → lightweight eq.custom.props
-		// (import flow sets eq.custom.props = { base: "BaseName" }) before falling back
-		// to scanning numeric keys on the equipped item.
+		// else fall back to picking numeric keys already applied to the equipped item.
 		let props = {};
 		if (PropertyList && PropertyList.length) {
 			props = buildPropsFromPropertyList(PropertyList);
 		} else if (eq.PropertyList && eq.PropertyList.length) {
 			props = buildPropsFromPropertyList(eq.PropertyList);
-		} else if (eq.custom && eq.custom.props && Object.keys(eq.custom.props).length) {
-			// copy minimal props (e.g., { base: 'Diadem' })
-			props = Object.assign({}, eq.custom.props);
 		} else {
 			for (const k in eq) {
-				if (["name","base","baseKey","tier","corruption","socketCount","PropertyList","Title","Worn","QualityCode"].includes(k)) continue;
+				if (["name","base","baseKey","rarity","tier","corruption","socketCount","PropertyList","Title","Worn","QualityCode"].includes(k)) continue;
 				const v = eq[k];
 				if (typeof v === "number" && v !== 0) props[k] = v;
 				else if (Array.isArray(v) && (k === "ctc" || k === "cskill")) props[k] = v.slice();
@@ -10347,46 +10263,20 @@ function applyMatchedProperties(slot) {
 		// Build CSV-style slot value (match buildCharacterURL format)
 		const arr = [title, eq.tier || 0, eq.corruption || "none"];
 
-		// Inline sockets (only include actual socket names; avoid pre-padding with 'none')
+		// Inline sockets
 		if (sockets && sockets.length) {
-			for (const s of sockets) {
-				if (s && s !== "none") arr.push(s);
-			}
+			for (const s of sockets) arr.push(s || "none");
 		}
 
-		// Inline props as key:val pairs joined by commas (single token)
+		// Inline props as a single braced token: props={k:v;k2:v2}
+		// Arrays are encoded as v1|v2 and pairs are separated by semicolons to avoid comma/token collisions.
 		if (props && Object.keys(props).length > 0) {
-			const propList = Object.entries(props).map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("|") : v}`).join(",");
-			arr.push(propList);
+			const propList = Object.entries(props).map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("|") : v}`).join(";");
+			arr.push(`props={${propList}}`);
 		}
 
-		// persist to resilient stash so buildCharacterURL can pick this up later
-		if (props && Object.keys(props).length) {
-			persistedInlineProps[slot] = Object.assign({}, persistedInlineProps[slot] || {}, props);
-			try { console.debug(`[persistedInlineProps] saved in saveImportedItemToUrl for ${slot}:`, persistedInlineProps[slot]); } catch(e) {}
-		}
-		// Ensure persistedInlineProps contains base/rarity if available so loadParams can rehydrate
-		if ((!persistedInlineProps[slot] || !persistedInlineProps[slot].base) && eq && eq.custom && eq.custom.props && eq.custom.props.base) {
-			persistedInlineProps[slot] = Object.assign({}, persistedInlineProps[slot] || {}, { base: eq.custom.props.base });
-		}
-		if ((!persistedInlineProps[slot] || !persistedInlineProps[slot].rarity) && eq && eq.rarity) {
-			persistedInlineProps[slot] = Object.assign({}, persistedInlineProps[slot] || {}, { rarity: eq.rarity });
-		}
-
-				// Replace the slot parameter in the URL with our inline CSV
+		// Replace the slot parameter in the URL with our inline CSV
 		params.set(slot, arr.join(","));
-		// Diagnostic: if title looks suspicious (none/empty), log full snapshots to help debug
-		if (!title || title === "none" || String(title).trim().length === 0) {
-			try {
-				console.warn(`[DEBUG saveImportedItemToUrl] suspicious title='${title}' for slot='${slot}'. Snapshots:`);
-				console.warn('  equipped[slot]=', JSON.parse(JSON.stringify(equipped[slot] || {})));
-				console.warn('  equipment[slot]=', JSON.parse(JSON.stringify(Array.isArray(equipment[slot]) ? equipment[slot].slice(0,10) : equipment[slot] || {})));
-				console.warn('  persistedInlineProps[slot]=', JSON.parse(JSON.stringify(persistedInlineProps[slot] || {})));
-				console.warn('  computed props=', JSON.parse(JSON.stringify(props || {})));
-			} catch (err) {
-				console.warn('[DEBUG saveImportedItemToUrl] failed to stringify snapshots', err);
-			}
-		}
 		const newUrl = `${window.location.pathname}?${params.toString()}`;
 		window.history.replaceState({}, "", newUrl);
 		console.debug(`Saved imported ${slot} to URL (inlined):`, arr.join(","));

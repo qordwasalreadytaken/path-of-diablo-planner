@@ -378,6 +378,7 @@ var bases = {	// Note: damage_vs_undead:50 is included for blunt weapons, but ot
 	Ogre_Maul:{group:"weapon", type:"mace", base_damage_min:77, base_damage_max:106, req_level:51, req_strength:225, durability:60, baseSpeed:10, range:1, max_sockets:6, damage_vs_undead:50, downgrade:"War Club", twoHands:1, twoHanded:1, subtype:"hammer", tier:3, iasindex:187},
 	Thunder_Maul:{group:"weapon", type:"mace", base_damage_min:33, base_damage_max:180, req_level:65, req_strength:253, durability:60, baseSpeed:20, range:2, max_sockets:6, damage_vs_undead:50, downgrade:"Martel de Fer", twoHands:1, twoHanded:1, subtype:"hammer", tier:3, iasindex:252},
 	Wirts_Leg:{group:"weapon", type:"mace", base_damage_min:2, base_damage_max:8, durability:24, baseSpeed:0, range:0, max_sockets:3, damage_vs_undead:50, subtype:"mace", tier:3, nonmetal:1},
+	Qord_Leg:{group:"weapon", type:"mace", base_damage_min:100, base_damage_max:100, durability:24, baseSpeed:0, range:0, max_sockets:3, damage_vs_undead:50, subtype:"mace", tier:3, nonmetal:1},
 	// sword
 	Short_Sword:{group:"weapon", type:"sword", base_damage_min:2, base_damage_max:7, durability:24, baseSpeed:0, range:0, max_sockets:2, upgrade:"Gladius", tier:1, iasindex:227},
 	Scimitar:{group:"weapon", type:"sword", base_damage_min:2, base_damage_max:6, req_dexterity:21, durability:22, baseSpeed:-20, range:0, max_sockets:2, upgrade:"Cutlass", tier:1, iasindex:212},
@@ -523,7 +524,7 @@ var bases = {	// Note: damage_vs_undead:50 is included for blunt weapons, but ot
 	Crusader_Bow:{group:"weapon", type:"bow", base_damage_min:15, base_damage_max:63, req_level:57, req_strength:97, req_dexterity:121, baseSpeed:10, max_sockets:6, downgrade:"Long Siege Bow", twoHands:1, twoHanded:1, tier:3, nonmetal:1, iasindex:62},
 	Ward_Bow:{group:"weapon", type:"bow", base_damage_min:20, base_damage_max:53, req_level:60, req_strength:72, req_dexterity:146, baseSpeed:0, max_sockets:5, downgrade:"Rune Bow", twoHands:1, twoHanded:1, tier:3, nonmetal:1, iasindex:281},
 	Hydra_Bow:{group:"weapon", type:"bow", base_damage_min:10, base_damage_max:68, req_level:63, req_strength:134, req_dexterity:167, baseSpeed:10, max_sockets:6, downgrade:"Gothic Bow", twoHands:1, twoHanded:1, tier:3, nonmetal:1, iasindex:143},
-	Qord_Bow:{group:"weapon", type:"bow", base_damage_min:100, base_damage_max:100, req_level:60, req_strength:72, req_dexterity:146, baseSpeed:0, max_sockets:6, twoHands:1, twoHanded:1, tier:3, nonmetal:1, iasindex:281, easymathdmg:1},
+	Qord_Bow:{group:"weapon", type:"bow", base_damage_min:100, base_damage_max:100, req_level:60, req_strength:72, req_dexterity:146, baseSpeed:0, max_sockets:6, twoHands:1, twoHanded:1, tier:3, nonmetal:1, iasindex:281},
 	// crossbow
 	Light_Crossbow:{group:"weapon", type:"crossbow", base_damage_min:6, base_damage_max:9, req_strength:21, req_dexterity:27, baseSpeed:-10, max_sockets:3, upgrade:"Arbalest", twoHands:1, twoHanded:1, tier:1, nonmetal:1, iasindex:161},
 	Crossbow:{group:"weapon", type:"crossbow", base_damage_min:9, base_damage_max:16, req_strength:40, req_dexterity:33, baseSpeed:0, max_sockets:4, upgrade:"Siege Crossbow", twoHands:1, twoHanded:1, tier:1, nonmetal:1, iasindex:60},
@@ -641,6 +642,49 @@ var bases = {	// Note: damage_vs_undead:50 is included for blunt weapons, but ot
 	Amulet:{group:"amulet", type:"amulet", itemcode:"amu"},
 	//Ring:{group:"ring", type:"ring"},
 };
+
+// Global testing knob: scale weapon base damage at the metadata level.
+// BASE_WEAPON_DAMAGE_MULT is the current active multiplier; use 1.0 for
+// normal game values or 1.5 for +50% base weapon damage.
+var BASE_WEAPON_DAMAGE_MULT = 1.5;
+
+// Preserve original weapon base data so we can safely toggle the
+// multiplier on and off at runtime without accumulating rounding error.
+var bases_original = JSON.parse(JSON.stringify(bases));
+
+function applyBaseWeaponDamageMultiplier(mult) {
+	if (typeof mult !== "number" || !isFinite(mult) || mult <= 0) { mult = 1.0; }
+	BASE_WEAPON_DAMAGE_MULT = mult;
+	for (var baseKey in bases_original) {
+		if (!bases_original.hasOwnProperty(baseKey)) { continue }
+		var orig = bases_original[baseKey];
+		if (!orig || orig.group !== "weapon") { continue }
+		var b = bases[baseKey];
+		if (!b) { b = bases[baseKey] = {}; }
+		if (typeof orig.base_damage_min !== "undefined") {
+			b.base_damage_min = Math.max(0, Math.ceil(orig.base_damage_min * BASE_WEAPON_DAMAGE_MULT));
+		}
+		if (typeof orig.base_damage_max !== "undefined") {
+			b.base_damage_max = Math.max(0, Math.ceil(orig.base_damage_max * BASE_WEAPON_DAMAGE_MULT));
+		}
+		if (typeof orig.base_min_alternate !== "undefined") {
+			b.base_min_alternate = Math.max(0, Math.ceil(orig.base_min_alternate * BASE_WEAPON_DAMAGE_MULT));
+		}
+		if (typeof orig.base_max_alternate !== "undefined") {
+			b.base_max_alternate = Math.max(0, Math.ceil(orig.base_max_alternate * BASE_WEAPON_DAMAGE_MULT));
+		}
+		if (typeof orig.throw_min !== "undefined") {
+			b.throw_min = Math.max(0, Math.ceil(orig.throw_min * BASE_WEAPON_DAMAGE_MULT));
+		}
+		if (typeof orig.throw_max !== "undefined") {
+			b.throw_max = Math.max(0, Math.ceil(orig.throw_max * BASE_WEAPON_DAMAGE_MULT));
+		}
+	}
+}
+
+// Apply the default multiplier on load so behaviour matches the
+// previous hard-coded 1.5x test until the user toggles it off.
+applyBaseWeaponDamageMultiplier(BASE_WEAPON_DAMAGE_MULT);
 
 /*
 var cskills = [

@@ -156,41 +156,10 @@
         <input id="synthwep" type="checkbox" name="synthwep" value="1" onclick="return toggleSynthwep(this);" checked>
         <label for="synthwep">&nbsp;&nbsp;&nbsp;&nbsp;Show Synthesized Items&nbsp;&nbsp;</label>
       </div></div> 
-	  <div class="nav-dropdown-content-item" title="Simulate a single attack that does any one damage type. Damage   &#10; reduction calculations can be found under equipment drop-downs &#10; below. Hover over to see detailed explanation."><div class="nav-option">
-        <input id="drcalcbase" type="textbox" size="5" name="drcalcbase" value="1000" oninput="updateTertiaryStats()";>
-        <label for="drcalcbase">&nbsp;&nbsp;&nbsp;&nbsp;Damage Taken for DR Calculations&nbsp;&nbsp;</label>
-      </div></div>
-	  <div class="nav-dropdown-content-item" title="Simulate a single attack that deals multiple damage types simultaneously. &#10; When enabled, excess Physical DR applies to remaining elemental damage. &#10; Bone Armor (physical), Cyclone Armor (elemental), and ES (all types) pools &#10; are shared across their respective damage types in the attack."><div class="nav-option">
-        <input id="mixedattack" type="checkbox" name="mixedattack" value="1" onclick="toggleMixedAttack();">
-        <label for="mixedattack">&nbsp;&nbsp;&nbsp;&nbsp;Mixed Damage Attack&nbsp;&nbsp;</label>
-      </div></div>
-	  <div id="mixedattack_controls" style="display:none;">
-	    <div class="nav-dropdown-content-item"><div class="nav-option">
-          <input id="mixedphys" type="textbox" size="5" name="mixedphys" value="100" oninput="updateTertiaryStats()";>
-          <label for="mixedphys">&nbsp;&nbsp;&nbsp;&nbsp;Physical Damage&nbsp;&nbsp;</label>
-        </div></div>
-	    <div class="nav-dropdown-content-item"><div class="nav-option">
-          <input id="mixedfire" type="textbox" size="5" name="mixedfire" value="100" oninput="updateTertiaryStats()";>
-          <label for="mixedfire">&nbsp;&nbsp;&nbsp;&nbsp;Fire Damage&nbsp;&nbsp;</label>
-        </div></div>
-	    <div class="nav-dropdown-content-item"><div class="nav-option">
-          <input id="mixedcold" type="textbox" size="5" name="mixedcold" value="100" oninput="updateTertiaryStats()";>
-          <label for="mixedcold">&nbsp;&nbsp;&nbsp;&nbsp;Cold Damage&nbsp;&nbsp;</label>
-        </div></div>
-	    <div class="nav-dropdown-content-item"><div class="nav-option">
-          <input id="mixedlight" type="textbox" size="5" name="mixedlight" value="100" oninput="updateTertiaryStats()";>
-          <label for="mixedlight">&nbsp;&nbsp;&nbsp;&nbsp;Lightning Damage&nbsp;&nbsp;</label>
-        </div></div>
-	    <div class="nav-dropdown-content-item"><div class="nav-option">
-          <input id="mixedmagic" type="textbox" size="5" name="mixedmagic" value="0" oninput="updateTertiaryStats()";>
-          <label for="mixedmagic">&nbsp;&nbsp;&nbsp;&nbsp;Magic Damage&nbsp;&nbsp;</label>
-        </div></div>
-	  </div>
-	  <div class="nav-dropdown-content-item" title="Aramex's Special: globally increases base weapon damage by 50% and reduces eth bonus to 10%. Turn off to use normal base damage."><div class="nav-option">
-		<input id="aramex_special" type="checkbox" name="aramex_special" value="1" onclick="return toggleAramexSpecial(this);" unchecked>
+	  <div class="nav-dropdown-content-item" title="Aramex's Special: globally increases base weapon damage by 50% for planner testing. Turn off to use normal base damage."><div class="nav-option">
+		<input id="aramex_special" type="checkbox" name="aramex_special" value="1" onclick="return toggleAramexSpecial(this);" checked>
 		<label for="aramex_special">&nbsp;&nbsp;&nbsp;&nbsp;Aramex's Special&nbsp;&nbsp;</label>
 	  </div></div>
-
     </div>
   </div>
   <div class="nav-dropdown">
@@ -318,9 +287,6 @@
 		<div class="nav-dropdown-content-item"><div class="nav-text">
 			<label>&nbsp;&nbsp;&nbsp;&nbsp;The new Runeword Picker allows you create runewords in the base of your choosing&nbsp;&nbsp;</label>
 			</div></div>
-		<div class="nav-dropdown-content-item"><div class="nav-text">
-			<label>&nbsp;&nbsp;&nbsp;&nbsp;Change the base "damage taken" values for damage reduction calculations in the preferences menu&nbsp;&nbsp;</label>
-			</div></div>
 		</div>
 	</div>
 <!--
@@ -364,11 +330,10 @@ Imported items might spawn missing properties, you can add them on the right."
 			class="nav-dropdown-input"
 		><br><br>
 		
-<!--		<label>
+		<label>
 			<input type="checkbox" id="assumeCharms">
 			Assume charms (Torch, Anni, and skillers)
-		</label><br><br> 
--->
+		</label><br><br>
 		
 		<input 
 			type="button" 
@@ -764,7 +729,6 @@ Imported items might spawn missing properties, you can add them on the right."
 			<div id="disclaimer"><a><font color=red size="2">This is Qords playground, things here might not exist in game or in the officil build planner </font color></a><a id="disclaimer"></a><br></div>
 	<div class="gray" id="skill_details_inactive"></div>
 	</div> <!-- /skill details -->
-
 <!--		stats		-->
 <div class="gray" id="stats">
 <div id="stats_main_columns">
@@ -916,9 +880,9 @@ Imported items might spawn missing properties, you can add them on the right."
 	<font size="2">Life Regen: </font><font size="2" id="life_regen"></font><br>
 	<br>
 <!--	<font size="2" id="eseff_label" style="visibility:hidden;">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
-	<font size="2" id="esprcnt_label" style="visibility:hidden;">ES Efficiency: </font><font size="2" id="eseff"></font><br><br> 
+	<font size="2" id="esprcnt_label" style="visibility:hidden;">ES Efficiency: </font><font size="2" id="eseff"></font><br><br> -->
 	<font size="2" id="eseff_label">ES Absorb: </font><u><font size="2" id="esprcnt"></u></font><br>
-	<font size="2" id="esprcnt_label">ES Efficiency: </font><font size="2" id="eseff"></font><br><br> -->
+	<font size="2" id="esprcnt_label">ES Efficiency: </font><font size="2" id="eseff"></font><br><br>
 
 
 </div>

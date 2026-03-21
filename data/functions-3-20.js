@@ -597,30 +597,16 @@ function loadParams() {
         return String(candidate).replace(/ /g,"_");
     }
 
-	// Global helper for ethereal base/defense multiplier. When Aramex's
-	// Special is enabled, reduce the ethereal bonus from 1.5 to 1.1.
-	function getEthMultiplier(isEthereal) {
-		if (!isEthereal) { return 1; }
-		return (typeof settings !== 'undefined' && settings.aramex_special == 1) ? 1.1 : 1.5;
-	}
-
-	// Ensure an equipped item's base damage fields (including throw and
-	// alternate values) are consistent with its base and ethereal status.
+	// Re-sync an equipped item's base damage fields from the current
+	// metadata (bases[]), respecting ethereal status.
 	function refreshBaseDamageFromBase(eq) {
 		if (!eq || !eq.base) { return; }
 		try {
 			const baseKey = canonicalBaseKey(eq.base);
 			if (!baseKey || !bases[baseKey]) { return; }
 			const b = bases[baseKey];
-			const multEth = getEthMultiplier(eq && eq.ethereal);
-			const props = [
-				"base_damage_min",
-				"base_damage_max",
-				"throw_min",
-				"throw_max",
-				"base_min_alternate",
-				"base_max_alternate"
-			];
+			const multEth = (eq && eq.ethereal) ? 1.5 : 1;
+			const props = ["base_damage_min","base_damage_max","throw_min","throw_max","base_min_alternate","base_max_alternate"];
 			for (let i = 0; i < props.length; i++) {
 				const p = props[i];
 				if (typeof b[p] !== "undefined") {
@@ -633,7 +619,7 @@ function loadParams() {
 	}
 
 
-	// --- Basic stats & skills ---
+    // --- Basic stats & skills ---
     let spent_skillpoints = 0;
     const param_level = Math.floor(Math.max(1, Math.min(99, ~~params.get("level"))));
     const param_diff = ~~params.get("difficulty");
@@ -650,7 +636,6 @@ function loadParams() {
     const param_skills = params.has("skills") ? params.get("skills") : "0".repeat(skills.length*2);
 	var param_charms = [];
 	if (params.has('charm') == true) { param_charms = params.getAll('charm') }
-	const param_custom_charms = params.has('custom_charm') ? params.getAll('custom_charm') : [];
     const param_effects = params.has("effect") ? params.getAll("effect").map(e => e.split(",")) : [];
     const param_mercenary = params.has("mercenary") ? params.get("mercenary").split(",") : "none";
     const param_irongolem = params.has("irongolem") ? params.get("irongolem") : "none";
@@ -661,9 +646,7 @@ function loadParams() {
 		if (param_quests != 1) { param_quests = 0 }
 		
 		// Check if stats exceed available points - if so, try converting from total to added stats
-//		Vileskin reported quest bonuses getting applied multiple times, maybe this fix?	
-//		const maxStatPoints = 5*param_level + 15*param_quests;
-		const maxStatPoints = 5*param_level;
+		const maxStatPoints = 5*param_level + 15*param_quests;
 		if ((param_str+param_dex+param_vit+param_ene) > maxStatPoints) {
 			// Assume these are total stats from API data, convert to added stats
 			const addedStr = Math.max(0, param_str - character.starting_strength);
@@ -708,8 +691,7 @@ function loadParams() {
 		toggleRunning(param_run)
 		character.running = 1
 	}
-//	Vileskin reported quest bonuses getting applied multiple times, maybe this fix?
-/*	if (param_quests == 1) {
+	if (param_quests == 1) {
         document.getElementById("quests").checked = true;
         character.quests_completed = param_quests;
         character.life += 60;
@@ -717,7 +699,7 @@ function loadParams() {
         character.cRes += 30;
         character.lRes += 30;
         character.pRes += 30;
-    } */
+    }
     if (param_url == 1) {
         document.getElementById("parameters").checked = true;
         toggleParameters(param_url);
@@ -1121,83 +1103,6 @@ for (let i = 0; i < param_charms.length; i++) {
     addCharm(charmName);
 }
 
-// --- Custom Charms ---
-for (let i = 0; i < param_custom_charms.length; i++) {
-    const parts = param_custom_charms[i].split(":");
-    if (parts.length < 3) continue;
-    
-    const invSlot = parseInt(parts[0], 10);
-    const size = parts[1];
-    const name = decodeURIComponent(parts[2]);
-    const propString = parts.slice(3).join(":"); // Rejoin in case props had colons
-    
-    // Parse properties
-    const props = {};
-    const PropertyList = [];
-    if (propString) {
-        const propPairs = propString.split(",");
-        for (let p of propPairs) {
-            const [key, val] = p.split(":");
-            if (!key || val === undefined) continue;
-            
-            // Try to parse as number first
-            if (!isNaN(val)) {
-                props[key] = parseFloat(val);
-            } else if (val.startsWith("[") || val.startsWith("{")) {
-                // Parse JSON arrays (ctc, cskill)
-                try {
-                    props[key] = JSON.parse(val);
-                } catch(e) {
-                    props[key] = val;
-                }
-            } else {
-                props[key] = val;
-            }
-            
-            // Rebuild PropertyList from stats object for tooltip display
-            if (stats[key] && stats[key].format) {
-                // Format the property text using the stats format
-                const formatParts = stats[key].format;
-                let propText = "";
-                
-                // Handle format array - typically ["+", " to Something"] or ["", "% Something"]
-                if (formatParts.length >= 2) {
-                    const prefix = formatParts[0]; // e.g., "+" or ""
-                    const suffix = formatParts.slice(1).join(""); // e.g., " to Bow & Crossbow Skills"
-                    
-                    if (prefix === "+" && parseFloat(val) > 0) {
-                        propText = `+${val}${suffix}`;
-                    } else if (prefix === "+") {
-                        propText = `${val}${suffix}`;
-                    } else {
-                        propText = `${val}${prefix}${suffix}`;
-                    }
-                } else {
-                    propText = formatParts.join("").replace(/[+#]/g, val);
-                }
-                
-                PropertyList.push(propText);
-                console.log(`  🔄 Rebuilt property: ${key} = ${val} → "${propText}"`);
-            } else {
-                // Fallback: just show key: value
-                PropertyList.push(`${key}: ${val}`);
-            }
-        }
-    }
-    
-    const charmData = {
-        name: name,
-        size: size,
-        invSlot: invSlot,
-        custom: true,
-        PropertyList: PropertyList,
-        ...props
-    };
-    
-    console.log(`Loading custom charm from URL: ${name} at slot ${invSlot}`, charmData);
-    addCustomCharm(charmData);
-}
-
 
     // --- Mercenary ---
     if (param_mercenary !== "none") {
@@ -1374,9 +1279,9 @@ function equipMerc(group, val) {
         let item = equipment[group][itemKey];
         if (item.name == val) {
             // --- add base stats ---
-				if (item.base) {
-					let base = getBaseId(item.base);
-					let multEth = getEthMultiplier(item.ethereal);
+            if (item.base) {
+                let base = getBaseId(item.base);
+                let multEth = (item.ethereal ? 1.5 : 1);
                 let reqEth = (item.ethereal ? 10 : 0);
                 let multED = 1 + (item.e_def || 0) / 100;
                 let multReq = 1 + (item.req || 0) / 100;
@@ -1512,22 +1417,8 @@ function equip(group, val) {
 			var after = Math.round(old_set_after,0)
 			// remove set bonuses for old item
 			for (let i = 1; i <= before; i++) {
-				var old_bonus = equipped[group]["set_bonuses"][i];
-				if (!old_bonus) { continue; }
-				for (affix in old_bonus) {
-					if (affix === "ctc") {
-						var oldCtcArr = old_bonus[affix];
-						if (Array.isArray(oldCtcArr)) {
-							for (let j = 0; j < oldCtcArr.length; j++) {
-								var oldCtcSkillName = oldCtcArr[j][2];
-								for (ctcskill in effect_ctcskills) {
-									if (ctcskill.split('_').join(' ') == oldCtcSkillName) { removeEffect(ctcskill+"-"+group) }
-								}
-							}
-						}
-					} else {
-						character[affix] -= old_bonus[affix]
-					}
+				for (affix in equipped[group]["set_bonuses"][i]) {
+					character[affix] -= equipped[group]["set_bonuses"][i][affix]
 				}
 			}
 			equipped[group]["set_bonuses"][1] = 0	// save "state" for invalid/outdated set info
@@ -1572,7 +1463,7 @@ function equip(group, val) {
 				var multED = 1;
 				var multReq = 1;
 				var reqEth = 0;
-				if (typeof(equipment[src_group][item]["ethereal"]) != 'undefined') { if (equipment[src_group][item]["ethereal"] == 1) { multEth = getEthMultiplier(true); reqEth = 10; } }
+				if (typeof(equipment[src_group][item]["ethereal"]) != 'undefined') { if (equipment[src_group][item]["ethereal"] == 1) { multEth = 1.5; reqEth = 10; } }
 				if (typeof(equipment[src_group][item]["e_def"]) != 'undefined') { multED += (equipment[src_group][item]["e_def"]/100) }
 				if (typeof(equipment[src_group][item]["req"]) != 'undefined') { multReq += (equipment[src_group][item]["req"]/100) }
 				if (typeof(bases[base]) != 'undefined') { for (affix in bases[base]) {
@@ -1588,7 +1479,6 @@ function equip(group, val) {
 //								{equipped[group][affix] = Math.max(0,Math.ceil((multReq*bases[base][affix] - reqEth) += (equipment[src_group][item]["req"]/100)))}
 //							else {equipped[group][affix] = Math.max(0,Math.ceil(multReq*bases[base][affix] - reqEth))}
 							equipped[group][affix] = Math.max(0,Math.ceil(multReq*bases[base][affix] - reqEth))
-//							equipped[group][affix] = Math.max(0,Math.ceil(multReq*bases[base][affix] - reqEth - (equipment[src_group][item]["req"]/100)))
 							console.log("  Added req affix", affix, "=", equipped[group][affix], "(base", bases[base][affix]+")")	
 						} else if (affix == "tier") {
 							equipped[group][affix] = bases[base][affix]
@@ -1694,31 +1584,8 @@ function equip(group, val) {
 			var after = Math.round(set_after,0)
 			// add set bonuses for new item
 			for (let i = 1; i <= after; i++) {
-				var new_bonus = set_bonuses[i];
-				if (!new_bonus) { continue; }
-				for (affix in new_bonus) {
-					if (affix === "ctc") {
-						var newCtcArr = new_bonus[affix];
-						if (Array.isArray(newCtcArr)) {
-							for (let j = 0; j < newCtcArr.length; j++) {
-								var newCtcSkillLevel = newCtcArr[j][1];
-								var newCtcSkillName = newCtcArr[j][2];
-								for (ctcskill in effect_ctcskills) {
-									if (ctcskill.split('_').join(' ') == newCtcSkillName) {
-										for (let k = 0; k < ctcskillName.length; k++) {
-											if (ctcskillName[k] == "" && ctcskillLevel[k] == 0) {
-												ctcskillName[k] = newCtcSkillName;
-												ctcskillLevel[k] = newCtcSkillLevel;
-												break;
-											}
-										}
-									}
-								}
-							}
-						}
-					} else {
-						character[affix] += new_bonus[affix]
-					}
+				for (affix in set_bonuses[i]) {
+					character[affix] += set_bonuses[i][affix]
 				}
 			}
 			equipped[group]["set_bonuses"][1] = 1	// valid set info
@@ -1915,158 +1782,6 @@ function testCharmURL() {
 
 testCharmURL();
 */
-
-// addCustomCharm - Adds a custom charm with specific stats at a specific position
-//	charmData: object with {name, size, invSlot, PropertyList, custom, ...stats}
-// ---------------------------------
-function addCustomCharm(charmData) {
-	console.log("🎯 addCustomCharm called with:", charmData);
-
-	if (!equipped.charms) equipped.charms = {};
-
-	const charm_img = {
-		prefix: "./images/items/charms/",
-		small: ["charm1_paw.png", "charm1_disc.png", "charm1_coin.png"],
-		large: ["charm2_page.png", "charm2_horn.png", "charm2_lantern.png"],
-		grand: ["charm3_lace.png", "charm3_eye.png", "charm3_monster.png"]
-	};
-
-	const size = charmData.size || "small";
-	const targetSlot = charmData.invSlot;
-	const nameVal = charmData.name;
-
-	console.log(`  📏 Size: ${size}, Target slot: ${targetSlot}, Name: ${nameVal}`);
-
-	let charmImage = charm_img.prefix + "debug_plus.png";
-	let charmHeight = "";
-	const charmWidth = "29";
-	let charm_y = 1;
-
-	const r = Math.floor(Math.random() * 3);
-	if (size === "grand") {
-		charmHeight = "88";
-		charmImage = charm_img.prefix + charm_img.grand[r];
-		charm_y = 3;
-	} else if (size === "large") {
-		charmHeight = "59";
-		charmImage = charm_img.prefix + charm_img.large[r];
-		charm_y = 2;
-	} else if (size === "small") {
-		charmHeight = "29";
-		charmImage = charm_img.prefix + charm_img.small[r];
-		charm_y = 1;
-	}
-
-	// Special images for unique charms
-	const nameLower = nameVal.toLowerCase();
-	if (nameLower.includes("annihilus")) {
-		charmImage = charm_img.prefix + "charm1u.png";
-	} else if (nameLower.includes("hellfire torch")) {
-		charmImage = charm_img.prefix + "charm2u.png";
-	}
-
-	console.log(`  🖼️ Image: ${charmImage}, Height: ${charmHeight}, Y-size: ${charm_y}`);
-
-	// Generate unique ID
-	const append = Math.floor(Math.random() * 999999 + 1);
-	const uniqueID = `${nameVal}_${append}`;
-
-	const charmHTML = `<img style="width: ${charmWidth}; height: ${charmHeight}; pointer-events: auto;" id="${uniqueID}" src="${charmImage}" draggable="true" ondragstart="drag(event)" width="${charmWidth}" height="${charmHeight}" oncontextmenu="trash(event)" onmouseover="itemHover(event, this.value)" onmouseout="itemOut()" onclick="itemSelect(event)">`;
-
-	// Check if target slot is available
-	let i = targetSlot;
-	let insertion = "";
-	let empty = 1;
-
-	console.log(`  🔍 Checking slot availability: slot ${i} (valid range: 1-40)`);
-
-	if (i > 0 && i <= 40) {
-		// Check if slot and required vertical space are empty
-		console.log(`    Slot ${i} empty: ${inv[i].empty === 1}`);
-		if (inv[i].empty === 0) empty = 0;
-		if (charm_y > 1) {
-			console.log(`    Slot ${i + 10} empty: ${inv[i + 10]?.empty === 1}`);
-			if (i + 10 <= 40 && inv[i + 10].empty === 0) empty = 0;
-		}
-		if (charm_y > 2) {
-			console.log(`    Slot ${i + 20} empty: ${inv[i + 20]?.empty === 1}`);
-			if (i + 20 <= 40 && inv[i + 20].empty === 0) empty = 0;
-		}
-
-		console.log(`  📍 Slot availability result: ${empty === 1 ? 'AVAILABLE' : 'OCCUPIED'}`);
-
-		if (empty === 1) {
-			insertion = inv[i].id;
-			console.log(`  🎨 Creating charm HTML element with id: ${uniqueID}, inserting into: ${insertion}`);
-			
-			inv[i].empty = 0;
-			inv[0].in[i] = uniqueID;
-			if (charm_y > 1) {
-				inv[i + 10].empty = 0;
-				inv[0].in[i + 10] = uniqueID;
-			}
-			if (charm_y > 2) {
-				inv[i + 20].empty = 0;
-				inv[0].in[i + 20] = uniqueID;
-			}
-
-			const element = document.getElementById(insertion);
-			if (!element) {
-				console.error(`  ❌ DOM element not found: ${insertion}`);
-			} else {
-				console.log(`  ✅ Found DOM element, adding HTML`);
-				element.innerHTML += charmHTML;
-			}
-
-			const ch = "charms";
-			equipped[ch][uniqueID] = {
-				id: uniqueID,
-				name: nameVal,
-				size: size,
-				custom: true,
-				invSlot: targetSlot,
-				PropertyList: charmData.PropertyList || []
-			};
-
-			console.log(`  💾 Created equipped charm object:`, equipped[ch][uniqueID]);
-
-			// Apply all custom stats from charmData
-			let statsApplied = 0;
-			for (let affix in charmData) {
-				if (["name", "size", "invSlot", "PropertyList", "custom"].includes(affix)) continue;
-
-				equipped[ch][uniqueID][affix] = charmData[affix];
-
-				// Apply numeric stats to character
-				if (typeof charmData[affix] === "number") {
-					const oldVal = character[affix] || 0;
-					character[affix] = oldVal + charmData[affix];
-					console.log(`    ➕ Applied ${affix}: ${oldVal} + ${charmData[affix]} = ${character[affix]}`);
-					statsApplied++;
-				} else if (affix === "ctc" || affix === "cskill") {
-					// Handle arrays (ctc/cskill)
-					if (!Array.isArray(character[affix])) character[affix] = [];
-					if (Array.isArray(charmData[affix])) {
-						character[affix].push(...charmData[affix]);
-					} else {
-						character[affix].push(charmData[affix]);
-					}
-					console.log(`    ➕ Applied ${affix}:`, charmData[affix]);
-					statsApplied++;
-				}
-			}
-
-			console.log(`✅ Successfully added custom charm: ${nameVal} (${statsApplied} stats applied)`);
-		} else {
-			console.warn(`❌ Slot ${targetSlot} not available for charm ${nameVal} - occupied`);
-		}
-	} else {
-		console.warn(`❌ Invalid slot ${targetSlot} for charm ${nameVal} - out of range (1-40)`);
-	}
-
-	updateURLDebounced();
-	updateAllEffects();
-}
 
 // addCharm - Adds a charm to the inventory
 //	val: the name of the charm
@@ -2883,7 +2598,6 @@ function updateAllEffects() {
 				if (ctcskill_name == "Volcano") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
 				if (ctcskill_name == "Poison Nova") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
 				if (ctcskill_name == "Frozen Orb") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
-				if (ctcskill_name == "Frost Nova") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
 				if (ctcskill_name == "Hydra") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
 				if (ctcskill_name == "Fissure") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
 				if (ctcskill_name == "Armageddon") { match = 0 } //without this line, CTC discharge would add lightining damage to attack damage display
@@ -3546,17 +3260,6 @@ function getCTCSkillData(name, lvl, group) {
 		}
 		forbtext = "(" + Math.round(result.cDamage_min) + "-" + Math.round(result.cDamage_max) + ")" + " {" +Math.round((result.cDamage_min+result.cDamage_max)/2) + "}";
 	}
-	else if (name == "Frost Nova") {
-		if (character.class_name == "Sorceress") {
-			result.cDamage_min = skill.data.values[0][lvl] * ((1 + 0.16*skills_all["sorceress"][3].level) * (1 + 0.16*skills_all["sorceress"][4].level) * (1+character.cDamage/100)) ;
-			result.cDamage_max = skill.data.values[1][lvl] * ((1 + 0.16*skills_all["sorceress"][3].level) * (1 + 0.16*skills_all["sorceress"][4].level) * (1+character.cDamage/100)) ;
-		} 
-		if (character.class_name != "Sorceress") {
-			result.cDamage_min = skill.data.values[0][lvl] * (1+character.cDamage/100) ;
-			result.cDamage_max = skill.data.values[1][lvl] * (1+character.cDamage/100) ;
-		}
-		fnovatext = "(" + Math.round(result.cDamage_min) + "-" + Math.round(result.cDamage_max) + ")" + " {" +Math.round((result.cDamage_min+result.cDamage_max)/2) + "}";
-	}
 	else if (name == "Hydra") {
 		if (character.class_name == "Sorceress") {
 			result.fDamage_min = skill.data.values[1][lvl] * ((1 + 0.01*skills_all["sorceress"][23].level + 0.02*skills_all["sorceress"][26].level) * (1+character.fDamage/100)) ;
@@ -3713,7 +3416,7 @@ function getCharacterInfo() {
 		}
 		charInfo += "},"
 	} }
-	charInfo += "},selectedSkill:["+selectedSkill[0]+","+selectedSkill[1]
+	charInfo += "},selectedSkill["+selectedSkill[0]+","+selectedSkill[1]
 	charInfo += "],mercenary:'"+mercenary.name+"'"
 	charInfo += ",settings:{coupling:"+settings.coupling+",autocast:"+settings.autocast+",synthwep:"+settings.synthwep+",aramex_special:"+settings.aramex_special
 	charInfo += "},ironGolem:"+golemItem.name
@@ -4119,25 +3822,12 @@ function itemHover(ev, id) {
 	var affixes = "";
 	if (type == "charm" && name != "+1 (each) skill") {
 		affixes = ""
-		
-		// Check if this is a custom charm with PropertyList
-		if (equipped["charms"][val].custom && equipped["charms"][val].PropertyList) {
-			// Display custom charm stats from PropertyList
-			const propList = equipped["charms"][val].PropertyList;
-			for (let i = 0; i < propList.length; i++) {
-				affixes += propList[i] + "<br>";
-			}
-			// Add "(Custom Imported)" indicator
-			main_affixes += "<font color='"+colors.Gray+"'>Custom Imported</font><br>";
-		} else {
-			// Standard charm display
-			for (affix in equipped["charms"][val]) {
-				if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
-					var affix_info = getAffixLine(affix,"charms",val,"");
-					if (affix_info[1] != 0) {
-						if (affix == "req_level") { main_affixes += affix_info[0]+"<br>" }
-						else { affixes += affix_info[0]+"<br>" }
-					}
+		for (affix in equipped["charms"][val]) {
+			if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
+				var affix_info = getAffixLine(affix,"charms",val,"");
+				if (affix_info[1] != 0) {
+					if (affix == "req_level") { main_affixes += affix_info[0]+"<br>" }
+					else { affixes += affix_info[0]+"<br>" }
 				}
 			}
 		}
@@ -4299,8 +3989,6 @@ function equipmentHover(group) {
 		for (let i = 1; i < bonuses.length; i++) {
 			if (amount >= i) {
 				for (affix in bonuses[i]) {
-					// Aggregate numeric bonuses; handle CTC separately below for display
-					if (affix === "ctc") { continue; }
 					if (typeof(list_bonuses[affix]) == 'undefined') { list_bonuses[affix] = 0 }
 					list_bonuses[affix] += bonuses[i][affix]
 				}
@@ -4314,7 +4002,7 @@ function equipmentHover(group) {
 				}
 			}
 		}
-		for (affix in list_bonuses) { if (typeof(stats[affix]) != 'undefined' && stats[affix] != unequipped[affix] && stats[affix] != 1) {
+		for (affix in list_bonuses) { if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
 			var source = list_bonuses;
 			var affix_line = "";
 			var value = source[affix];
@@ -4346,7 +4034,7 @@ function equipmentHover(group) {
 			if (halt == true) { value_combined = 0 }
 			if (value_combined != 0) { set_affixes += affix_line+"<br>" }
 		} }
-		for (affix in list_group_bonuses) { if (typeof(stats[affix]) != 'undefined' && stats[affix] != unequipped[affix] && stats[affix] != 1) {
+		for (affix in list_group_bonuses) { if (stats[affix] != unequipped[affix] && stats[affix] != 1) {
 			var source = list_group_bonuses;
 			var affix_line = "";
 			var value = source[affix];
@@ -4378,17 +4066,6 @@ function equipmentHover(group) {
 			if (halt == true) { value_combined = 0 }
 			if (value_combined != 0) { set_group_affixes += affix_line+"<br>" }
 		} }
-		// Add CTC lines from per-item set bonuses (do not aggregate numerically)
-		var set_ctc_text = "";
-		for (let i = 1; i < bonuses.length; i++) {
-			if (amount >= i && bonuses[i] && Array.isArray(bonuses[i].ctc)) {
-				for (let j = 0; j < bonuses[i].ctc.length; j++) {
-					var c = bonuses[i].ctc[j];
-					set_ctc_text += c[0]+"% chance to cast level "+c[1]+" "+c[2]+" "+c[3]+"<br>";
-				}
-			}
-		}
-		if (set_ctc_text != "") { set_affixes += set_ctc_text; }
 		if (set_group_affixes != "") { set_group_affixes = "<br>"+group_bonuses[0]+":<br>"+set_group_affixes }
 	} }
 	if (socketed_affixes != "") { socketed_affixes = "<br>"+socketed_affixes }
@@ -4567,7 +4244,7 @@ function changeBase(group, change) {
 		var multReq = 1;
 		var reqEth = 0;
 
-		if (typeof(equipped[group]["ethereal"]) != 'undefined') { if (equipped[group]["ethereal"] == 1) { multEth = getEthMultiplier(true); reqEth = 10; } }
+		if (typeof(equipped[group]["ethereal"]) != 'undefined') { if (equipped[group]["ethereal"] == 1) { multEth = 1.5; reqEth = 10; } }
 		if (typeof(equipped[group]["e_def"]) != 'undefined') { multED += (equipped[group]["e_def"]/100) }
 		if (typeof(equipped[group]["req"]) != 'undefined') { multReq += (equipped[group]["req"]/100) }
 		for (affix in bases[base]) { if (affix != "group" && affix != "type" && affix != "upgrade" && affix != "downgrade" && affix != "subtype" && affix != "only" && affix != "def_low" && affix != "def_high" && affix != "durability" && affix != "range" && affix != "twoHands") {
@@ -4975,12 +4652,6 @@ if (event == null && source) {
         }
         socketed[group].socketsFilled += 1;
         console.debug(`Socketing ${socketItem} into ${group}`);
-        
-        // Recalculate requirements if socketables have 'req' modifiers (e.g., Hel Rune)
-        if (typeof(socketed[group].totals.req) != 'undefined' && socketed[group].totals.req != 0) {
-            recalculateRequirements(group);
-        }
-        
         calculateSkillAmounts();
         updateStats();
         updateSkills();
@@ -5003,52 +4674,6 @@ if (event == null && source) {
     inv[0].onpickup = "none";
 }
 
-
-// recalculateRequirements - Recalculates req_strength and req_dexterity for an equipped item
-//	when socketables with 'req' modifiers (like Hel Rune) are added or removed
-// ---------------------------------
-function recalculateRequirements(group) {
-    if (!equipped[group] || !equipped[group].base) {
-        return; // No item equipped or no base to reference
-    }
-    
-    // Get the base item's original requirements
-    var base = getBaseId(equipped[group].base);
-    if (typeof(bases[base]) == 'undefined') {
-        return; // Base not found
-    }
-    
-    // Calculate multipliers
-    var multReq = 1;
-    var reqEth = 0;
-    
-    // Apply ethereal reduction (-10 requirements)
-    if (typeof(equipped[group]["ethereal"]) != 'undefined' && equipped[group]["ethereal"] == 1) {
-        reqEth = 10;
-    }
-    
-    // Apply item's own 'req' modifier (if any)
-    if (typeof(equipped[group]["req"]) != 'undefined') {
-        multReq += (equipped[group]["req"] / 100);
-    }
-    
-    // Apply socketables' 'req' modifier (e.g., Hel Rune)
-    if (typeof(socketed[group].totals.req) != 'undefined') {
-        multReq += (socketed[group].totals.req / 100);
-    }
-    
-    // Recalculate req_strength
-    if (typeof(bases[base].req_strength) != 'undefined') {
-        equipped[group].req_strength = Math.max(0, Math.ceil(multReq * bases[base].req_strength - reqEth));
-    }
-    
-    // Recalculate req_dexterity
-    if (typeof(bases[base].req_dexterity) != 'undefined') {
-        equipped[group].req_dexterity = Math.max(0, Math.ceil(multReq * bases[base].req_dexterity - reqEth));
-    }
-    
-    console.debug(`Recalculated requirements for ${group}: STR=${equipped[group].req_strength}, DEX=${equipped[group].req_dexterity}, multReq=${multReq}`);
-}
 
 
 // allowSocket - Checks on mouse-over whether a socketable item may be added
@@ -5096,13 +4721,11 @@ function trashSocketable(event, ident, override) {
 		if (event.ctrlKey) { dup = 39 }
 	}
 	var nameVal = val.split('_')[0];
-	var affectedGroup = null; // Track which group had a socketable removed
 	// removed from equipment
 	var groups = ["helm", "armor", "weapon", "offhand"];
 	for (let g = 0; g < groups.length; g++) {
 		for (let i = 0; i < socketed[groups[g]].items.length; i++) {
 			if (val == socketed[groups[g]].items[i].id) {
-				var hadReqModifier = (typeof(socketed[groups[g]].items[i].req) != 'undefined' && socketed[groups[g]].items[i].req != 0);
 				for (affix in socketed[groups[g]].items[i]) {
 					if (affix != "id" && affix != "name") {
 						character[affix] -= socketed[groups[g]].items[i][affix]
@@ -5111,9 +4734,6 @@ function trashSocketable(event, ident, override) {
 				}
 				socketed[groups[g]].items[i] = {id:"",name:""}
 				socketed[groups[g]].socketsFilled -= 1
-				if (hadReqModifier) {
-					affectedGroup = groups[g];
-				}
 			}
 		}
 	}
@@ -5144,12 +4764,6 @@ function trashSocketable(event, ident, override) {
 	calculateSkillAmounts()
 	updateStats()
 	updateSkills()
-	
-	// Recalculate requirements if a socketable with 'req' modifier was removed
-	if (affectedGroup != null) {
-		recalculateRequirements(affectedGroup);
-	}
-	
 	if (selectedSkill[0] != " ­ ­ ­ ­ Skill 1") { checkSkill(selectedSkill[0], 1) }
 	if (selectedSkill[1] != " ­ ­ ­ ­ Skill 2") { checkSkill(selectedSkill[1], 2) }
 	// updateAllEffects()?
@@ -5573,8 +5187,9 @@ function getWeaponDamage(str, dex, group, thrown) {
 		phys_max_other = ~~equipped[other].damage_max + c.level*~~equipped[other].max_damage_per_level
 	}
 	var e_damage = c.e_damage - e_damage_other;
-	var base_min = equipped[group].base_damage_min;
-	var base_max = equipped[group].base_damage_max;
+//  Add Aramex's propsed 50% increase to base weapon damage here?	
+	var base_min = equipped[group].base_damage_min; // * 1.5?
+	var base_max = equipped[group].base_damage_max; // * 1.5?
 	if (thrown == 1) { base_min = ~~(equipped[group].throw_min); base_max = ~~(equipped[group].throw_max); }
 	// DBG: log weapon inputs used to calculate damage
 	try { /* console.debug("DBG:getWeaponDamage inputs", {group:group, base_min_raw:equipped[group].base_damage_min, base_max_raw:equipped[group].base_damage_max, base_min_used:base_min, base_max_used:base_max, thrown:thrown, e_damage:c.e_damage, socketed_totals: socketed[group] && socketed[group].totals}); */ } catch (e) { }
@@ -5662,7 +5277,7 @@ function updatePrimaryStats() {
 		if (typeof(equipped[group].base_defense) != 'undefined') { if (equipped[group].base_defense != unequipped.base_defense) {
 			var multEth = 1;
 			var multED = 1;
-			if (typeof(equipped[group]["ethereal"]) != 'undefined') { if (equipped[group]["ethereal"] == 1) { multEth = getEthMultiplier(true); } }
+			if (typeof(equipped[group]["ethereal"]) != 'undefined') { if (equipped[group]["ethereal"] == 1) { multEth = 1.5; } }
 			if (typeof(equipped[group]["e_def"]) != 'undefined') { multED += (equipped[group]["e_def"]/100) }
 			if (typeof(corruptsEquipped[group]["e_def"]) != 'undefined') { multED += (corruptsEquipped[group]["e_def"]/100) }
 			if (group == "helm" || group == "armor" || group == "weapon" || group == "offhand") { if (typeof(socketed[group].totals["e_def"]) != 'undefined') { multED += (socketed[group].totals["e_def"]/100) } }
@@ -5888,7 +5503,6 @@ function updateSecondaryStats() {
 	document.getElementById("labsorb").innerHTML = lAbs
 	document.getElementById("mabsorb").innerHTML = c.mAbsorb_flat
 
-/*	
 	if (eseff > 0) {
 		document.getElementById("eseff_label").style.visibility = "visible"
 		document.getElementById("eseff").innerHTML = eseff + "%"
@@ -5899,44 +5513,25 @@ function updateSecondaryStats() {
 	if (esprcnt > 0) {
 		document.getElementById("esprcnt_label").style.visibility = "visible"
 		document.getElementById("esprcnt").innerHTML = esprcnt + "%";
-		
-		var esdamagetaken = "Energy Shield: " + esprcnt + "% of damage absorbed to Mana";
-		esdamagetaken += "\nEfficiency: " + eseff + "% (from TK level " + (skills[13] ? skills[13].level : 0) + ")";
-		esdamagetaken += "\nMana cost = damage absorbed × (160-" + eseff + ")/80 = " + Math.round((160-eseff)/80 * 100) + "%";
-		esdamagetaken += "\n\nPer 500 damage taken, you lose:";
-		
-		// Physical calculation
-		var physLife = Math.max(1, Math.round(((500 - c.damage_reduced) * (1-(c.pdr/100)) * (1-(esprcnt/100))) * (1-(c.block/100))));
-		var physMana = Math.round((500 * (esprcnt/100)) * (160-eseff)/80);
-		esdamagetaken += "\nPhysical: " + physLife + " HP, " + physMana + " Mana";
-		
-		// Fire calculation
-		var fireAfterReductions = ((500 - c.mDamage_reduced) * (1-(c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup)/100) * (1-c.fAbsorb/100) - (c.fAbsorb_flat + (c.level*c.fAbsorb_flat_per_level)));
-		var fireLife = Math.max(1, Math.round(fireAfterReductions * (1-esprcnt/100)));
-		var fireMana = Math.round((500 * (esprcnt/100)) * (160-eseff)/80);
-		esdamagetaken += "\nFire: " + fireLife + " HP, " + fireMana + " Mana";
-		
-		// Cold calculation
-		var coldAfterReductions = ((500 - c.mDamage_reduced) * (1-(c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup)/100) * (1-c.cAbsorb/100) - (c.cAbsorb_flat + (c.level*c.cAbsorb_flat_per_level)));
-		var coldLife = Math.max(1, Math.round(coldAfterReductions * (1-esprcnt/100)));
-		var coldMana = Math.round((500 * (esprcnt/100)) * (160-eseff)/80);
-		esdamagetaken += "\nCold: " + coldLife + " HP, " + coldMana + " Mana";
-		
-		// Lightning calculation
-		var lightAfterReductions = ((500 - c.mDamage_reduced) * (1-(c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup)/100) * (1-c.lAbsorb/100) - c.lAbsorb_flat);
-		var lightLife = Math.max(1, Math.round(lightAfterReductions * (1-esprcnt/100)));
-		var lightMana = Math.round((500 * (esprcnt/100)) * (160-eseff)/80);
-		esdamagetaken += "\nLight: " + lightLife + " HP, " + lightMana + " Mana";
-		
-		esdamagetaken += "\n\nOrder: Armor → ES → DR/MDR → Resist → Absorb";
+//		getESDamageTaken - No extra function needed, this does the job
+		var esdamagetaken = "Per 500 damage taken,\nHP will lose:" ;
+		esdamagetaken += "\nPhys: " + Math.round(((500 * (1-(esprcnt/100))) - c.damage_reduced) *(1-(c.pdr/100))*(1-(c.block/100)));
+//		esdamagetaken += "\nPhys: " + Math.round((500-c.damage_reduced)*(1-(c.pdr/100))*(1-(c.block/100))*(1-(esprcnt/100))) ;
+//		esdamagetaken += "\nFire: " + Math.round((500-c.mDamage_reduced)*(1-(c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup)/100)*(1-esprcnt/100)) ;
+//		esdamagetaken += "\nCold: " + Math.round((500-c.mDamage_reduced)*(1-(c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup)/100)*(1-esprcnt/100)) ;
+//		esdamagetaken += "\nLight: " + Math.round((500-c.mDamage_reduced)*(1-(c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup)/100)*(1-esprcnt/100)) ;
+		esdamagetaken += "\nFire: " + Math.round(((500 * (1-esprcnt/100))  - c.mDamage_reduced) * (1-(c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup)/100) * (1-c.fAbsorb/100) - (c.fAbsorb_flat + (c.level*c.fAbsorb_flat_per_level))) ;
+		esdamagetaken += "\nCold: " + Math.round(((500 * (1-esprcnt/100))  - c.mDamage_reduced) * (1-(c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup)/100) * (1-c.cAbsorb/100) - (c.cAbsorb_flat + (c.level*c.cAbsorb_flat_per_level))) ;
+		esdamagetaken += "\nLight: " + Math.round(((500 * (1-esprcnt/100))  - c.mDamage_reduced) * (1-(c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup)/100) * (1-c.lAbsorb/100) - c.lAbsorb_flat) ;
+		esdamagetaken += "\nThese cannot be negative numbers, assume anything "
+		esdamagetaken += "\nbelow zero is actually 1"
 
 		var TooltipElement = document.getElementById("esprcnt");
-		TooltipElement.title = esdamagetaken;	
+		TooltipElement.title = esdamagetaken  ;	
 	} else {
 		document.getElementById("esprcnt_label").style.visibility = "hidden"
 		document.getElementById("esprcnt").innerHTML = ""
 	}	
-*/		
 	
 	document.getElementById("cdr").innerHTML = c.cdr; if (c.cdr > 0) { document.getElementById("cdr").innerHTML += "%" }
 	var fcrTotal = c.fcr + Math.floor(c.level*c.fcr_per_level);
@@ -6116,506 +5711,6 @@ function updateSecondaryStats() {
 //	else{document.getElementById("fhr_bp").innerHTML = c.fhr_bp}
 }
 
-// toggleMixedAttack - Shows/hides the mixed attack damage type inputs
-// ---------------------------------
-function toggleMixedAttack() {
-	var checkbox = document.getElementById("mixedattack");
-	var controls = document.getElementById("mixedattack_controls");
-	if (checkbox.checked) {
-		controls.style.display = "block";
-	} else {
-		controls.style.display = "none";
-	}
-	updateTertiaryStats();
-}
-
-// calculateMixedDamageTaken - Calculates damage from a single attack with multiple damage types
-//	physDmg, fireDmg, coldDmg, lightDmg, magicDmg: damage amounts for each type
-// Returns: object with final damage to life, damage to mana (if ES), and healing from absorb
-// Key differences from separate attacks:
-//   - Bone/Cyclone/ES pools are shared across all damage types
-//   - Excess Physical DR applies to sum of remaining elemental damage after their resist/absorb
-// ---------------------------------
-function calculateMixedDamageTaken(physDmg, fireDmg, coldDmg, lightDmg, magicDmg) {
-	var c = character;
-	
-	console.log("=== MIXED DAMAGE ATTACK CALCULATION ===");
-	console.log("Initial Damage: Phys=" + physDmg + " Fire=" + fireDmg + " Cold=" + coldDmg + " Light=" + lightDmg + " Magic=" + magicDmg);
-	
-	var result = {
-		damageToLife: 0,
-		damageToMana: 0,
-		healingFromAbsorb: 0,
-		armorAbsorbed: 0,
-		breakdown: {}
-	};
-	
-	var totalDamageToLife = 0;
-	var totalDamageToMana = 0;
-	var totalHealing = 0;
-	
-	// Track shared absorption pools
-	var boneArmorRemaining = c.absorb_melee || 0;
-	var cycloneArmorRemaining = c.absorb_elemental || 0;
-	
-	console.log("Bone Armor / Cyclone Armor");
-	console.log("  Bone Armor Available: " + boneArmorRemaining);
-	console.log("  Cyclone Armor Available: " + cycloneArmorRemaining);
-	
-	// Step 1: Apply Bone/Cyclone Armor to all damage types (shared pools)
-	var damages = {
-		physical: physDmg,
-		fire: fireDmg,
-		cold: coldDmg,
-		lightning: lightDmg,
-		magic: magicDmg
-	};
-	
-	var armorAbsorbed = {physical: 0, fire: 0, cold: 0, lightning: 0, magic: 0};
-	
-	// Bone Armor absorbs physical only
-	if (boneArmorRemaining > 0) {
-		if (damages.physical > 0) {
-			var absorbed = Math.min(damages.physical, boneArmorRemaining);
-			damages.physical -= absorbed;
-			boneArmorRemaining -= absorbed;
-			armorAbsorbed.physical = absorbed;
-		}
-	}
-	
-	// Cyclone Armor absorbs all elemental
-	if (cycloneArmorRemaining > 0) {
-		var elementalTypes = ["fire", "cold", "lightning"];
-		for (var i = 0; i < elementalTypes.length; i++) {
-			var type = elementalTypes[i];
-			if (damages[type] > 0 && cycloneArmorRemaining > 0) {
-				var absorbed = Math.min(damages[type], cycloneArmorRemaining);
-				damages[type] -= absorbed;
-				cycloneArmorRemaining -= absorbed;
-				armorAbsorbed[type] = absorbed;
-			}
-		}
-	}
-	
-	result.armorAbsorbed = armorAbsorbed.physical + armorAbsorbed.fire + armorAbsorbed.cold + armorAbsorbed.lightning + armorAbsorbed.magic;
-	
-	console.log("  After Armor Absorption:");
-	console.log("    Phys=" + damages.physical + " (absorbed " + armorAbsorbed.physical + ")");
-	console.log("    Fire=" + damages.fire + " (absorbed " + armorAbsorbed.fire + ")");
-	console.log("    Cold=" + damages.cold + " (absorbed " + armorAbsorbed.cold + ")");
-	console.log("    Light=" + damages.lightning + " (absorbed " + armorAbsorbed.lightning + ")");
-	console.log("    Magic=" + damages.magic + " (absorbed " + armorAbsorbed.magic + ")");
-	console.log("    Bone Armor Remaining: " + boneArmorRemaining);
-	console.log("    Cyclone Armor Remaining: " + cycloneArmorRemaining);
-	
-	// Step 2: Apply Energy Shield (shared pool converts all damage types)
-	var esPercent = 0;
-	var esLevel = 0;
-	
-	if (c.class_name === "Sorceress") {
-		// Check if ES effect is active
-		if (effects["Energy Shield"] && effects["Energy Shield"].info.enabled == 1) {
-			esLevel = effects["Energy Shield"].level;
-		}
-		// Fallback: check if character has skill points in ES (skill index 19)
-		else if (typeof skills !== 'undefined' && skills[19] && skills[19].level > 0) {
-			esLevel = skills[19].level + skills[19].extra_levels;
-		}
-		
-		if (esLevel > 0) {
-			// Get absorb percentage from skill data
-			if (skills[19] && skills[19].data && skills[19].data.values && skills[19].data.values[2]) {
-				esPercent = Math.min(95, skills[19].data.values[2][esLevel]);
-			}
-		}
-	}
-	
-	// Calculate ES efficiency from Telekinesis synergy
-	var esEfficiency = 6; // Base efficiency
-	if (c.class_name === "Sorceress" && typeof skills !== 'undefined' && skills[13]) {
-		esEfficiency = 6 + (4 * skills[13].level); // +4% per Telekinesis level
-	}
-	
-	console.log("Energy Shield: " + esPercent + "%" + (esPercent > 0 ? " (level " + esLevel + ")" : ""));
-	if (esPercent > 0) {
-		console.log("  ES Efficiency: " + esEfficiency + "% (from Telekinesis level " + (skills[13] ? skills[13].level : 0) + ")");
-	}
-	
-	// Step 3-4: Physical Damage Reduction (track excess DR for later)
-	var physDamageAfterArmor = damages.physical;
-	var excessPhysDR = 0;
-	
-	if (physDamageAfterArmor > 0) {
-		// Flat DR
-		var flatDR = c.damage_reduced || 0;
-		physDamageAfterArmor = Math.max(0, physDamageAfterArmor - flatDR);
-		
-		if (physDamageAfterArmor == 0 && flatDR > damages.physical) {
-			excessPhysDR = flatDR - damages.physical;
-		}
-		
-		// Percentage DR
-		if (physDamageAfterArmor > 0) {
-			var pdrPercent = Math.min(50, c.pdr || 0);
-			physDamageAfterArmor = physDamageAfterArmor * (100 - pdrPercent) / 100;
-		}
-	}
-	
-	console.log("Damage Reduced (Physical)");
-	console.log("  Flat DR: " + (c.damage_reduced || 0));
-	console.log("  % DR: " + (c.pdr || 0) + "%");
-	console.log("  Physical Damage After DR: " + physDamageAfterArmor);
-	console.log("  Excess Physical DR: " + excessPhysDR);
-	
-	// Apply ES to physical damage
-	var physToLife = physDamageAfterArmor * (100 - esPercent) / 100;
-	var physToMana = physDamageAfterArmor * esPercent / 100;
-	// Apply ES efficiency to mana damage
-	if (c.class_name === "Sorceress" && esPercent > 0 && physToMana > 0) {
-		// Formula: manaCost = damageAbsorbed * (160 - efficiency) / 80
-		physToMana = physToMana * (160 - esEfficiency) / 80;
-	}
-	
-	console.log("  Physical After ES: " + physToLife + " to life, " + physToMana + " to mana");
-	
-	// Step 5-6: Process elemental damages: ES first, then MDR/Resist/%Absorb on life portion only
-	console.log("Energy Shield / Magic Damage Reduced / Resistances (Elemental)");
-	var elementalDamages = {};
-	var damageTypes = ["fire", "cold", "lightning", "magic"];
-	
-	for (var i = 0; i < damageTypes.length; i++) {
-		var type = damageTypes[i];
-		var dmg = damages[type];
-		if (dmg <= 0) {
-			elementalDamages[type] = 0;
-			continue;
-		}
-		
-		// First: Apply Energy Shield (splits into life and mana)
-		var dmgToLife = dmg * (100 - esPercent) / 100;
-		var dmgToMana = dmg * esPercent / 100;
-		if (c.class_name === "Sorceress" && esPercent > 0 && dmgToMana > 0) {
-			// Formula: manaCost = damageAbsorbed * (160 - efficiency) / 80
-			dmgToMana = dmgToMana * (160 - esEfficiency) / 80;
-		}
-		
-		// Track mana damage from this element
-		if (dmgToMana > 0) {
-			totalDamageToMana += dmgToMana;
-		}
-		
-		// Now process the LIFE portion through MDR/Resist/%Absorb
-		// Flat MDR
-		var mdr = c.mDamage_reduced || 0;
-		dmgToLife = Math.max(0, dmgToLife - mdr);
-		
-		// Resistances (not for magic damage)
-		var resistance = 0;
-		if (type !== "magic" && dmgToLife > 0) {
-			var resistMax = 75;
-			
-			if (type === "fire") {
-				resistance = c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup;
-				resistMax = (c.fRes_max_base || 75) + (c.fRes_max || 0);
-			} else if (type === "cold") {
-				resistance = c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup;
-				resistMax = (c.cRes_max_base || 75) + (c.cRes_max || 0);
-			} else if (type === "lightning") {
-				resistance = c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup;
-				resistMax = (c.lRes_max_base || 75) + (c.lRes_max || 0);
-			}
-			
-			resistance = Math.min(resistance, resistMax);
-			dmgToLife = dmgToLife * (100 - resistance) / 100;
-		}
-		
-		// Apply percentage absorb
-		var absorbPercent = 0;
-		if (type === "fire") absorbPercent = c.fAbsorb || 0;
-		else if (type === "cold") absorbPercent = c.cAbsorb || 0;
-		else if (type === "lightning") absorbPercent = c.lAbsorb || 0;
-		
-		if (absorbPercent > 0) {
-			dmgToLife = dmgToLife * (100 - absorbPercent) / 100;
-		}
-		
-		console.log("  " + type + ": " + damages[type] + " -> " + Math.round(dmgToLife) + " life, " + Math.round(dmgToMana) + " mana (ES=" + esPercent + "%, MDR=" + mdr + ", Res=" + Math.round(resistance) + "%, Absorb%=" + absorbPercent + "%)");
-		
-		elementalDamages[type] = dmgToLife;
-	}
-	
-	// Step 7: Apply excess Physical DR to sum of remaining elemental damage
-	console.log("Excess Physical DR Application to Elemental");
-	if (excessPhysDR > 0) {
-		var totalElemental = elementalDamages.fire + elementalDamages.cold + elementalDamages.lightning + elementalDamages.magic;
-		
-		console.log("  Total Elemental Before: " + totalElemental);
-		console.log("  Applying Excess Phys DR: " + excessPhysDR);
-		
-		if (totalElemental > 0) {
-			totalElemental = Math.max(0, totalElemental - excessPhysDR);
-			
-			// Distribute the reduced total back proportionally
-			var originalTotal = elementalDamages.fire + elementalDamages.cold + elementalDamages.lightning + elementalDamages.magic;
-			if (originalTotal > 0) {
-				var ratio = totalElemental / originalTotal;
-				elementalDamages.fire *= ratio;
-				elementalDamages.cold *= ratio;
-				elementalDamages.lightning *= ratio;
-				elementalDamages.magic *= ratio;
-			}
-		}
-		
-		console.log("  Total Elemental After: " + totalElemental);
-		console.log("  Fire=" + elementalDamages.fire + " Cold=" + elementalDamages.cold + " Light=" + elementalDamages.lightning + " Magic=" + elementalDamages.magic);
-	} else {
-		console.log("  No excess Physical DR to apply");
-	}
-	
-	// Step 8: Apply flat absorb to each elemental type
-	console.log("Flat Absorb");
-	var totalFlatAbsorb = 0;
-	var absorbTypes = ["fire", "cold", "lightning", "magic"];
-	
-	for (var i = 0; i < absorbTypes.length; i++) {
-		var type = absorbTypes[i];
-		var dmgToLife = elementalDamages[type];
-		if (dmgToLife <= 0) continue;
-		
-		// Apply flat absorb
-		var flatAbsorb = 0;
-		if (type === "fire") flatAbsorb = c.fAbsorb_flat || 0;
-		else if (type === "cold") flatAbsorb = c.cAbsorb_flat || 0;
-		else if (type === "lightning") flatAbsorb = c.lAbsorb_flat || 0;
-		
-		if (flatAbsorb > 0) {
-			dmgToLife = dmgToLife - flatAbsorb;
-			if (dmgToLife < 0) {
-				totalHealing += Math.abs(dmgToLife);
-				dmgToLife = 0;
-			}
-		}
-		
-		totalDamageToLife += dmgToLife;
-	}
-	
-	// Add physical damage
-	totalDamageToLife += physToLife;
-	totalDamageToMana += physToMana;
-	
-	console.log("Final Results:");
-	console.log("  Total Damage to Life: " + Math.round(totalDamageToLife));
-	if (totalDamageToMana > 0) {
-		console.log("  Total Damage to Mana: " + Math.round(totalDamageToMana) + " (Energy Shield efficiency: " + esEfficiency + "%)");
-	}
-	console.log("  Healing from Absorb: " + Math.round(totalHealing));
-	console.log("=== END MIXED DAMAGE CALCULATION ===\n");
-	
-	// Final results
-	result.damageToLife = Math.max(1, Math.round(totalDamageToLife));
-	result.damageToMana = Math.round(totalDamageToMana);
-	result.healingFromAbsorb = Math.round(totalHealing);
-	result.breakdown = {
-		physical: Math.round(physToLife),
-		fire: Math.round(elementalDamages.fire * (100 - esPercent) / 100),
-		cold: Math.round(elementalDamages.cold * (100 - esPercent) / 100),
-		lightning: Math.round(elementalDamages.lightning * (100 - esPercent) / 100),
-		magic: Math.round(elementalDamages.magic * (100 - esPercent) / 100),
-		excessPhysDR: Math.round(excessPhysDR)
-	};
-	
-	return result;
-}
-// calculateDamageTaken - Calculates final damage taken based on Diablo 2 order of operations
-//	damageAmount: initial damage amount (typically 1000 for display purposes)
-//	damageType: "physical", "fire", "cold", "lightning", or "magic"
-// Returns: object with final damage to life, damage to mana (if ES), and healing from absorb
-// Order: 1) Bone/Cyclone Armor, 2) Energy Shield, 3) Flat DR, 4) % DR, 5) Flat MDR, 6) Resistances, 7) % Absorb, 8) Flat Absorb
-// ---------------------------------
-function calculateDamageTaken(damageAmount, damageType) {
-	var c = character;
-	
-	console.log("=== SINGLE DAMAGE TYPE CALCULATION: " + damageType.toUpperCase() + " ===");
-	console.log("Initial Damage: " + damageAmount);
-	
-	var result = {
-		damageToLife: 0,
-		damageToMana: 0,
-		healingFromAbsorb: 0,
-		armorAbsorbed: 0
-	};
-	
-	var damage = damageAmount;
-	
-	// Step 1: Skill-Based Absorption (Bone Armor, Cyclone Armor)
-	// These absorb damage first, before any other calculations
-	console.log("Bone Armor / Cyclone Armor");
-	if (damageType === "physical") {
-		// Bone Armor absorbs physical damage only (Necromancer)
-		if (c.class_name === "Necromancer" && c.absorb_melee > 0) {
-			var absorbed = Math.min(damage, c.absorb_melee);
-			damage = Math.max(0, damage - absorbed);
-			result.armorAbsorbed = absorbed;
-			console.log("  Bone Armor absorbed: " + absorbed + ", remaining damage: " + damage);
-		} else {
-			console.log("  No Bone Armor (class=" + c.class_name + ")");
-		}
-	}
-	
-	if (damageType === "fire" || damageType === "cold" || damageType === "lightning") {
-		// Cyclone Armor absorbs elemental damage (Druid)
-		if (c.class_name === "Druid" && c.absorb_elemental > 0) {
-			var absorbed = Math.min(damage, c.absorb_elemental);
-			damage = Math.max(0, damage - absorbed);
-			result.armorAbsorbed = absorbed;
-			console.log("  Cyclone Armor absorbed: " + absorbed + ", remaining damage: " + damage);
-		} else {
-			console.log("  No Cyclone Armor (class=" + c.class_name + ")");
-		}
-	}
-	
-	// Step 2: Energy Shield (Sorceress) - Splits damage AFTER armor, BEFORE reductions
-	console.log("Energy Shield");
-	var damageToMana = 0;
-	var damageToLife = damage;
-	var esPercent = 0;
-	var esEfficiency = 6; // Base efficiency
-	var esLevel = 0;
-	
-	if (c.class_name === "Sorceress") {
-		// Check if ES effect is active
-		if (effects["Energy Shield"] && effects["Energy Shield"].info.enabled == 1) {
-			esLevel = effects["Energy Shield"].level;
-		}
-		// Fallback: check if character has skill points in ES (skill index 19)
-		else if (typeof skills !== 'undefined' && skills[19] && skills[19].level > 0) {
-			esLevel = skills[19].level + skills[19].extra_levels;
-		}
-		
-		if (esLevel > 0) {
-			// Get absorb percentage from skill data
-			if (skills[19] && skills[19].data && skills[19].data.values && skills[19].data.values[2]) {
-				esPercent = Math.min(95, skills[19].data.values[2][esLevel]);
-			}
-			// Calculate ES efficiency from Telekinesis synergy
-			if (typeof skills !== 'undefined' && skills[13]) {
-				esEfficiency = 6 + (4 * skills[13].level); // +4% per Telekinesis level
-			}
-		}
-	}
-	
-	if (esPercent > 0) {
-		damageToMana = damage * (esPercent / 100);
-		damageToLife = damage * (1 - esPercent / 100);
-		// Apply ES efficiency to mana damage
-		// Formula: manaCost = damageAbsorbed * (160 - efficiency) / 80
-		// At 80% efficiency: 1:1 ratio. Above 80%: reduced mana cost. Below 80%: increased mana cost.
-		damageToMana = damageToMana * (160 - esEfficiency) / 80;
-		console.log("  " + esPercent + "% to mana: " + damageToMana + " (efficiency: " + esEfficiency + "%), " + (100 - esPercent) + "% to life: " + damageToLife);
-	} else {
-		console.log("  No Energy Shield active (class=" + c.class_name + ")");
-	}
-	
-	// Step 3-4: Physical Damage Reduction (flat then %, for physical damage only)
-	// Only applies to the LIFE portion
-	if (damageType === "physical") {
-		console.log("Damage Reduced (Physical)");
-		// Flat reduction first
-		damageToLife = Math.max(0, damageToLife - c.damage_reduced);
-		console.log("  After Flat DR (" + c.damage_reduced + "): " + damageToLife + " to life, " + damageToMana + " to mana");
-		
-		// Then percentage reduction
-		damageToLife = damageToLife * (1 - Math.min(50, c.pdr) / 100);
-		console.log("  After % DR (" + Math.min(50, c.pdr) + "%): " + damageToLife + " to life, " + damageToMana + " to mana");
-	}
-	
-	// Step 5: Magic Damage Reduction (flat amount, applies to ALL elemental and magic damage)
-	// Only applies to the LIFE portion
-	if (damageType === "fire" || damageType === "cold" || damageType === "lightning" || damageType === "magic") {
-		console.log("Magic Damage Reduced");
-		console.log("  MDR: " + c.mDamage_reduced);
-		damageToLife = Math.max(0, damageToLife - c.mDamage_reduced);
-		console.log("  After MDR: " + damageToLife + " to life, " + damageToMana + " to mana");
-	}
-	
-	// Step 6: Resistances (for elemental damage)
-	// Only applies to the LIFE portion
-	if (damageType === "fire" || damageType === "cold" || damageType === "lightning") {
-		console.log("Resistances");
-		var resistance = 0;
-		var resistMax = 75;
-		
-		if (damageType === "fire") {
-			resistance = c.fRes + c.all_res - c.fRes_penalty + c.resistance_skillup;
-			resistMax = (c.fRes_max_base || 75) + (c.fRes_max || 0);
-		} else if (damageType === "cold") {
-			resistance = c.cRes + c.all_res - c.cRes_penalty + c.resistance_skillup;
-			resistMax = (c.cRes_max_base || 75) + (c.cRes_max || 0);
-		} else if (damageType === "lightning") {
-			resistance = c.lRes + c.all_res - c.lRes_penalty + c.resistance_skillup;
-			resistMax = (c.lRes_max_base || 75) + (c.lRes_max || 0);
-		}
-		
-		resistance = Math.min(resistance, resistMax);
-		damageToLife = damageToLife * (100 - resistance) / 100;
-		console.log("  Resistance: " + resistance + "% (max: " + resistMax + "%)");
-		console.log("  After Resistance: " + damageToLife + " to life, " + damageToMana + " to mana");
-	}
-	
-	// Step 7-8: Absorb (applied LAST, after all other reductions)
-	// Reduces damage AND heals you by the amount that exceeds the remaining damage
-	// Only applies to the LIFE portion
-	console.log("% Absorb / Flat Absorb");
-	var absorbAmount = 0;
-	var absorbPercent = 0;
-	
-	if (damageType === "fire") {
-		absorbAmount = c.fAbsorb_flat + (c.level * (c.fAbsorb_flat_per_level || 0));
-		absorbPercent = c.fAbsorb || 0;
-	} else if (damageType === "cold") {
-		absorbAmount = c.cAbsorb_flat + (c.level * (c.cAbsorb_flat_per_level || 0));
-		absorbPercent = c.cAbsorb || 0;
-	} else if (damageType === "lightning") {
-		absorbAmount = c.lAbsorb_flat || 0;
-		absorbPercent = c.lAbsorb || 0;
-	} else if (damageType === "magic") {
-		absorbAmount = c.mAbsorb_flat || 0;
-		absorbPercent = 0; // No percentage magic absorb in D2
-	}
-	
-	// Apply percentage absorb first
-	if (absorbPercent > 0) {
-		damageToLife = damageToLife * (1 - absorbPercent / 100);
-	}
-	
-	// Then flat absorb - only heal if absorb exceeds remaining damage
-	var damageBeforeFlatAbsorb = damageToLife;
-	damageToLife = damageToLife - absorbAmount;
-	
-	console.log("  % Absorb: " + absorbPercent + "%, Flat Absorb: " + absorbAmount);
-	console.log("  Damage before flat absorb: " + damageBeforeFlatAbsorb);
-	
-	if (damageToLife < 0) {
-		// Absorb exceeded damage - you heal for the excess
-		result.healingFromAbsorb = Math.abs(damageToLife);
-		damageToLife = 0;
-		console.log("  Healing from excess absorb: " + result.healingFromAbsorb);
-	} else {
-		// Absorb didn't exceed damage - no healing
-		result.healingFromAbsorb = 0;
-		console.log("  No healing (absorb didn't exceed damage)");
-	}
-	
-	// Final results
-	result.damageToLife = Math.max(1, Math.round(damageToLife)); // Min 1 damage
-	result.damageToMana = Math.round(damageToMana);
-	
-	console.log("Final Result: " + result.damageToLife + " HP" + (result.damageToMana > 0 ? ", " + result.damageToMana + " Mana (ES efficiency: " + esEfficiency + "%)" : "") + (result.healingFromAbsorb > 0 ? ", Healing: " + result.healingFromAbsorb : ""));
-	console.log("=== END " + damageType.toUpperCase() + " CALCULATION ===\n");
-	
-	return result;
-}
-
 // updateTertiaryStats - Updates other stats
 // ---------------------------------
 function updateTertiaryStats() {
@@ -6711,161 +5806,6 @@ function updateTertiaryStats() {
 	if (character.dodge > 0) { statlines += character.dodge + "% Chance to <b>Dodge</b> melee attack when attacking or standing still" + "<br>"}
 	if (c.avoid > 0) { statlines += c.avoid + "% Chance to <b>Avoid</b> missiles when attacking or standing still" + "<br>"}
 	if (c.evade > 0) { statlines += c.evade + "% Chance to <b>Evade</b> melee or missile attack when walking or running" + "<br>"}
-//	if (c.pdr > 0 || c.mDamage_reduced > 0 ) { statlines += "Phys damage Reduced by " + c.pdr +  "% and  " + c.damage_reduced + " flat;" + "Magic damage reduced by: " + c.mDamage_reduced + "<br>"}
-	
-	// Calculate damage taken for various damage types
-	// Check if mixed attack mode is enabled
-	var isMixedAttack = document.getElementById("mixedattack") && document.getElementById("mixedattack").checked;
-	
-	if (isMixedAttack) {
-		// Mixed attack mode - single attack with multiple damage types
-		var mixedPhys = parseInt(document.getElementById("mixedphys").value) || 0;
-		var mixedFire = parseInt(document.getElementById("mixedfire").value) || 0;
-		var mixedCold = parseInt(document.getElementById("mixedcold").value) || 0;
-		var mixedLight = parseInt(document.getElementById("mixedlight").value) || 0;
-		var mixedMagic = parseInt(document.getElementById("mixedmagic").value) || 0;
-		
-		var mixedResult = calculateMixedDamageTaken(mixedPhys, mixedFire, mixedCold, mixedLight, mixedMagic);
-		
-		var totalInputDamage = mixedPhys + mixedFire + mixedCold + mixedLight + mixedMagic;
-		
-		// Set character calc properties
-		c.drcalc = mixedResult.breakdown.physical;
-		c.mdrfirecalc = mixedResult.breakdown.fire;
-		c.mdrcoldcalc = mixedResult.breakdown.cold;
-		c.mdrlightcalc = mixedResult.breakdown.lightning;
-		
-		// Display mixed attack results
-		if (totalInputDamage > 0) {
-			var drCalcText = "Mixed Attack: Single hit with multiple damage types";
-			drCalcText += "\nInput: " + mixedPhys + " Physical, " + mixedFire + " Fire, " + mixedCold + " Cold, " + mixedLight + " Lightning, " + mixedMagic + " Magic";
-			drCalcText += "\n\nFinal Damage:";
-			drCalcText += "\n  " + mixedResult.damageToLife + " HP";
-			if (mixedResult.damageToMana > 0) { 
-				var esEff = 6;
-				if (typeof skills !== 'undefined' && skills[13]) {
-					esEff = 6 + (4 * skills[13].level);
-				}
-				drCalcText += " + " + mixedResult.damageToMana + " Mana (ES " + esEff + "% efficiency)"; 
-			}
-			if (mixedResult.armorAbsorbed > 0) { drCalcText += "\n  Absorbed by Armor: " + Math.round(mixedResult.armorAbsorbed); }
-			if (mixedResult.healingFromAbsorb > 0) { drCalcText += "\n  Healing from Absorb: " + Math.round(mixedResult.healingFromAbsorb); }
-			
-			drCalcText += "\n\nBreakdown by Type:";
-			if (mixedPhys > 0) { drCalcText += "\n  Physical: " + mixedPhys + " → " + mixedResult.breakdown.physical + " HP"; }
-			if (mixedFire > 0) { drCalcText += "\n  Fire: " + mixedFire + " → " + mixedResult.breakdown.fire + " HP"; }
-			if (mixedCold > 0) { drCalcText += "\n  Cold: " + mixedCold + " → " + mixedResult.breakdown.cold + " HP"; }
-			if (mixedLight > 0) { drCalcText += "\n  Lightning: " + mixedLight + " → " + mixedResult.breakdown.lightning + " HP"; }
-			if (mixedMagic > 0) { drCalcText += "\n  Magic: " + mixedMagic + " → " + mixedResult.breakdown.magic + " HP"; }
-			if (mixedResult.breakdown.excessPhysDR > 0) {
-				drCalcText += "\n\n  Excess Physical DR: " + Math.round(mixedResult.breakdown.excessPhysDR) + " applied to remaining elemental damage";
-			}
-			
-			drCalcText += "\n\nKey Differences from Separate Attacks:";
-			drCalcText += "\n* Assumes attck includes physical damage to utilize excess physical DR";
-//			drCalcText += "\n• Bone/Cyclone Armor pools shared across all types";
-//			drCalcText += "\n• Energy Shield pool shared across all types";
-			drCalcText += "\n• Excess Physical DR applies to remaining elemental damage";
-			
-			drCalcText += "\n\nOrder of Operations:";
-			drCalcText += "\n1. Bone Armor (physical) / Cyclone Armor (elemental) - shared pool";
-			drCalcText += "\n2. Energy Shield - splits ALL damage into Life & Mana - shared pool";
-			drCalcText += "\n3. Physical: Flat DR → % DR (only on life portion)";
-			drCalcText += "\n4. Elemental: Flat MDR → Resist → % Absorb → Flat Absorb (only on life portion)";
-			drCalcText += "\n5. If Physical DR exceeds physical damage, excess applies to elementals";
-			
-			statlines += "<span id='drcalc_display' title='" + drCalcText + "' style='cursor:help; text-decoration:underline dotted;'>";
-			statlines += "Mixed Attack Calc: Total=" + mixedResult.damageToLife + " HP</span><br>";
-		}
-	} else {
-		// Separate attack mode - each damage type calculated independently
-		var baseDamage = parseInt(document.getElementById("drcalcbase").value) || 1000;
-		
-		var physResult = calculateDamageTaken(baseDamage, "physical");
-		// var magicResult = calculateDamageTaken(baseDamage, "magic");  // TODO: PoD-specific magic damage mechanics
-		var fireResult = calculateDamageTaken(baseDamage, "fire");
-		var coldResult = calculateDamageTaken(baseDamage, "cold");
-		var lightResult = calculateDamageTaken(baseDamage, "lightning");
-		
-		// Set character calc properties
-		c.drcalc = physResult.damageToLife;
-		// c.mdrcalc = magicResult.damageToLife;  // TODO: PoD-specific magic damage mechanics
-		c.mdrfirecalc = fireResult.damageToLife;
-		c.mdrcoldcalc = coldResult.damageToLife;
-		c.mdrlightcalc = lightResult.damageToLife;
-		
-		// Only show if there's any meaningful damage reduction (less than base damage taken)
-		var hasDR = (physResult.damageToLife < baseDamage || // magicResult.damageToLife < baseDamage || 
-					 fireResult.damageToLife < baseDamage || coldResult.damageToLife < baseDamage || 
-					 lightResult.damageToLife < baseDamage);
-		
-		if (hasDR) {
-			var drCalcText = "Per " + baseDamage + " damage taken:";
-		
-		if (physResult.damageToLife < baseDamage) {
-			drCalcText += "\nPhysical: " + physResult.damageToLife + " HP";
-			if (physResult.damageToMana > 0) { drCalcText += " + " + physResult.damageToMana + " Mana"; }
-			if (physResult.armorAbsorbed > 0) { drCalcText += " (Bone Armor: " + Math.round(physResult.armorAbsorbed) + ")"; }
-		}
-		
-		// Magic damage calc commented out - TODO: PoD-specific magic damage mechanics
-		/*
-		if (magicResult.damageToLife < baseDamage) {
-			drCalcText += "\nMagic: " + magicResult.damageToLife + " HP";
-			if (magicResult.damageToMana > 0) { drCalcText += " + " + magicResult.damageToMana + " Mana"; }
-			if (magicResult.armorAbsorbed > 0) { drCalcText += " (Bone Armor: " + Math.round(magicResult.armorAbsorbed) + ")"; }
-			if (magicResult.healingFromAbsorb > 0) { drCalcText += " [Heal: " + Math.round(magicResult.healingFromAbsorb) + "]"; }
-		}
-		*/
-		
-		if (fireResult.damageToLife < baseDamage) {
-			drCalcText += "\nFire: " + fireResult.damageToLife + " HP";
-			if (fireResult.damageToMana > 0) { drCalcText += " + " + fireResult.damageToMana + " Mana"; }
-			if (fireResult.armorAbsorbed > 0) { drCalcText += " (Cyclone: " + Math.round(fireResult.armorAbsorbed) + ")"; }
-			if (fireResult.healingFromAbsorb > 0) { drCalcText += " [Heal: " + Math.round(fireResult.healingFromAbsorb) + "]"; }
-		}
-		
-		if (coldResult.damageToLife < baseDamage) {
-			drCalcText += "\nCold: " + coldResult.damageToLife + " HP";
-			if (coldResult.damageToMana > 0) { drCalcText += " + " + coldResult.damageToMana + " Mana"; }
-			if (coldResult.armorAbsorbed > 0) { drCalcText += " (Cyclone: " + Math.round(coldResult.armorAbsorbed) + ")"; }
-			if (coldResult.healingFromAbsorb > 0) { drCalcText += " [Heal: " + Math.round(coldResult.healingFromAbsorb) + "]"; }
-		}
-		
-		if (lightResult.damageToLife < baseDamage) {
-			drCalcText += "\nLight: " + lightResult.damageToLife + " HP";
-			if (lightResult.damageToMana > 0) { drCalcText += " + " + lightResult.damageToMana + " Mana"; }
-			if (lightResult.armorAbsorbed > 0) { drCalcText += " (Cyclone: " + Math.round(lightResult.armorAbsorbed) + ")"; }
-			if (lightResult.healingFromAbsorb > 0) { drCalcText += " [Heal: " + Math.round(lightResult.healingFromAbsorb) + "]"; }
-		}
-		
-		var orderExplanation = "\n\nOrder of Operations:";
-		orderExplanation += "\n1. Bone Armor (physical) / Cyclone Armor (elemental)";
-		orderExplanation += "\n2. Energy Shield - splits damage into Life & Mana";
-		if (physResult.damageToMana > 0 || fireResult.damageToMana > 0 || coldResult.damageToMana > 0 || lightResult.damageToMana > 0) {
-			var esEff = 6;
-			if (typeof skills !== 'undefined' && skills[13]) {
-				esEff = 6 + (4 * skills[13].level);
-			}
-			orderExplanation += " (" + esEff + "% efficiency from TK level " + (skills[13] ? skills[13].level : 0) + ")";
-			orderExplanation += "\n   Mana cost = damage absorbed × (160-efficiency)/80";
-		}
-		orderExplanation += "\n3. Damage Reduced (flat, then %) - physical only";
-		orderExplanation += "\n4. Magic Damage Reduced (flat) - elemental only";
-		orderExplanation += "\n5. Resistances - elemental only";
-		orderExplanation += "\n6. % Absorb - reduces damage";
-		orderExplanation += "\n7. Flat Absorb - reduces damage, excess becomes healing";
-		
-		drCalcText += orderExplanation;
-		
-		statlines += "<span id='drcalc_display' title='" + drCalcText + "' style='cursor:help; text-decoration:underline dotted;'>";
-		statlines += "Damage Calc: Phys=" + physResult.damageToLife;
-		// if (magicResult.damageToLife < 1000) { statlines += " Mag=" + magicResult.damageToLife; }
-		statlines += " Fire=" + fireResult.damageToLife + " Cold=" + coldResult.damageToLife + 
-		             " Light=" + lightResult.damageToLife + "</span><br>";
-		}
-	}
-	
 	if (character.metamorphosis_bear1 > 0) { 
 //		character.oskill_Cleave = character.maul_charges
 		character.skill_Cleave = character.maul_charges
@@ -6913,136 +5853,130 @@ function updateTertiaryStats() {
 // ---------------------------------
 function updateCTC() {
 	var stats = "";
-
-	// Helper to build a CTC line and ensure getCTCSkillData is invoked
-	function formatCtcStat(chance, lvl, name, trigger) {
-		var stat = "";
-		if (name == "Discharge") {
-			var danctcdmg = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + dischargetext;
-		}
-		else if (name == "Chain Lightning") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + cltext;
-		}
-		else if (name == "Nova") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + novatext;
-		}
-		else if (name == "Volcano") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + volctext;
-		}
-		else if (name == "Molten Boulder") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + mbouldertext;
-		}
-		else if (name == "Fissure") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + fissuretext;
-		}
-		else if (name == "Hurricane") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + hurritext;
-		}
-		else if (name == "Armageddon") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + armatext;
-		}
-		else if (name == "Ball Lightning") {
-			var lDamage_min = character_all.any.getSkillData(name,lvl,0);
-			var lDamage_max = character_all.any.getSkillData(name,lvl,1);
-			var balltext = "(" + Math.round(lDamage_min) + "-" + Math.round(lDamage_max) + ")" + " {" +Math.round((lDamage_min+lDamage_max)/2) + "}";
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + balltext;
-		}
-		else if (name == "Poison Nova") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + pnovatext;
-		}
-		else if (name == "Frozen Orb") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + forbtext;
-		}
-		else if (name == "Frost Nova") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + fnovatext;
-		}
-		else if (name == "Hydra") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + hydratext;
-		}
-		else if (name == "Fire Ball") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + fireballtext;
-		}
-		else if (name == "Meteor") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + meteotext;
-		}
-		else if (name == "Blizzard") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + blizztext;
-		}
-		else if (name == "Glacial Spike") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + glacialtext;
-		}
-		else if (name == "Ice Arrow") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + icearrowtext;
-		}
-		else if (name == "Static Field") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + staticftext;
-		}
-		else if (name == "War Cry") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + warcrytext;
-		}
-		else if (name == "Cleave") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + warcrytext;
-		}
-		else if (name == "Firestorm") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + firestormtext;
-		}
-		else if (name == "Molten Strike") {
-			var danctcdmg2 = getCTCSkillData(name,lvl);
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger + " " + moltenstext;
-		}
-		else {
-			stat = chance+"% chance to cast level "+lvl+" "+name+" "+trigger;
-		}
-		return stat;
-	}
-
+	
+	
+	
 	for (group in equipped) {
 		if (typeof(equipped[group].ctc) != 'undefined') {
 			if (equipped[group].ctc != "") {
 				for (let i = 0; i < equipped[group].ctc.length; i++) {
-					var ctcEntry = equipped[group].ctc[i];
-					var stat = formatCtcStat(ctcEntry[0], ctcEntry[1], ctcEntry[2], ctcEntry[3]);
-					stats += (stat + "<br>")					
-				}			
-			}
-		}
-	}
-
-	// Include CTC granted via set bonuses
-	for (group in equipped) {
-		if (typeof(equipped[group].rarity) != 'undefined' && equipped[group].rarity == "set" && typeof(equipped[group].set_bonuses) != 'undefined') {
-			var bonuses = equipped[group].set_bonuses;
-			var set = bonuses[0];
-			var amount = Math.round(character[set]);
-			for (let i = 1; i < bonuses.length; i++) {
-				if (amount >= i && bonuses[i] && Array.isArray(bonuses[i].ctc)) {
-					for (let j = 0; j < bonuses[i].ctc.length; j++) {
-						var c = bonuses[i].ctc[j];
-						var stat = formatCtcStat(c[0], c[1], c[2], c[3]);
-						stats += (stat + "<br>");
+					if (equipped[group].ctc[i][2] == "Discharge") {
+//						getCTCSkillData(ctcname,ctclvl) ;
+						var danctcdmg = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+//						var danctcdmg = character.getCTCSkillData("Discharge",21) ;
+//						ctcdmg = "(" + danctcdmg.result.lDamage_min + "-" + danctcdmg.result.lDamage_max + ")" ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + dischargetext;
 					}
-				}
+
+					else if (equipped[group].ctc[i][2] == "Chain Lightning") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + cltext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Nova") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + novatext;
+					}
+					else if (equipped[group].ctc[i][2] == "Volcano") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + volctext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Molten Boulder") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + mbouldertext;
+					}
+					else if (equipped[group].ctc[i][2] == "Fissure") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + fissuretext;
+					}
+					else if (equipped[group].ctc[i][2] == "Hurricane") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + hurritext;
+					}
+					else if (equipped[group].ctc[i][2] == "Armageddon") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + armatext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Ball Lightning") {
+						lDamage_min = character_all.any.getSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1],0) ;
+						lDamage_max = character_all.any.getSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1],1) ;
+						balltext = "(" + Math.round(lDamage_min) + "-" + Math.round(lDamage_max) + ")" + " {" +Math.round((lDamage_min+lDamage_max)/2) + "}";
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + balltext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Poison Nova") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + pnovatext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Frozen Orb") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + forbtext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Hydra") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + hydratext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Fire Ball") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + fireballtext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Meteor") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + meteotext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Blizzard") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + blizztext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Glacial Spike") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + glacialtext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Ice Arrow") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + icearrowtext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Static Field") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + staticftext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "War Cry") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + warcrytext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Cleave") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + warcrytext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Firestorm") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + firestormtext;
+					}
+
+					else if (equipped[group].ctc[i][2] == "Molten Strike") {
+						var danctcdmg2 = getCTCSkillData(equipped[group].ctc[i][2],equipped[group].ctc[i][1]) ;
+						var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] + " " + moltenstext;
+					}
+
+					else {var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] ;//+ ctcdmg ;// + dischargetext;
+					}
+
+					//var stat = equipped[group].ctc[i][0]+"% chance to cast level "+equipped[group].ctc[i][1]+" "+equipped[group].ctc[i][2]+" "+equipped[group].ctc[i][3] ;//+ ctcdmg ;// + dischargetext;
+					stats += (stat + "<br>")					
+				}				
 			}
 		}
 	}
@@ -7605,35 +6539,9 @@ for (let slot of [
 // 	for (charm in equipped.charms) { if (typeof(equipped.charms[charm].name) != 'undefined' && equipped.charms[charm].name != 'none') { params.append('charm', equipped.charms[charm].name) }}
 // --- Charms ---
 for (let charm in equipped.charms) {
-    const ch = equipped.charms[charm];
-    if (ch?.name && ch.name !== "none") {
-        // Custom charms: encode with position and properties
-        if (ch.custom) {
-            const propList = [];
-            for (let key in ch) {
-                if (["id", "name", "size", "invSlot", "PropertyList", "custom"].includes(key)) continue;
-                const value = ch[key];
-                
-                // Handle all types of properties
-                if (typeof value === "number" && value !== 0) {
-                    propList.push(`${key}:${value}`);
-                } else if (Array.isArray(value)) {
-                    // Encode arrays as JSON strings for URL (ctc, cskill, etc.)
-                    propList.push(`${key}:${JSON.stringify(value)}`);
-                } else if (value !== null && value !== undefined && value !== "") {
-                    // Include any other non-empty values (strings, etc.)
-                    propList.push(`${key}:${value}`);
-                }
-            }
-            // Format: custom_charm=slot:size:name:prop1:val1,prop2:val2,...
-            const encoded = `${ch.invSlot}:${ch.size}:${encodeURIComponent(ch.name)}:${propList.join(",")}`;
-            params.append("custom_charm", encoded);
-            console.log(`✅ Encoded custom charm ${ch.name} at slot ${ch.invSlot}:`, encoded);
-        } else {
-            // Standard preset charms
-            const code = getCharmUrlCode(ch.name);
-            params.append("charm", code);
-        }
+    if (equipped.charms[charm]?.name && equipped.charms[charm].name !== "none") {
+        const code = getCharmUrlCode(equipped.charms[charm].name);
+        params.append("charm", code);
     }
 }
 
@@ -7852,22 +6760,6 @@ function rehydrateInlineProps(slot) {
 	}
 }
 
-// --- Synth Inventory Integration ---
-let synthInventory = null;
-async function loadSynthInventory() {
-	if (synthInventory) return synthInventory;
-	try {
-		// Use relative path for /data/ directory
-		const resp = await fetch("data/synth_inventory_parsed.json");
-		if (!resp.ok) throw new Error("Failed to load synth inventory");
-		synthInventory = await resp.json();
-		return synthInventory;
-	} catch (e) {
-		console.error("Could not load synth inventory:", e);
-		return null;
-	}
-}
-
 async function importChar() {
 //	reset("sorceress")
 const equipGroups = ["helm","armor","gloves","boots","belt","amulet","ring1","ring2","weapon","offhand"];
@@ -7879,49 +6771,7 @@ for (let group of equipGroups) {
 }	
 //	startup()
     // Get the textbox input value
-	let characterName = document.getElementById('importname').value.trim();
-	// Check for synth import by id: "synth:<id>" or "synthid:<friendly_id>"
-	let synthMatch = characterName.match(/^synth(id)?:([\w-]+)/i);
-	if (synthMatch) {
-		const [, idType, idVal] = synthMatch;
-		const inventory = await loadSynthInventory();
-		if (!inventory) {
-			alert("Synth inventory not loaded.");
-			return;
-		}
-		let item = null;
-		if (idType === "id") {
-			item = inventory.find(x => String(x.friendly_id) === idVal);
-		} else {
-			item = inventory.find(x => x.id === idVal);
-		}
-		if (!item) {
-			alert("Synth item not found.");
-			return;
-		}
-		// Equip the synth item using parsed_properties
-		try {
-			reset();
-			const slot = "weapon";
-			equipment[slot] = equipment[slot] || {};
-			equipment[slot].custom = true;
-			equipment[slot].synth = true; // Mark as synth for planner logic
-			equipment[slot].name = item.title || item.base_type || "Synth Item";
-			equipment[slot].rarity = "mag";
-			equipment[slot].PropertyList = item.properties || [];
-			// Apply parsed properties
-			for (const [k, v] of Object.entries(item.parsed_properties || {})) {
-				equipment[slot][k] = v;
-			}
-			updateSelectedItemSummary(slot);
-			update();
-			alert("Synth item imported to weapon slot!");
-		} catch (err) {
-			alert('Error importing synth item: ' + err.message);
-			console.error(err);
-		}
-		return;
-	}
+    let characterName = document.getElementById('importname').value.trim();
 
     // If no value is entered in the textbox, check the URL for the "import" parameter
     if (!characterName) {
@@ -7950,6 +6800,7 @@ for (let group of equipGroups) {
 	//characterName = "PIG_ASN"
 	if (characterName) {
 		console.log("Character Name:", characterName);
+		
 		// Fetch character data and process it
 		try {
 			const characterData = await fetchCharacterData(characterName);
@@ -8043,10 +6894,6 @@ for (let group of equipGroups) {
 		equipItemDirectly(item);
 		});
 
-		// Process charms from inventory
-		if (characterData.Inventory) {
-			processCharacterCharms(characterData.Inventory);
-		}
 
 		// Determine which SkillTab has the most points
 		let dominantTab = characterData.SkillTabs.reduce((maxTab, currentTab) =>
@@ -8113,97 +6960,6 @@ for (let group of equipGroups) {
 		update(); // Update interface dynamically
 	}
 
-	// Helper to convert API position (x, y) to inventory slot index
-	function apiPositionToInvSlot(x, y) {
-		// API uses 0-based coordinates (rows 0-9), planner only has bottom 4 rows (API y=5-8)
-		// inv[] array: 1-10 (API row 5), 11-20 (API row 6), 21-30 (API row 7), 31-40 (API row 8)
-		return (y - 5) * 10 + x + 1;
-	}
-
-	// Helper to determine charm size from API data
-	function determineCharmSize(apiCharm) {
-		if (apiCharm.Size && apiCharm.Size.invheight) {
-			const h = apiCharm.Size.invheight;
-			if (h >= 3) return "grand";
-			if (h >= 2) return "large";
-			return "small";
-		}
-		// Fallback: check title
-		const title = (apiCharm.Title || "").toLowerCase();
-		if (title.includes("grand")) return "grand";
-		if (title.includes("large")) return "large";
-		return "small";
-	}
-
-	// Helper to check if inventory item is a charm
-	function isCharm(item) {
-		return item.TextTag && item.TextTag.toLowerCase().includes("charm");
-	}
-
-	// Process charms from character inventory
-	function processCharacterCharms(inventoryData) {
-		if (!Array.isArray(inventoryData)) {
-			console.warn("⚠️ processCharacterCharms: inventoryData is not an array", inventoryData);
-			return;
-		}
-
-		console.log("🔍 Processing character charms from inventory...", inventoryData.length, "items");
-
-		let charmCount = 0;
-		let skippedCount = 0;
-
-		inventoryData.forEach((item, index) => {
-			console.log(`📦 Item ${index}:`, {
-				Title: item.Title,
-				TextTag: item.TextTag,
-				Position: item.Position,
-				isCharm: isCharm(item),
-				yPos: item.Position?.y
-			});
-
-			// Only process charms in bottom 4 rows (y >= 5)
-			if (!isCharm(item)) {
-				console.log(`  ⏭️ Skipped: Not a charm (TextTag: ${item.TextTag})`);
-				skippedCount++;
-				return;
-			}
-
-			if (!item.Position) {
-				console.log(`  ⏭️ Skipped: No position data`);
-				skippedCount++;
-				return;
-			}
-
-			if (item.Position.y < 5) {
-				console.log(`  ⏭️ Skipped: Row ${item.Position.y} < 5 (top inventory)`);
-				skippedCount++;
-				return;
-			}
-
-			const size = determineCharmSize(item);
-			const invSlot = apiPositionToInvSlot(item.Position.x, item.Position.y);
-			console.log(`  ✅ Processing charm: ${item.Title} | Size: ${size} | Slot: ${invSlot}`);
-
-			const props = buildPropsFromPropertyList(item.PropertyList || []);
-			console.log(`  📊 Parsed props:`, props);
-
-			const charmData = {
-				name: item.Title || "Custom Charm",
-				size: size,
-				invSlot: invSlot,
-				PropertyList: item.PropertyList || [],
-				custom: true,
-				...props
-			};
-
-			console.log(`  🎯 Adding custom charm with data:`, charmData);
-			charmCount++;
-			addCustomCharm(charmData);
-		});
-
-		console.log(`✅ Charm processing complete: ${charmCount} charms added, ${skippedCount} items skipped`);
-	}
-
 	// Equip items from api response
 	function formatSlotName(slot) {
 		if (slot === "ring1" || slot === "ring2") return "Ring"; // Special case for ring1
@@ -8268,13 +7024,9 @@ for (let group of equipGroups) {
 		const props = {};
 		if (!Array.isArray(PropertyList)) return props;
 
-		console.log("🔍 buildPropsFromPropertyList called with:", PropertyList);
-
 		for (const propTextRaw of PropertyList) {
 			const propText = String(propTextRaw).trim();
 			if (!propText) continue;
-
-			console.log(`  📝 Processing: "${propText}"`);
 
 			// try to get matches via your existing matcher (guarded: may be undefined
 			// in some nested scopes when import functions are executed)
@@ -8294,14 +7046,12 @@ for (let group of equipGroups) {
 
 			// If matcher returned a single object (non-array form), normalize to array
 			const arrMatches = Array.isArray(matches) ? matches : [matches];
-			console.log(`    🎯 Matches:`, arrMatches);
 
 			// fallback parse numeric value if matcher didn't return a value
 			const numericFallback = (() => {
 				const m = propText.match(/[-+]?\d+(\.\d+)?/);
 				return m ? (m[0].indexOf('.') >= 0 ? parseFloat(m[0]) : parseInt(m[0], 10)) : null;
 			})();
-			console.log(`    🔢 Numeric fallback:`, numericFallback);
 
 			for (const mm of arrMatches) {
 				if (!mm || !mm.statKey) continue;
@@ -8314,8 +7064,6 @@ for (let group of equipGroups) {
 				if ((v === null || v === undefined) && mm.statKey) {
 					v = 1;
 				}
-
-				console.log(`    ✅ Applying: ${k} = ${v}`);
 
 				if (k === "ctc" || k === "cskill") {
 					if (!props[k]) props[k] = [];
@@ -8331,7 +7079,6 @@ for (let group of equipGroups) {
 			}
 		}
 
-		console.log("✅ buildPropsFromPropertyList result:", props);
 		return props;
 	}
 
@@ -8489,53 +7236,7 @@ function applyInlinePropsToEquipped(slot, props) {
 		if (cskillParsed) {
 //			console.log(`🎯 Parsed Charged Skill: ${JSON.stringify(cskillParsed.value)}`);
 			return [cskillParsed];
-		}
-		
-		// Parse skill bonuses like "+1 to Bow and Crossbow Skills (Amazon Only)"
-		const skillBonusMatch = propertyText.match(/^([+-]?\d+)\s+to\s+(.+?)\s+Skills?\s*\((.+?)\)$/i);
-		if (skillBonusMatch) {
-			const value = parseInt(skillBonusMatch[1], 10);
-			const skillTree = skillBonusMatch[2].trim().toLowerCase();
-			
-			// Map skill tree names to stat keys
-			const skillMap = {
-				"bow and crossbow": "skills_bows",
-				"bow & crossbow": "skills_bows",
-				"javelin and spear": "skills_javelin",
-				"javelin & spear": "skills_javelin",
-				"passive and magic": "skills_passive",
-				"passive & magic": "skills_passive",
-				"martial arts": "skills_martial",
-				"shadow disciplines": "skills_shadow",
-				"traps": "skills_traps",
-				"warcries": "skills_warcries",
-				"masteries": "skills_masteries",
-				"combat skills": "skills_combat",
-				"elemental skills": "skills_elemental",
-				"shape shifting": "skills_shapeshifting",
-				"shape shifting skills": "skills_shapeshifting",
-				"summoning": "skills_summoning",
-				"summoning skills": "skills_summoning",
-				"poison and bone": "skills_poisonbone",
-				"poison & bone": "skills_poisonbone",
-				"poison and bone skills": "skills_poisonbone",
-				"curses": "skills_curses",
-				"defensive auras": "skills_defensive",
-				"offensive auras": "skills_offensive",
-				"cold skills": "skills_cold",
-				"cold": "skills_cold",
-				"lightning skills": "skills_lightning",
-				"lightning": "skills_lightning",
-				"fire skills": "skills_fire",
-				"fire": "skills_fire"
-			};
-			
-			const statKey = skillMap[skillTree];
-			if (statKey) {
-				return [{ statKey, value }];
-			}
-		}
-		
+		}	
 		// Try to match "Adds #–# [Element] Damage"
 		const damageMatch = propertyText.match(/Adds\s+(\d+)[–-](\d+)\s*(\w*)\s*Damage/i);
 		if (damageMatch) {
@@ -8667,6 +7368,63 @@ function applyInlinePropsToEquipped(slot, props) {
 		return equippedItem;
 	}
 
+	function matchSynthStatsFromAPIStrings(apiStatStrings, synthProperties, stats) {
+		if (!Array.isArray(apiStatStrings) || !Array.isArray(synthProperties)) return;
+
+		apiStatStrings.forEach(apiText => {
+			apiText = apiText.trim();
+			console.log(`🔍 Matching API stat: "${apiText}"`);
+
+			let matchedKey = null;
+			let matchedValue = null;
+
+			// Loop through all editable stats
+			for (const [statKey, statData] of Object.entries(stats)) {
+				if (statData.editable !== 1) continue;
+
+				// Build regex pattern from the stat's format, e.g. ["+", "% Enhanced Damage"]
+				const patternStr = statData.format
+					.map(piece => piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape regex chars
+					.join(".*?"); // allow anything (like numbers) in between
+				const pattern = new RegExp(`^${patternStr}$`, "i");
+
+				if (pattern.test(apiText)) {
+					// Try to extract the number value from the string
+					const numMatch = apiText.match(/[-+]?\d+(\.\d+)?/);
+					const value = numMatch ? parseFloat(numMatch[0]) : null;
+					if (value !== null) {
+						matchedKey = statKey;
+						matchedValue = value;
+						break;
+					}
+				}
+			}
+
+			if (!matchedKey) {
+				console.warn(`❌ No matching stat key for "${apiText}"`);
+				return;
+			}
+	console.log("🔍 Searching synthProperties for:", matchedKey, matchedValue);
+	//console.table(synthProperties);
+
+			// Now match with synthProperties using resolved key and value
+			const match = synthProperties.find(
+				p => p.key === matchedKey && Number(p.value) === Number(matchedValue)
+			);
+			if (match) {
+				const checkbox = document.querySelector(
+					`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
+				);
+				if (checkbox && !checkbox.checked) {
+					checkbox.checked = true;
+					checkbox.dispatchEvent(new Event("change"));
+					console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
+				}
+			} else {
+				console.warn(`❌ No synth property matched for resolved stat "${matchedKey}: ${matchedValue}"`);
+			}
+		});
+	}
 
 	function matchSynthStatsFromAPI(apiPropertyList, synthProperties) {
 		if (!Array.isArray(apiPropertyList) || !Array.isArray(synthProperties)) return;
@@ -8693,6 +7451,30 @@ function applyInlinePropsToEquipped(slot, props) {
 		});
 	}
 
+	function gatherSynthPropertiesFromMultiple(items) {
+		const result = [];
+
+		items.forEach(item => {
+			const source = item.Title || item.name || "Unknown";
+
+			// ✅ If PropertyList doesn't exist, build it from raw properties
+			let propList = item.PropertyList;
+			if (!propList || propList.length === 0) {
+				propList = Object.entries(item)
+					.filter(([key]) =>
+						!["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill", "Worn", "SynthesisedFrom", "Title", "PropertyList", "tier", "max_sockets", "baseSpeed", "light_radius", "base_damage_min", "base_damage_max", "original_tier", "pod_changes", "req_strength", "req_dexterity", "iasindex"].includes(key)
+					)
+					.map(([key, value]) => `${key}: ${value}`);
+			}
+
+			propList.forEach(propString => {
+				const [key, value] = propString.split(":").map(s => s.trim());
+				result.push({ key, value, source });
+			});
+		});
+
+		return result;
+	}
 
 
 
@@ -8797,6 +7579,65 @@ function applyInlinePropsToEquipped(slot, props) {
 		return !excludedKeys.includes(key);
 	}
 
+	function generateSynthPropertyUI(properties, slot = "weapon") {
+		const containerId = slot === "offhand" ? "offhandsynthPropertyContainer" : "synthPropertyContainer";
+		const container = document.getElementById(containerId);
+
+		if (!container || !properties || properties.length === 0) {
+			if (container) container.style.display = "none";
+			return;
+		}
+
+		container.style.display = "block";
+		container.innerHTML = `<strong>Potential Synth Properties (${slot}):</strong>`;
+
+		const equippedItem = equipped[slot];
+
+		properties.forEach(({ key, value, source }) => {
+			const checkboxId = `${slot}-${key}-${source.replace(/\s+/g, '_')}`;
+			const div = document.createElement("div");
+
+			div.innerHTML = `
+				<label>
+					<input type="checkbox" id="${checkboxId}" data-key="${key}" data-value="${value}">
+					${key}: ${value} <small>(${source})</small>
+				</label>
+			`;
+
+			const checkbox = div.querySelector("input");
+			checkbox.addEventListener("change", (e) => {
+				const statKey = e.target.dataset.key;
+				const rawValue = e.target.dataset.value;
+				const value = isNaN(rawValue) ? rawValue : parseFloat(rawValue);
+
+				if (e.target.checked) {
+					equippedItem[statKey] = value;
+					character[statKey] = (character[statKey] || 0) + (isNaN(value) ? 0 : value);
+				} else {
+					if (!isNaN(value)) {
+						character[statKey] -= value;
+					}
+					delete equippedItem[statKey];
+				}
+
+				// Update PropertyList without duplication
+				equippedItem.PropertyList = equippedItem.PropertyList || [];
+				const propString = `${statKey}: ${value}`;
+				if (e.target.checked) {
+					if (!equippedItem.PropertyList.includes(propString)) {
+						equippedItem.PropertyList.push(propString);
+					}
+				} else {
+					equippedItem.PropertyList = equippedItem.PropertyList.filter(p => p !== propString);
+				}
+
+				updateSelectedItemSummary(equippedItem.Worn);
+				update();
+			});
+
+			container.appendChild(div);
+		});
+	}
 
 	function parseAddsDamageStat(text) {
 		const regex = /Adds\s+(\d+)\s*(?:–|to|-)\s*(\d+)\s*(Cold|Fire|Lightning|Magic|Poison)?\s*Damage/i;
@@ -8899,151 +7740,6 @@ function applyInlinePropsToEquipped(slot, props) {
 	update()
 }
 
-	function gatherSynthPropertiesFromMultiple(items) {
-		const result = [];
-
-		items.forEach(item => {
-			const source = item.Title || item.name || "Unknown";
-
-			// ✅ If PropertyList doesn't exist, build it from raw properties
-			let propList = item.PropertyList;
-			if (!propList || propList.length === 0) {
-				propList = Object.entries(item)
-					.filter(([key]) =>
-						!["name", "req_level", "type", "base", "img", "twoHanded", "ctc", "cskill", "Worn", "SynthesisedFrom", "Title", "PropertyList", "tier", "max_sockets", "baseSpeed", "light_radius", "base_damage_min", "base_damage_max", "original_tier", "pod_changes", "req_strength", "req_dexterity", "iasindex"].includes(key)
-					)
-					.map(([key, value]) => `${key}: ${value}`);
-			}
-
-			propList.forEach(propString => {
-				const [key, value] = propString.split(":").map(s => s.trim());
-				result.push({ key, value, source });
-			});
-		});
-
-		return result;
-	}
-//	window.gatherSynthPropertiesFromMultiple = gatherSynthPropertiesFromMultiple
-
-	function generateSynthPropertyUI(properties, slot = "weapon") {
-		const containerId = slot === "offhand" ? "offhandsynthPropertyContainer" : "synthPropertyContainer";
-		const container = document.getElementById(containerId);
-
-		if (!container || !properties || properties.length === 0) {
-			if (container) container.style.display = "none";
-			return;
-		}
-
-		container.style.display = "block";
-		container.innerHTML = `<strong>Potential Synth Properties (${slot}):</strong>`;
-
-		const equippedItem = equipped[slot];
-
-		properties.forEach(({ key, value, source }) => {
-			const checkboxId = `${slot}-${key}-${source.replace(/\s+/g, '_')}`;
-			const div = document.createElement("div");
-
-			div.innerHTML = `
-				<label>
-					<input type="checkbox" id="${checkboxId}" data-key="${key}" data-value="${value}">
-					${key}: ${value} <small>(${source})</small>
-				</label>
-			`;
-
-			const checkbox = div.querySelector("input");
-			checkbox.addEventListener("change", (e) => {
-				const statKey = e.target.dataset.key;
-				const rawValue = e.target.dataset.value;
-				const value = isNaN(rawValue) ? rawValue : parseFloat(rawValue);
-
-				if (e.target.checked) {
-					equippedItem[statKey] = value;
-					character[statKey] = (character[statKey] || 0) + (isNaN(value) ? 0 : value);
-				} else {
-					if (!isNaN(value)) {
-						character[statKey] -= value;
-					}
-					delete equippedItem[statKey];
-				}
-
-				// Update PropertyList without duplication
-				equippedItem.PropertyList = equippedItem.PropertyList || [];
-				const propString = `${statKey}: ${value}`;
-				if (e.target.checked) {
-					if (!equippedItem.PropertyList.includes(propString)) {
-						equippedItem.PropertyList.push(propString);
-					}
-				} else {
-					equippedItem.PropertyList = equippedItem.PropertyList.filter(p => p !== propString);
-				}
-
-				updateSelectedItemSummary(equippedItem.Worn);
-				update();
-			});
-
-			container.appendChild(div);
-		});
-	}
-
-	function matchSynthStatsFromAPIStrings(apiStatStrings, synthProperties, stats) {
-		if (!Array.isArray(apiStatStrings) || !Array.isArray(synthProperties)) return;
-
-		apiStatStrings.forEach(apiText => {
-			apiText = apiText.trim();
-			console.log(`🔍 Matching API stat: "${apiText}"`);
-
-			let matchedKey = null;
-			let matchedValue = null;
-
-			// Loop through all editable stats
-			for (const [statKey, statData] of Object.entries(stats)) {
-				if (statData.editable !== 1) continue;
-
-				// Build regex pattern from the stat's format, e.g. ["+", "% Enhanced Damage"]
-				const patternStr = statData.format
-					.map(piece => piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape regex chars
-					.join(".*?"); // allow anything (like numbers) in between
-				const pattern = new RegExp(`^${patternStr}$`, "i");
-
-				if (pattern.test(apiText)) {
-					// Try to extract the number value from the string
-					const numMatch = apiText.match(/[-+]?\d+(\.\d+)?/);
-					const value = numMatch ? parseFloat(numMatch[0]) : null;
-					if (value !== null) {
-						matchedKey = statKey;
-						matchedValue = value;
-						break;
-					}
-				}
-			}
-
-			if (!matchedKey) {
-				console.warn(`❌ No matching stat key for "${apiText}"`);
-				return;
-			}
-	console.log("🔍 Searching synthProperties for:", matchedKey, matchedValue);
-	//console.table(synthProperties);
-
-			// Now match with synthProperties using resolved key and value
-			const match = synthProperties.find(
-				p => p.key === matchedKey && Number(p.value) === Number(matchedValue)
-			);
-			if (match) {
-				const checkbox = document.querySelector(
-					`input[type="checkbox"][data-key="${match.key}"][data-value="${match.value}"]`
-				);
-				if (checkbox && !checkbox.checked) {
-					checkbox.checked = true;
-					checkbox.dispatchEvent(new Event("change"));
-					console.log(`✅ Auto-checked: ${match.key}: ${match.value}`);
-				}
-			} else {
-				console.warn(`❌ No synth property matched for resolved stat "${matchedKey}: ${matchedValue}"`);
-			}
-		});
-	}
-
-	
 async function justthesynth() {
     // Get the textbox input value
     let characterName = document.getElementById('importname').value.trim();
@@ -9124,33 +7820,6 @@ function processCharacterData(characterData) {
 function formatSlotName(slot) {
     if (slot === "ring1" || slot === "ring2") return "Ring"; // Special case for ring1
     return slot.charAt(0).toUpperCase() + slot.slice(1);
-}
-
-// Helper to convert API position (x, y) to inventory slot index
-function apiPositionToInvSlot(x, y) {
-	// API uses 0-based coordinates, inventory grid is 10 wide
-	// inv[] array: 1-10 (row 0), 11-20 (row 1), etc.
-	return y * 10 + x + 1;
-}
-
-// Helper to determine charm size from API data
-function determineCharmSize(apiCharm) {
-	if (apiCharm.Size && apiCharm.Size.invheight) {
-		const h = apiCharm.Size.invheight;
-		if (h >= 3) return "grand";
-		if (h >= 2) return "large";
-		return "small";
-	}
-	// Fallback: check title
-	const title = (apiCharm.Title || "").toLowerCase();
-	if (title.includes("grand")) return "grand";
-	if (title.includes("large")) return "large";
-	return "small";
-}
-
-// Helper to check if inventory item is a charm
-function isCharm(item) {
-	return item.TextTag && item.TextTag.toLowerCase().includes("charm");
 }
 
 const pendingPropertyLists = {};
@@ -9951,6 +8620,7 @@ function selectWeapon() {
 		name: selected,
 		e_damage: 0,
 		baseED: 0,
+//  Would also need to account for Aramex weapon damage change here		
 		base_damage_min: base.base_damage_min || 0,
 		base_damage_max: base.base_damage_max || 0,
 		baseSpeed: base.baseSpeed || 0,
@@ -10896,15 +9566,6 @@ function flattenRuneword(runeword, baseItem) {
 	// copy stats onto flat for convenience
 	Object.assign(flat, flat.runewordStats);
 
-	// Add implicit +3 to bow and crossbow skills for Amazon-only bows and spears
-	if (bases[baseItem] && bases[baseItem].only === "amazon" && bases[baseItem].type === "bow") {
-		flat.skills_bows = (flat.skills_bows || 0) + 3;
-	}
-
-	if (bases[baseItem] && bases[baseItem].only === "amazon" && bases[baseItem].type === "spear") {
-		flat.skills_javelins = (flat.skills_javelins || 0) + 3;
-	}
-
 	// Keep a little metadata if you need it later
 	["allowedTypes", "allowedCategories"].forEach(k => {
 	if (runeword[k]) flat[k] = runeword[k];
@@ -11841,59 +10502,6 @@ function applyMatchedProperties(slot) {
 		const newUrl = `${window.location.pathname}?${params.toString()}`;
 		window.history.replaceState({}, "", newUrl);
 	}
-
-
-// Import a synth item from synth_inventory.json by friendly_id and equip it
-async function equipsynth(friendly_id) {
-	try {
-		// Fetch the synth inventory JSON (assumes it's served statically)
-		const response = await fetch('data/synth_inventory.json');
-		if (!response.ok) throw new Error('Failed to load synth_inventory.json');
-		const synths = await response.json();
-		// Find the item by friendly_id (as number or string)
-		const synthItem = synths.find(item => String(item.friendly_id) === String(friendly_id));
-		if (!synthItem) {
-			alert('Synth item not found for ID: ' + friendly_id);
-			return;
-		}
-
-		// Convert synth_inventory fields to planner item format as needed
-		// (You may need to adjust this mapping for your planner's item structure)
-		const baseItem = {
-			Title: synthItem.title,
-			name: synthItem.title,
-			base: synthItem.base_type,
-			Worn: 'weapon', // Default, or map from synthItem.location if needed
-			SynthesisedFrom: synthItem.synthesised_from,
-			PropertyList: synthItem.properties,
-			// Add other fields as needed for your planner
-		};
-
-		// Equip the item using the same logic as synthesizeFromAPI, but no API data
-		// (Donor items will not be found, so only the base item is used)
-		equipItemDirectly(baseItem);
-		const slot = baseItem.Worn;
-		const equippedItem = equipped[slot];
-		if (!equippedItem) {
-			alert('Failed to equip synthesized item: ' + baseItem.Title);
-			return;
-		}
-
-		// Generate synth property UI and apply properties
-//		const synthProperties = gatherSynthPropertiesFromMultiple([equippedItem]);
-		const synthProperties = window.gatherSynthPropertiesFromMultiple([equippedItem]);
-		generateSynthPropertyUI(synthProperties, slot);
-		setTimeout(() => {
-			matchSynthStatsFromAPIStrings(baseItem.PropertyList || [], synthProperties, stats);
-		}, 0);
-
-		updateSelectedItemSummary(slot);
-		update();
-	} catch (err) {
-		alert('Error importing synth item: ' + err.message);
-		console.error(err);
-	}
-}
 
 // Notes for Organization Overhaul:
 //   TODO...

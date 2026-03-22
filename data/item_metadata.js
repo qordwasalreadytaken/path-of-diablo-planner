@@ -653,7 +653,7 @@ var BASE_WEAPON_DAMAGE_MULT = 1.5;
 var bases_original = JSON.parse(JSON.stringify(bases));
 
 function applyBaseWeaponDamageMultiplier(mult) {
-	if (typeof mult !== "number" || !isFinite(mult) || mult <= 0) { mult = 1.0; }
+	if (typeof mult !== "number" || !isFinite(mult) || mult <= 0) { mult = 1.5; }
 	BASE_WEAPON_DAMAGE_MULT = mult;
 	for (var baseKey in bases_original) {
 		if (!bases_original.hasOwnProperty(baseKey)) { continue }

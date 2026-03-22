@@ -434,8 +434,51 @@ function toggleSynthwep(synthwep) {
 	if (synthwep.checked) { settings.synthwep = 1 } else { settings.synthwep = 0 }
 	update()
 	getCharacterInfo()
-	loadEquipment(chioce)
+ 	loadEquipment(choice)
 	loadItems(choice)
+}
+
+// Helper to normalize base keys (e.g. "Dusk Shroud" -> "Dusk_Shroud")
+// and to resolve any aliases via resolveBaseKey when available.
+function canonicalBaseKey(candidate) {
+	if (!candidate) return null;
+	try { const kb = resolveBaseKey(candidate); if (kb) return kb; } catch(e){}
+	return String(candidate).replace(/ /g, "_");
+}
+
+// Global helper for ethereal base/defense multiplier. When Aramex's
+// Special is enabled, reduce the ethereal bonus from 1.5 to 1.1.
+function getEthMultiplier(isEthereal) {
+	if (!isEthereal) { return 1; }
+	return (typeof settings !== 'undefined' && settings.aramex_special == 1) ? 1.1 : 1.5;
+}
+
+// Ensure an equipped item's base damage fields (including throw and
+// alternate values) are consistent with its base and ethereal status.
+function refreshBaseDamageFromBase(eq) {
+	if (!eq || !eq.base) { return; }
+	try {
+		const baseKey = canonicalBaseKey(eq.base);
+		if (!baseKey || !bases[baseKey]) { return; }
+		const b = bases[baseKey];
+		const multEth = getEthMultiplier(eq && eq.ethereal);
+		const props = [
+			"base_damage_min",
+			"base_damage_max",
+			"throw_min",
+			"throw_max",
+			"base_min_alternate",
+			"base_max_alternate"
+		];
+		for (let i = 0; i < props.length; i++) {
+			const p = props[i];
+			if (typeof b[p] !== "undefined") {
+				eq[p] = Math.max(0, Math.ceil(multEth * b[p]));
+			}
+		}
+	} catch (e) {
+		console.error("refreshBaseDamageFromBase failed", e);
+	}
 }
 
 // toggleAramexSpecial - Toggles Aramex's Special (+50% base weapon damage test)
@@ -457,13 +500,15 @@ function toggleAramexSpecial(checkbox) {
 	// Refresh currently equipped items (player and merc) so their base
 	// damage fields reflect the new metadata values.
 	try {
-		for (var group in equipped) {
-			if (!equipped.hasOwnProperty(group)) { continue }
-			refreshBaseDamageFromBase(equipped[group]);
-		}
-		for (var mgroup in mercEquipped) {
-			if (!mercEquipped.hasOwnProperty(mgroup)) { continue }
-			refreshBaseDamageFromBase(mercEquipped[mgroup]);
+		if (typeof refreshBaseDamageFromBase === "function") {
+			for (var group in equipped) {
+				if (!equipped.hasOwnProperty(group)) { continue }
+				refreshBaseDamageFromBase(equipped[group]);
+			}
+			for (var mgroup in mercEquipped) {
+				if (!mercEquipped.hasOwnProperty(mgroup)) { continue }
+				refreshBaseDamageFromBase(mercEquipped[mgroup]);
+			}
 		}
 	} catch (e) {
 		console.error("Aramex's Special: failed to refresh equipped base damage", e);
@@ -597,52 +642,10 @@ function loadParams() {
         return String(candidate).replace(/ /g,"_");
     }
 
-	// Global helper for ethereal base/defense multiplier. When Aramex's
-	// Special is enabled, reduce the ethereal bonus from 1.5 to 1.1.
-	function getEthMultiplier(isEthereal) {
-		if (!isEthereal) { return 1; }
-		return (typeof settings !== 'undefined' && settings.aramex_special == 1) ? 1.1 : 1.5;
-	}
-
-	// Ensure an equipped item's base damage fields (including throw and
-	// alternate values) are consistent with its base and ethereal status.
-	function refreshBaseDamageFromBase(eq) {
-		if (!eq || !eq.base) { return; }
-		try {
-			const baseKey = canonicalBaseKey(eq.base);
-			if (!baseKey || !bases[baseKey]) { return; }
-			const b = bases[baseKey];
-			const multEth = getEthMultiplier(eq && eq.ethereal);
-			const props = [
-				"base_damage_min",
-				"base_damage_max",
-				"throw_min",
-				"throw_max",
-				"base_min_alternate",
-				"base_max_alternate"
-			];
-			for (let i = 0; i < props.length; i++) {
-				const p = props[i];
-				if (typeof b[p] !== "undefined") {
-					eq[p] = Math.max(0, Math.ceil(multEth * b[p]));
-				}
-			}
-		} catch (e) {
-			console.error("refreshBaseDamageFromBase failed", e);
-		}
-	}
-
 
 	// --- Basic stats & skills ---
     let spent_skillpoints = 0;
     const param_level = Math.floor(Math.max(1, Math.min(99, ~~params.get("level"))));
-    const param_diff = ~~params.get("difficulty");
-    var param_quests = ~~params.get("quests");
-    var param_run = ~~params.get("running");
-	let param_str = Math.floor(Math.max(0, ~~params.get("strength")));
-	let param_dex = Math.floor(Math.max(0, ~~params.get("dexterity")));
-	let param_vit = Math.floor(Math.max(0, ~~params.get("vitality")));
-	let param_ene = Math.floor(Math.max(0, ~~params.get("energy")));
     const param_url = ~~params.get("url");
     const param_coupling = params.has("coupling") ? params.get("coupling") : 1;
     const param_synthwep = params.has("synthwep") ? params.get("synthwep") : 1;

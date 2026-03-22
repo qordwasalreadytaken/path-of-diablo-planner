@@ -446,11 +446,103 @@ function canonicalBaseKey(candidate) {
 	return String(candidate).replace(/ /g, "_");
 }
 
-// Global helper for ethereal base/defense multiplier. When Aramex's
-// Special is enabled, reduce the ethereal bonus from 1.5 to 1.1.
+// Update Aramex's Special numeric settings from the preference inputs and
+// reapply multipliers when the feature is enabled.
+function updateAramexSpecialSettings() {
+	try {
+		var baseInput = document.getElementById("aramex_base_delta");
+		var ethInput = document.getElementById("aramex_eth_delta");
+		if (baseInput) {
+			var b = Number(baseInput.value);
+			if (isNaN(b)) b = 0;
+			settings.aramex_base_delta = b;
+		}
+		if (ethInput) {
+			var e = Number(ethInput.value);
+			if (isNaN(e)) e = 0;
+			settings.aramex_eth_delta = e;
+		}
+	} catch (err) {
+		console.error("updateAramexSpecialSettings: failed to read inputs", err);
+	}
+
+	// Only apply effects when Aramex's Special is enabled; otherwise
+	// the values are just stored for later use.
+	if (settings.aramex_special != 1) { return false; }
+
+	try {
+		if (typeof applyBaseWeaponDamageMultiplier === "function") {
+			var raw = (typeof settings.aramex_base_delta !== 'undefined') ? settings.aramex_base_delta : 0;
+			var delta = isNaN(raw) ? 0 : Number(raw);
+			var mult = 1 + delta/100;
+			applyBaseWeaponDamageMultiplier(mult);
+		}
+
+		if (typeof refreshBaseDamageFromBase === "function") {
+			for (var group in equipped) {
+				if (!equipped.hasOwnProperty(group)) { continue }
+				refreshBaseDamageFromBase(equipped[group]);
+			}
+			for (var mgroup in mercEquipped) {
+				if (!mercEquipped.hasOwnProperty(mgroup)) { continue }
+				refreshBaseDamageFromBase(mercEquipped[mgroup]);
+			}
+		}
+	} catch (e) {
+		console.error("updateAramexSpecialSettings: failed to reapply multipliers", e);
+	}
+
+	try { update(); } catch(e) {}
+	try { updateURLDebounced(); } catch(e) {}
+	return false;
+}
+
+// Helper to normalize base keys (e.g. "Dusk Shroud" -> "Dusk_Shroud")
+// and to resolve any aliases via resolveBaseKey when available.
+function canonicalBaseKey(candidate) {
+	if (!candidate) return null;
+	try { const kb = resolveBaseKey(candidate); if (kb) return kb; } catch(e){}
+	return String(candidate).replace(/ /g, "_");
+}
+
+// Global helper for ethereal base/defense multiplier.
+//
+// Normal game:
+//   - Non-eth: 100% (1.0x)
+//   - Eth:    +50% (1.5x)
+//
+// With Aramex's Special enabled and text boxes B (base) and E (eth):
+//   - Non-eth total multiplier      = 1 + B/100
+//   - Eth total multiplier          = 1 + (B+E)/100
+//   - Since base metadata is already scaled by (1 + B/100), this helper
+//     returns the extra factor needed so that:
+//         base * (1 + B/100) * getEthMultiplier(true)
+//       = base * (1 + (B+E)/100)
+//     i.e. getEthMultiplier(true) = (1 + (B+E)/100) / (1 + B/100).
 function getEthMultiplier(isEthereal) {
 	if (!isEthereal) { return 1; }
-	return (typeof settings !== 'undefined' && settings.aramex_special == 1) ? 1.1 : 1.5;
+
+	// Aramex's Special OFF: keep normal +50% ethereal bonus.
+	try {
+		if (typeof settings === 'undefined' || settings.aramex_special != 1) {
+			return 1.5;
+		}
+	} catch (e) {
+		return 1.5;
+	}
+
+	// Aramex's Special ON: interpret boxes as described above.
+	var B = 0; // base extra % over 100
+	var E = 0; // eth extra % over base
+	try {
+		B = Number(settings.aramex_base_delta) || 0;
+		E = Number(settings.aramex_eth_delta) || 0;
+	} catch (e) {}
+
+	var baseMult = 1 + B/100;
+	var targetMult = 1 + (B + E)/100;
+	if (baseMult <= 0) { return targetMult; }
+	return targetMult / baseMult;
 }
 
 // Ensure an equipped item's base damage fields (including throw and
@@ -491,7 +583,11 @@ function toggleAramexSpecial(checkbox) {
 	// Update metadata-level bases using the preserved originals.
 	try {
 		if (typeof applyBaseWeaponDamageMultiplier === "function") {
-			applyBaseWeaponDamageMultiplier(enabled ? 1.5 : 1.0);
+			// Base weapon bonus is an extra % over normal 100%.
+			var raw = (typeof settings.aramex_base_delta !== 'undefined') ? settings.aramex_base_delta : 0;
+			var delta = isNaN(raw) ? 0 : Number(raw);
+			var mult = enabled ? (1 + delta/100) : 1.0;
+			applyBaseWeaponDamageMultiplier(mult);
 		}
 	} catch (e) {
 		console.error("Aramex's Special: failed applying base damage multiplier", e);
@@ -3718,7 +3814,7 @@ function getCharacterInfo() {
 	} }
 	charInfo += "},selectedSkill:["+selectedSkill[0]+","+selectedSkill[1]
 	charInfo += "],mercenary:'"+mercenary.name+"'"
-	charInfo += ",settings:{coupling:"+settings.coupling+",autocast:"+settings.autocast+",synthwep:"+settings.synthwep+",aramex_special:"+settings.aramex_special
+	charInfo += ",settings:{coupling:"+settings.coupling+",autocast:"+settings.autocast+",synthwep:"+settings.synthwep+",aramex_special:"+settings.aramex_special+",aramex_base_delta:"+settings.aramex_base_delta+",aramex_eth_delta:"+settings.aramex_eth_delta
 	charInfo += "},ironGolem:"+golemItem.name
 	charInfo += "}"
 //	document.getElementById("fhr_bp").innerHTML = charInfo.fhr_bp
@@ -3961,6 +4057,21 @@ function setCharacterInfo(className) {
 		if (settings.aramex_special == 1) { document.getElementById("aramex_special").checked = false; }
 		toggleAramexSpecial(document.getElementById("aramex_special"));
 	}
+	// Restore Aramex numeric settings if present and sync inputs.
+	try {
+		if (typeof fileInfo.settings.aramex_base_delta !== 'undefined') {
+			settings.aramex_base_delta = Number(fileInfo.settings.aramex_base_delta) || 0;
+			if (document.getElementById("aramex_base_delta")) {
+				document.getElementById("aramex_base_delta").value = settings.aramex_base_delta;
+			}
+		}
+		if (typeof fileInfo.settings.aramex_eth_delta !== 'undefined') {
+			settings.aramex_eth_delta = Number(fileInfo.settings.aramex_eth_delta) || 0;
+			if (document.getElementById("aramex_eth_delta")) {
+				document.getElementById("aramex_eth_delta").value = settings.aramex_eth_delta;
+			}
+		}
+	} catch(e) {}
 	//updateStats()
 	document.getElementById("inputTextToSave").value = ""
 	update()
@@ -4627,8 +4738,8 @@ function changeBase(group, change) {
 		if (item.ethereal) {
 			// Remove ethereal status
 			item.ethereal = false;
-			multEth = 1; // Reset multiplier
-			reqEth = 0;  // Reset requirement reduction
+			// Reset requirement reduction
+			reqEth = 0;
 			if (typeof item["req_strength"] !== "undefined") {
 				item["req_strength"] = Math.max(0, Math.ceil(bases[base]["req_strength"]));
 			}
@@ -4638,20 +4749,24 @@ function changeBase(group, change) {
 			if (typeof item["base_defense"] !== "undefined") {
 				item["base_defense"] = Math.max(0, Math.ceil(bases[base]["base_defense"]));
 			}
-			if (typeof item["base_damage_min"] !== "undefined") {
-				item["base_damage_min"] = Math.max(0, Math.ceil(bases[base]["base_damage_min"]));
-			}
-			if (typeof item["base_damage_max"] !== "undefined") {
-				item["base_damage_max"] = Math.max(0, Math.ceil(bases[base]["base_damage_max"]));
-			}
-			try { /* console.debug("DBG:toggleEthereal remove ethereal", {group:group, base_min:item.base_damage_min, base_max:item.base_damage_max, baseId:base}); */ } catch(e) {}
+			// Re-sync base damage fields from metadata so they
+			// respect the current Aramex base multiplier but have
+			// no ethereal bonus.
+			try {
+				if (typeof refreshBaseDamageFromBase === "function") { refreshBaseDamageFromBase(item); }
+				/* console.debug("DBG:toggleEthereal remove ethereal", {group:group, base_min:item.base_damage_min, base_max:item.base_damage_max, baseId:base}); */
+			} catch(e) {}
 
 
 		} else {
 			// Apply ethereal status
 			item.ethereal = true;
 			equipped[group]["ethereal"] == 1 ;
-			multEth = 1.5; // Increase multiplier for ethereal
+			// Note: base weapon damage scaling (including Aramex's
+			// base/eth bonuses) is handled by refreshBaseDamageFromBase
+			// via getEthMultiplier(). We keep the classic 1.5x armor
+			// defense bonus here, but do not hard-code 1.5x weapon
+			// damage anymore.
 			reqEth = 10;  // Reduce requirements by 10%
 			if (typeof item["req_strength"] !== "undefined") {
 				item["req_strength"] = Math.max(0, Math.ceil(bases[base]["req_strength"] * 0.9));
@@ -4662,13 +4777,13 @@ function changeBase(group, change) {
 			if (typeof item["base_defense"] !== "undefined") {
 				item["base_defense"] = Math.max(0, Math.ceil(bases[base]["base_defense"] * 1.5));
 			}
-			if (typeof item["base_damage_min"] !== "undefined") {
-				item["base_damage_min"] = Math.max(0, Math.ceil(bases[base]["base_damage_min"] * 1.5));
-			}
-			if (typeof item["base_damage_max"] !== "undefined") {
-				item["base_damage_max"] = Math.max(0, Math.ceil(bases[base]["base_damage_max"] * 1.5));
-			}
-			try { /* console.debug("DBG:toggleEthereal apply ethereal", {group:group, base_min:item.base_damage_min, base_max:item.base_damage_max, baseId:base}); */ } catch(e) {}
+			// Re-sync base damage fields using current Aramex
+			// settings so total eth bonus is (B+E)% over original
+			// while non-eth uses only B%.
+			try {
+				if (typeof refreshBaseDamageFromBase === "function") { refreshBaseDamageFromBase(item); }
+				/* console.debug("DBG:toggleEthereal apply ethereal", {group:group, base_min:item.base_damage_min, base_max:item.base_damage_max, baseId:base}); */
+			} catch(e) {}
 
 		}
 

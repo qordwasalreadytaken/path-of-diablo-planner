@@ -17,7 +17,11 @@ var offhandType = "none";
 var lastCharm = "";			// last charm on mouse-over
 var lastSocketable = "";	// last gem/rune/jewel on mouse-over
 var lastSelected = "";
-var settings = {coupling:1, autocast:1, parameters:0, aramex_special:1}
+// settings.aramex_base_delta: extra base weapon % over 100 when Aramex's
+// Special is enabled (e.g. 50 -> 150% base weapon damage).
+// settings.aramex_eth_delta: extra ethereal bonus % over the normal +50%
+// when Aramex's Special is enabled (e.g. 10 -> +60% total, 20 -> +70% total).
+var settings = {coupling:1, autocast:1, parameters:0, aramex_special:1, aramex_base_delta:50, aramex_eth_delta:0}
 var monsterID = 2;
 var MAX = 20;				// Highest Skill Hardpoints
 var LIMIT = 60;				// Highest Skill Data

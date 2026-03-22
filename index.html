@@ -186,9 +186,17 @@
           <label for="mixedmagic">&nbsp;&nbsp;&nbsp;&nbsp;Magic Damage&nbsp;&nbsp;</label>
         </div></div>
 	  </div>
-	  <div class="nav-dropdown-content-item" title="Aramex's Special: globally increases base weapon damage by 50% and reduces eth bonus to 10%. Turn off to use normal base damage."><div class="nav-option">
+	  <div class="nav-dropdown-content-item" title="Aramex's Special: applies custom base weapon and ethereal bonuses for planner testing. Turn off to use normal game values."><div class="nav-option">
 		<input id="aramex_special" type="checkbox" name="aramex_special" value="1" onclick="return toggleAramexSpecial(this);" unchecked>
 		<label for="aramex_special">&nbsp;&nbsp;&nbsp;&nbsp;Aramex's Special&nbsp;&nbsp;</label>
+	  </div></div>
+	  <div class="nav-dropdown-content-item" title="Base weapon bonus: extra % over normal 100% base damage when Aramex's Special is enabled (e.g. 50 =&gt; 150% base damage)."><div class="nav-option">
+		<input id="aramex_base_delta" type="textbox" size="4" name="aramex_base_delta" value="50" oninput="return updateAramexSpecialSettings();">
+		<label for="aramex_base_delta">&nbsp;&nbsp;&nbsp;&nbsp;Base Weapon Bonus&nbsp;&nbsp;</label>
+	  </div></div>
+	  <div class="nav-dropdown-content-item" title="Extra ethereal bonus over the normal +50% when Aramex's Special is enabled (e.g. 10 =&gt; +60% total, 20 =&gt; +70% total)."><div class="nav-option">
+		<input id="aramex_eth_delta" type="textbox" size="4" name="aramex_eth_delta" value="0" oninput="return updateAramexSpecialSettings();">
+		<label for="aramex_eth_delta">&nbsp;&nbsp;&nbsp;&nbsp;Ethereal Bonus (extra)&nbsp;&nbsp;</label>
 	  </div></div>
 
     </div>

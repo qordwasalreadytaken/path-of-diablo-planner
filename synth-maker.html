@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoD Synth Item Maker</title>
+  <link rel="shortcut icon" type="image/x-icon" href="./images/pod.ico">
+  <script src="./data/items.js"></script>
+  <script src="./data/item_metadata.js"></script>
+  <style>
+    :root {
+      --bg-0: #0a0a0a;
+      --bg-1: #1a1a1a;
+      --bg-2: #2a2a2a;
+      --panel: rgba(20, 20, 20, 0.95);
+      --line: #4a4a4a;
+      --text: #d0d0c8;
+      --muted: #8a8a80;
+      --gold: #9a8860;
+      --teal: #7a7a70;
+      --accent: #cc3322;
+      --ok: #8a8860;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      background: #0a0a0a;
+    }
+
+    .shell {
+      width: min(1200px, 94vw);
+      margin: 2rem auto;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1.3fr 1fr;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 2px solid var(--line);
+      box-shadow: inset 0 0 0 1px rgba(200, 200, 200, 0.1), 0 8px 16px rgba(0, 0, 0, 0.8);
+      padding: 1rem;
+      backdrop-filter: blur(0px);
+    }
+
+    .hero {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: clamp(1.2rem, 2.2vw, 2.1rem);
+      color: var(--gold);
+    }
+
+    .hero p {
+      margin: 0.4rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .stats-pill {
+      border: 1px solid var(--gold);
+      padding: 0.35rem 0.75rem;
+      font-size: 0.9rem;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    .selectors {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .selector-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.6rem;
+      align-items: center;
+      border: 1px solid rgba(120, 120, 110, 0.5);
+      padding: 0.55rem;
+      background: rgba(30, 30, 25, 0.85);
+    }
+
+    .selector-row label {
+      font-weight: bold;
+      color: var(--teal);
+      min-width: 52px;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid #5a5a50;
+      background: #0f0f0a;
+      color: var(--text);
+      padding: 0.5rem;
+      font-size: 0.92rem;
+    }
+
+    .base-choice {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .base-choice input {
+      accent-color: var(--accent);
+    }
+
+    .properties-section {
+      margin-top: 0.6rem;
+      border: 1px solid rgba(120, 120, 110, 0.4);
+      background: rgba(15, 15, 10, 0.7);
+      overflow: hidden;
+    }
+
+    .properties-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 0.5rem 0.6rem;
+      background: rgba(40, 40, 35, 0.8);
+      border: none;
+      width: 100%;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: background 0.15s;
+    }
+
+    .properties-toggle:hover {
+      background: rgba(60, 60, 50, 0.9);
+    }
+
+    .properties-toggle.open {
+      background: rgba(70, 70, 60, 0.9);
+      color: var(--gold);
+    }
+
+    .toggle-arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+      font-size: 0.75rem;
+    }
+
+    .toggle-arrow.open {
+      transform: rotate(90deg);
+    }
+
+    .properties-list {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease-out;
+      padding: 0;
+    }
+
+    .properties-list.open {
+      max-height: 500px;
+      padding: 0.5rem 0.6rem;
+      border-top: 1px solid rgba(120, 120, 110, 0.4);
+    }
+
+    .property-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .property-checkbox:last-child {
+      margin-bottom: 0;
+    }
+
+    .property-checkbox input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
+
+    .property-checkbox label {
+      cursor: pointer;
+      flex: 1;
+      margin: 0;
+      font-weight: normal;
+      color: var(--text);
+    }
+
+    .property-value {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-left: auto;
+      word-break: break-word;
+      max-width: 120px;
+      text-align: right;
+    }
+
+    .hover-tooltip-preview {
+      margin-top: 0.45rem;
+      border: 2px solid #5a4a3a;
+      background: linear-gradient(180deg, rgba(10, 10, 8, 0.98), rgba(20, 20, 15, 0.98));
+      box-shadow: inset 0 0 0 1px rgba(140, 120, 80, 0.25), 0 4px 12px rgba(0, 0, 0, 0.9);
+      padding: 0.7rem 0.8rem;
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      line-height: 1.26;
+    }
+
+    .tooltip-name {
+      text-align: center;
+      font-size: 0.98rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .tooltip-base {
+      text-align: center;
+      color: #d6d6d6;
+      font-size: 0.86rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .tooltip-block {
+      font-size: 0.87rem;
+      color: #d9d9d9;
+    }
+
+    .tooltip-divider {
+      height: 1px;
+      background: rgba(140, 120, 80, 0.3);
+      margin: 0.42rem 0;
+    }
+
+    .legend {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      margin-top: 0.65rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .legend .dot {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      margin-right: 0.35rem;
+    }
+
+    .btn {
+      border: 2px solid var(--accent);
+      background: rgba(204, 51, 34, 0.15);
+      color: #d07050;
+      padding: 0.45rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn:hover {
+      background: rgba(204, 51, 34, 0.3);
+    }
+
+    @media (max-width: 920px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .table-wrap {
+        max-height: 40vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel hero">
+      <div>
+        <h1>Synth Item Composer</h1>
+        <p>Pick up to six unique items, mark one as the base, and it combines all donor properties into that base. Remove any properties you don't want.</p>
+      </div>
+<!--      <div class="stats-pill" id="itemCountPill">Loading items...</div>-->
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-top: 0; color: var(--gold);">Item Picks</h2>
+      <div class="selectors" id="selectors"></div>
+      <div class="legend">
+<!--        <span><span class="dot" style="background:#cc3322;"></span>Base item is kept and enhanced.</span>
+        <span><span class="dot" style="background:#8a8a80;"></span>Other selected items donate their properties.</span> -->
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-top: 0; color: var(--gold); margin-bottom: 0.8rem;">Synth Preview</h2>
+      <div class="hover-tooltip-preview" id="tooltipPreview">
+        <div class="tooltip-name" id="tooltipName">No Item</div>
+        <div class="tooltip-base" id="tooltipBase"></div>
+        <div class="tooltip-block" id="tooltipMainAffixes"></div>
+        <div class="tooltip-divider" id="tooltipDivider" style="display:none;"></div>
+        <div class="tooltip-block" id="tooltipAffixes"></div>
+      </div>
+<!--      <p style="margin-top: 0.8rem; color: var(--muted); font-size: 0.8rem;">Tooltip preview uses item metadata text formatting (level 90 used for per-level affixes).</p>-->
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const SELECTOR_COUNT = 6;
+      const selectEls = [];
+      const baseRadioEls = [];
+      const propertyCheckboxStates = {}; // { itemIndex: { propertyKey: boolean, ... }, ... }
+      const propertyExpandedStates = {}; // { itemIndex: boolean, ... }
+      const propertyRowEls = {}; // { itemIndex: htmlElement, ... }
+      let uniqueItems = [];
+      let latestResult = {};
+      const PREVIEW_LEVEL = 90;
+
+      const RARITY_COLORS = {
+        common: "#dddddd",
+        normal: "#dddddd",
+        high: "#dddddd",
+        magic: "#6666bb",
+        rare: "#cccc77",
+        craft: "#c48736",
+        crafted: "#c48736",
+        set: "#00f000",
+        unique: "#9b885e",
+        rw: "#dddddd"
+      };
+
+      const MAIN_AFFIX_KEYS = new Set([
+        "base_damage_min", "base_defense", "req_level", "req_strength", "req_dexterity", "durability", "baseSpeed", "range",
+        "throw_min", "base_min_alternate", "block", "velocity", "smite_min"
+      ]);
+
+      const TOOLTIP_SKIP_KEYS = new Set([
+        "name", "type", "base", "img", "rarity", "only", "not", "set_bonuses", "synth", "pod_changes",
+        "group", "size", "special", "upgrade", "downgrade", "weapon", "armor", "shield", "def_low", "def_high", "nonmetal",
+        "sup", "original_tier", "glow", "synth_sources", "synth_source_slots", "tier", "max_sockets"
+      ]);
+
+      const META_KEYS = new Set([
+        "name", "type", "base", "img", "rarity", "only", "not", "set_bonuses", "set_IK", "set_Mav", "set_Gris", "set_TO", "set_TR", "set_Nat",
+        "set_Ald", "set_BK", "set_Disciple", "set_Angelic", "set_Cathan", "set_Cow", "set_Brethren", "set_Hwanin", "set_Naj", "set_Orphan",
+        "set_Sander", "set_Sazabi", "set_Arcanna", "set_Arctic", "set_Berserker", "set_Civerb", "set_Cleglaw", "set_Death", "set_Hsarus",
+        "set_Infernal", "set_Iratha", "set_Isenhart", "set_Milabrega", "set_Sigon", "set_Tancred", "set_Vidala", "synth", "pod_changes",
+        "req_level", "req_strength", "req_dexterity", "durability", "max_sockets", "tier", "group", "size", "special", "upgrade", "downgrade",
+        "weapon", "armor", "shield", "def_low", "def_high", "nonmetal", "sup", "original_tier", "glow"
+      ]);
+
+      function isRunewordLikeName(name) {
+        if (typeof name !== "string") {
+          return false;
+        }
+
+        // Some runeword rows use soft hyphens and spacing instead of explicit rarity flags.
+        const normalized = name.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
+        return normalized.includes(" - ");
+      }
+
+      function init() {
+        const all = getAllUniqueItems();
+        uniqueItems = all.sort((a, b) => a.name.localeCompare(b.name));
+        renderSelectors();
+        updateItemCount();
+        updateResult();
+      }
+
+      function getAllUniqueItems() {
+        if (!window.equipment || typeof window.equipment !== "object") {
+          return [];
+        }
+
+        const out = [];
+        Object.keys(window.equipment).forEach((slotKey) => {
+          if (slotKey !== "weapon") {
+            return;
+          }
+
+          const slotItems = window.equipment[slotKey];
+          if (!Array.isArray(slotItems)) {
+            return;
+          }
+
+          slotItems.forEach((item) => {
+            if (!item || typeof item !== "object" || !item.name) {
+              return;
+            }
+
+            const rarity = item.rarity || "unique";
+            if (rarity !== "unique") {
+              return;
+            }
+
+            if (isRunewordLikeName(item.name)) {
+              return;
+            }
+
+            if (item.synth === "true") {
+              return;
+            }
+
+            const nonMetaKeys = Object.keys(item).filter((k) => !META_KEYS.has(k));
+            if (nonMetaKeys.length === 0) {
+              return;
+            }
+
+            out.push({ ...item, __slot: slotKey });
+          });
+        });
+
+        return out;
+      }
+
+      function renderPropertyCheckboxes(itemIndex) {
+        const selectedItems = getSelectedItems();
+        const item = selectedItems[itemIndex];
+
+        const container = document.createElement("div");
+        container.className = "properties-section";
+
+        const toggle = document.createElement("button");
+        toggle.className = "properties-toggle";
+        toggle.type = "button";
+
+        const arrow = document.createElement("span");
+        arrow.className = "toggle-arrow";
+        arrow.textContent = "▶";
+
+        const toggleText = document.createElement("span");
+        toggleText.textContent = item ? `${item.name} Properties` : "No item selected";
+        toggleText.style.flex = "1";
+        toggleText.style.marginLeft = "0.5rem";
+        toggleText.style.textAlign = "left";
+
+        toggle.appendChild(arrow);
+        toggle.appendChild(toggleText);
+
+        const listDiv = document.createElement("div");
+        listDiv.className = "properties-list";
+
+        if (item) {
+          if (!propertyCheckboxStates[itemIndex]) {
+            propertyCheckboxStates[itemIndex] = {};
+          }
+
+          const affixes = extractAffixes(item);
+          const propKeys = Object.keys(affixes).sort();
+
+          propKeys.forEach((key) => {
+            if (propertyCheckboxStates[itemIndex][key] === undefined) {
+              propertyCheckboxStates[itemIndex][key] = true;
+            }
+
+            const propDiv = document.createElement("div");
+            propDiv.className = "property-checkbox";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `prop_${itemIndex}_${key}`;
+            checkbox.checked = propertyCheckboxStates[itemIndex][key];
+            checkbox.addEventListener("change", () => {
+              propertyCheckboxStates[itemIndex][key] = checkbox.checked;
+              updateResult();
+            });
+
+            const label = document.createElement("label");
+            label.htmlFor = `prop_${itemIndex}_${key}`;
+            label.textContent = getStatDisplayName(key);
+
+            const valueDiv = document.createElement("span");
+            valueDiv.className = "property-value";
+            valueDiv.textContent = formatValue(affixes[key]);
+            valueDiv.title = formatValue(affixes[key]);
+
+            propDiv.appendChild(checkbox);
+            propDiv.appendChild(label);
+            propDiv.appendChild(valueDiv);
+            listDiv.appendChild(propDiv);
+          });
+        }
+
+        let isOpen = propertyExpandedStates[itemIndex] || false;
+        toggle.addEventListener("click", () => {
+          isOpen = !isOpen;
+          propertyExpandedStates[itemIndex] = isOpen;
+          toggle.classList.toggle("open", isOpen);
+          arrow.classList.toggle("open", isOpen);
+          listDiv.classList.toggle("open", isOpen);
+        });
+
+        // Set initial state based on stored state
+        if (isOpen) {
+          toggle.classList.add("open");
+          arrow.classList.add("open");
+          listDiv.classList.add("open");
+        }
+
+        container.appendChild(toggle);
+        container.appendChild(listDiv);
+        return container;
+      }
+
+      function renderSelectors() {
+        const wrap = document.getElementById("selectors");
+        wrap.innerHTML = "";
+        propertyCheckboxStates.constructor = Object; // reset but keep reference
+
+        for (let i = 0; i < SELECTOR_COUNT; i += 1) {
+          const selectorContainer = document.createElement("div");
+
+          const row = document.createElement("div");
+          row.className = "selector-row";
+
+          const lbl = document.createElement("label");
+          lbl.setAttribute("for", `itemSelect${i}`);
+          lbl.textContent = `Item ${i + 1}`;
+
+          const select = document.createElement("select");
+          select.id = `itemSelect${i}`;
+          select.innerHTML = "";
+
+          const blank = document.createElement("option");
+          blank.value = "";
+          blank.textContent = "-- choose a unique item --";
+          select.appendChild(blank);
+
+          uniqueItems.forEach((it, idx) => {
+            const option = document.createElement("option");
+            option.value = String(idx);
+            option.textContent = `${it.name} (${it.__slot})`;
+            select.appendChild(option);
+          });
+
+          select.addEventListener("change", updateResult);
+
+          const baseChoice = document.createElement("label");
+          baseChoice.className = "base-choice";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = "baseChoice";
+          radio.value = String(i);
+          if (i === 0) {
+            radio.checked = true;
+          }
+          radio.addEventListener("change", updateResult);
+          baseChoice.appendChild(radio);
+          baseChoice.appendChild(document.createTextNode("Base"));
+
+          row.appendChild(lbl);
+          row.appendChild(select);
+          row.appendChild(baseChoice);
+
+          selectorContainer.appendChild(row);
+
+          const propsRow = renderPropertyCheckboxes(i);
+          propertyRowEls[i] = propsRow;
+          selectorContainer.appendChild(propsRow);
+
+          wrap.appendChild(selectorContainer);
+          selectEls.push(select);
+          baseRadioEls.push(radio);
+        }
+      }
+
+      function updateItemCount() {
+        document.getElementById("itemCountPill").textContent = `${uniqueItems.length} unique weapons`;
+      }
+
+      function getSelectedBaseIndex() {
+        const radio = baseRadioEls.find((r) => r.checked);
+        return radio ? Number(radio.value) : 0;
+      }
+
+      function getSelectedItems() {
+        return selectEls.map((sel) => {
+          if (sel.value === "") {
+            return null;
+          }
+          const idx = Number(sel.value);
+          return uniqueItems[idx] || null;
+        });
+      }
+
+      function extractAffixes(item) {
+        const affixes = {};
+        Object.entries(item).forEach(([key, val]) => {
+          if (META_KEYS.has(key) || key.startsWith("__")) {
+            return;
+          }
+          affixes[key] = val;
+        });
+        return affixes;
+      }
+
+      function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      function getBaseId(baseName) {
+        return String(baseName || "").split(" ").join("_").split("-").join("_").split("s'").join("s").split("'s").join("s");
+      }
+
+      function roundLikePlanner(num) {
+        if (num >= 25) {
+          return Math.round(num);
+        }
+
+        const decimals = `${num}.`.split(".");
+        if (decimals[1].length > 1) {
+          return Number(num).toFixed(1);
+        }
+
+        return Math.round((num + Number.EPSILON) * 10) / 10;
+      }
+
+      function getRarityColor(rarity) {
+        return RARITY_COLORS[String(rarity || "unique").toLowerCase()] || RARITY_COLORS.unique;
+      }
+
+      function applyBaseMetadata(item) {
+        const out = clone(item);
+        if (!out.base || !window.bases || typeof window.bases !== "object") {
+          return out;
+        }
+
+        const baseId = getBaseId(out.base);
+        const baseMeta = window.bases[baseId];
+        if (!baseMeta || typeof baseMeta !== "object") {
+          return out;
+        }
+
+        Object.entries(baseMeta).forEach(([key, val]) => {
+          if (typeof out[key] === "undefined") {
+            out[key] = val;
+          }
+        });
+
+        return out;
+      }
+
+      function getTooltipAffixLine(source, affix) {
+        if (affix === "ctc") {
+          if (!Array.isArray(source.ctc) || source.ctc.length === 0) {
+            return ["", 0];
+          }
+
+          const line = source.ctc.map((entry) => `${entry[0]}% chance to cast level ${entry[1]} ${entry[2]} ${entry[3]}`).join("<br>");
+          return [line, 1];
+        }
+
+        if (affix === "cskill") {
+          if (!Array.isArray(source.cskill) || source.cskill.length === 0) {
+            return ["", 0];
+          }
+
+          const line = source.cskill.map((entry) => `Level ${entry[0]} ${entry[1]} (${entry[2]} charges)`).join("<br>");
+          return [line, 1];
+        }
+
+        if (!window.stats || typeof window.stats !== "object") {
+          return ["", 0];
+        }
+
+        let stat = window.stats[affix];
+        if (!stat || stat === 1 || stat === 2 || !Array.isArray(stat.format)) {
+          return ["", 0];
+        }
+
+        if (Array.isArray(stat.index) && stat.index.length === 0) {
+          if (!source[affix]) {
+            return ["", 0];
+          }
+          return [stat.format.join(""), 1];
+        }
+
+        let halt = false;
+        if (stat.alt != null && Array.isArray(stat.index) && stat.index.length > 1) {
+          const has0 = typeof source[stat.index[0]] !== "undefined" && Number(source[stat.index[0]]) > 0;
+          const has1 = typeof source[stat.index[1]] !== "undefined" && Number(source[stat.index[1]]) > 0;
+          if (has0 && has1 && stat.index[1] === affix) {
+            halt = true;
+          }
+          if (!(has0 && has1) && window.stats_alternate && window.stats_alternate[affix]) {
+            stat = window.stats_alternate[affix];
+          }
+        }
+
+        if (!Array.isArray(stat.index)) {
+          return ["", 0];
+        }
+
+        let line = "";
+        let hasValue = false;
+
+        for (let i = 0; i < stat.index.length; i += 1) {
+          const idx = stat.index[i];
+          let value = typeof source[idx] === "undefined" ? 0 : source[idx];
+          const numeric = Number(value);
+          const isNumeric = !Number.isNaN(numeric);
+
+          if (isNumeric && numeric !== 0) {
+            hasValue = true;
+            value = numeric;
+          }
+
+          let rounding = true;
+          if (Array.isArray(stat.mult) && typeof stat.mult[i] !== "undefined") {
+            if (stat.mult[i] !== 1) {
+              if (stat.mult[i] === "level" && typeof value === "number") {
+                value *= PREVIEW_LEVEL;
+              }
+              if (affix === "all_skills_per_level") {
+                value = Math.ceil(Number(value));
+              }
+            } else {
+              rounding = false;
+            }
+          }
+
+          if (typeof value === "number" && rounding) {
+            value = roundLikePlanner(value);
+          }
+
+          let text = stat.format[i] || "";
+          if (typeof value === "number" && value < 0 && text.endsWith("+")) {
+            text = text.slice(0, -1);
+          }
+
+          line += `${text}${value}`;
+        }
+
+        line += stat.format[stat.index.length] || "";
+        if (line === " to Class Skills") {
+          line = " to All Class Skills";
+        }
+        if (affix === "aura" && (source[affix] === "Lifted Spirit" || source[affix] === "Righteous Fire")) {
+          line = `${source[affix]} Aura when Equipped`;
+        }
+        if (halt) {
+          hasValue = false;
+        }
+
+        return [line, hasValue ? 1 : 0];
+      }
+
+      function renderTooltipPreview(item) {
+        const nameEl = document.getElementById("tooltipName");
+        const baseEl = document.getElementById("tooltipBase");
+        const mainEl = document.getElementById("tooltipMainAffixes");
+        const affixEl = document.getElementById("tooltipAffixes");
+        const dividerEl = document.getElementById("tooltipDivider");
+
+        if (!item || !item.name) {
+          nameEl.textContent = "No Item";
+          nameEl.style.color = RARITY_COLORS.common;
+          baseEl.textContent = "";
+          mainEl.innerHTML = "";
+          affixEl.innerHTML = "";
+          dividerEl.style.display = "none";
+          return;
+        }
+
+        const withBase = applyBaseMetadata(item);
+        const mainLines = [];
+        const affixLines = [];
+
+        Object.keys(withBase).forEach((affix) => {
+          if (TOOLTIP_SKIP_KEYS.has(affix) || affix.startsWith("__")) {
+            return;
+          }
+
+          const lineInfo = getTooltipAffixLine(withBase, affix);
+          if (!lineInfo[1] || !lineInfo[0]) {
+            return;
+          }
+
+          if (MAIN_AFFIX_KEYS.has(affix)) {
+            mainLines.push(lineInfo[0]);
+          } else {
+            affixLines.push(lineInfo[0]);
+          }
+        });
+
+        nameEl.textContent = item.name;
+        nameEl.style.color = getRarityColor(item.rarity || "unique");
+        baseEl.textContent = item.base || "";
+        mainEl.innerHTML = mainLines.join("<br>");
+        affixEl.innerHTML = affixLines.join("<br>");
+        dividerEl.style.display = (mainLines.length > 0 && affixLines.length > 0) ? "block" : "none";
+      }
+
+      function mergeAffixes(baseAffixes, donorAffixes) {
+        const merged = clone(baseAffixes);
+
+        Object.entries(donorAffixes).forEach(([key, incoming]) => {
+          const current = merged[key];
+
+          if (typeof incoming === "number") {
+            if (typeof current === "number") {
+              merged[key] = current + incoming;
+            } else if (typeof current === "undefined") {
+              merged[key] = incoming;
+            }
+            return;
+          }
+
+          if (Array.isArray(incoming)) {
+            if (Array.isArray(current)) {
+              merged[key] = current.concat(clone(incoming));
+            } else if (typeof current === "undefined") {
+              merged[key] = clone(incoming);
+            }
+            return;
+          }
+
+          if (typeof incoming === "string") {
+            if (typeof current === "undefined") {
+              merged[key] = incoming;
+            } else if (current !== incoming) {
+              merged[key] = `${current} | ${incoming}`;
+            }
+            return;
+          }
+
+          if (typeof incoming === "object" && incoming !== null) {
+            if (typeof current === "undefined") {
+              merged[key] = clone(incoming);
+            }
+          }
+        });
+
+        return merged;
+      }
+
+      function getStatDisplayName(key) {
+        // Try to get human-readable name from stat definitions
+        if (!window.stats || typeof window.stats !== "object") {
+          return formatPropName(key);
+        }
+
+        const stat = window.stats[key];
+        if (!stat || !Array.isArray(stat.format)) {
+          return formatPropName(key);
+        }
+
+        // Extract meaningful text from format array (skip operators like "+", "-", "%")
+        const formatParts = stat.format.filter(part => {
+          if (!part) return false;
+          // Skip pure operators and numbers
+          return !/^[+\-*/%]+$/.test(part) && part.trim() !== "" && !/^\d+/.test(part);
+        });
+
+        if (formatParts.length > 0) {
+          // Join parts and clean up spacing
+          return formatParts.join("").trim();
+        }
+
+        return formatPropName(key);
+      }
+
+      function formatPropName(key) {
+        return key
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      function formatValue(value) {
+        if (typeof value === "number") {
+          if (Number.isInteger(value)) {
+            return String(value);
+          }
+          return value.toFixed(2).replace(/\.00$/, "");
+        }
+
+        if (Array.isArray(value)) {
+          return JSON.stringify(value);
+        }
+
+        if (typeof value === "object" && value !== null) {
+          return JSON.stringify(value);
+        }
+
+        return String(value);
+      }
+
+      function buildMergedResult() {
+        const selections = getSelectedItems();
+        const baseSlot = getSelectedBaseIndex();
+        const baseItem = selections[baseSlot];
+
+        if (!baseItem) {
+          return { ok: false, message: "Choose a base slot that has an item selected." };
+        }
+
+        const donors = selections.filter((it, idx) => idx !== baseSlot && it !== null);
+
+        if (donors.length === 0) {
+          return { ok: false, message: "Add at least one donor item to merge properties." };
+        }
+
+        // Filter base affixes based on checkbox state
+        const baseAffixes = extractAffixes(baseItem);
+        const baseCheckboxState = propertyCheckboxStates[baseSlot] || {};
+        const filteredBaseAffixes = Object.fromEntries(
+          Object.entries(baseAffixes).filter(([key]) => baseCheckboxState[key] !== false)
+        );
+        let mergedAffixes = clone(filteredBaseAffixes);
+
+        // Merge donor properties, also respecting checkbox state
+        selections.forEach((donor, donorIdx) => {
+          if (donor === null || donorIdx === baseSlot) {
+            return;
+          }
+          const donorAffixes = extractAffixes(donor);
+          const donorCheckboxState = propertyCheckboxStates[donorIdx] || {};
+          const filteredDonorAffixes = Object.fromEntries(
+            Object.entries(donorAffixes).filter(([key]) => donorCheckboxState[key] !== false)
+          );
+          mergedAffixes = mergeAffixes(mergedAffixes, filteredDonorAffixes);
+        });
+
+        const mergedItem = clone(baseItem);
+        
+        // Remove all non-metadata properties (they will be replaced by mergedAffixes)
+        Object.keys(mergedItem).forEach((key) => {
+          if (!key.startsWith("__") && !META_KEYS.has(key)) {
+            delete mergedItem[key];
+          }
+        });
+        
+        // Add only the merged affixes (respecting checkbox filters)
+        Object.entries(mergedAffixes).forEach(([k, v]) => {
+          mergedItem[k] = v;
+        });
+        mergedItem.synth_sources = donors.map((d) => d.name);
+        mergedItem.synth_source_slots = donors.map((d) => d.__slot);
+
+        return {
+          ok: true,
+          baseItem,
+          donors,
+          mergedAffixes,
+          mergedItem
+        };
+      }
+
+      function updateResult() {
+        // Re-render property checkboxes to reflect current selections
+        for (let i = 0; i < SELECTOR_COUNT; i += 1) {
+          if (propertyRowEls[i] && propertyRowEls[i].parentElement) {
+            const newPropsRow = renderPropertyCheckboxes(i);
+            propertyRowEls[i].parentElement.replaceChild(newPropsRow, propertyRowEls[i]);
+            propertyRowEls[i] = newPropsRow;
+          }
+        }
+
+        const result = buildMergedResult();
+
+        if (!result.ok) {
+          renderTooltipPreview(null);
+          latestResult = {};
+          return;
+        }
+
+        renderTooltipPreview(result.mergedItem);
+        latestResult = result.mergedItem;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

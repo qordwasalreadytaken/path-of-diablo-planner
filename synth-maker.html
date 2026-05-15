@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PoD Synth Item Maker</title>
   <link rel="shortcut icon" type="image/x-icon" href="./images/pod.ico">
-  <script src="./data/items.js"></script>
-  <script src="./data/item_metadata.js"></script>
+  <!-- External scripts moved to end of body for proper load order -->
   <style>
     :root {
       --bg-0: #0a0a0a;
@@ -83,6 +82,19 @@
     .selectors {
       display: grid;
       gap: 0.7rem;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      color: var(--gold);
     }
 
     .selector-row {
@@ -301,7 +313,10 @@
     </section>
 
     <section class="panel">
-      <h2 style="margin-top: 0; color: var(--gold);">Item Picks</h2>
+      <div class="panel-header">
+        <h2>Item Picks</h2>
+        <button id="gimmeeRandomBtn" class="btn">Roll a Random</button>
+      </div>
       <div class="selectors" id="selectors"></div>
       <div class="legend">
 <!--        <span><span class="dot" style="background:#cc3322;"></span>Base item is kept and enhanced.</span>
@@ -315,6 +330,7 @@
         <div class="tooltip-name" id="tooltipName">No Item</div>
         <div class="tooltip-base" id="tooltipBase"></div>
         <div class="tooltip-block" id="tooltipMainAffixes"></div>
+          <div id="itemNamesList" style="margin: 0.5em 0 0.3em 0;"></div>
         <div class="tooltip-divider" id="tooltipDivider" style="display:none;"></div>
         <div class="tooltip-block" id="tooltipAffixes"></div>
       </div>
@@ -322,8 +338,11 @@
     </section>
   </main>
 
+  <script src="./data/items.js"></script>
+  <script src="./data/item_metadata.js"></script>
   <script>
-    (function () {
+    console.log('=== synth-maker main script loaded ===');
+    window.addEventListener('DOMContentLoaded', function () {
       const SELECTOR_COUNT = 6;
       const selectEls = [];
       const baseRadioEls = [];
@@ -583,7 +602,10 @@
       }
 
       function updateItemCount() {
-        document.getElementById("itemCountPill").textContent = `${uniqueItems.length} unique weapons`;
+        const itemCountPill = document.getElementById("itemCountPill");
+        if (itemCountPill) {
+          itemCountPill.textContent = `${uniqueItems.length} unique weapons`;
+        }
       }
 
       function getSelectedBaseIndex() {
@@ -950,7 +972,12 @@
         
         // Add only the merged affixes (respecting checkbox filters)
         Object.entries(mergedAffixes).forEach(([k, v]) => {
-          mergedItem[k] = v;
+            // Cap enhanced_damage at 511
+            if (k === "e_damage" && typeof v === "number" && v > 511) {
+              mergedItem[k] = 511;
+            } else {
+              mergedItem[k] = v;
+            }
         });
         mergedItem.synth_sources = donors.map((d) => d.name);
         mergedItem.synth_source_slots = donors.map((d) => d.__slot);
@@ -979,15 +1006,107 @@
         if (!result.ok) {
           renderTooltipPreview(null);
           latestResult = {};
+            // Clear item names list
+            const namesList = document.getElementById("itemNamesList");
+            if (namesList) namesList.innerHTML = "";
           return;
         }
 
         renderTooltipPreview(result.mergedItem);
         latestResult = result.mergedItem;
+
+          // Show base and donor item names below main affixes
+          const namesList = document.getElementById("itemNamesList");
+          if (namesList) {
+            let html = "<div style='font-size:0.93em;color:#b0a080;'>";
+            html += `<b>Base:</b> ${result.baseItem?.name || "-"}`;
+            if (result.donors && result.donors.length > 0) {
+              html += "<br><b>Donors:</b> " + result.donors.map(d => d.name).join(", ");
+            }
+            html += "</div>";
+            namesList.innerHTML = html;
+          }
       }
 
-      init();
-    })();
+      // Gimmee Random button logic
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function gimmeeRandom() {
+        console.log("gimmeeRandom() called");
+        if (!uniqueItems.length) {
+          console.log("No uniqueItems loaded");
+          return;
+        }
+        // Pick 2-6 unique items
+        const numItems = getRandomInt(2, Math.min(6, uniqueItems.length));
+        const itemIndices = shuffle([...Array(uniqueItems.length).keys()]).slice(0, numItems);
+        // Pick a random base
+        const baseIdx = getRandomInt(0, numItems - 1);
+
+        // For each item, pick 2-4 random properties, but total <= 12
+        let totalProps = 0;
+        const maxTotalProps = 12;
+        // Reset all selectors
+        selectEls.forEach(sel => { sel.value = ""; });
+        baseRadioEls.forEach((r, i) => { r.checked = (i === baseIdx); });
+        // Reset all property checkboxes
+        for (let i = 0; i < SELECTOR_COUNT; i++) propertyCheckboxStates[i] = {};
+
+        itemIndices.forEach((itemIdx, slotIdx) => {
+          selectEls[slotIdx].value = String(itemIdx);
+          const item = uniqueItems[itemIdx];
+          const affixKeys = Object.keys(extractAffixes(item));
+          shuffle(affixKeys);
+          let numProps = getRandomInt(2, Math.min(4, affixKeys.length));
+          // Clamp so we don't exceed maxTotalProps
+          if (totalProps + numProps > maxTotalProps) {
+            numProps = maxTotalProps - totalProps;
+          }
+          totalProps += numProps;
+          // Set propertyCheckboxStates for this item
+          affixKeys.forEach((k, i) => {
+            propertyCheckboxStates[slotIdx][k] = i < numProps;
+          });
+        });
+        // Clear unused selectors
+        for (let i = itemIndices.length; i < SELECTOR_COUNT; i++) {
+          selectEls[i].value = "";
+          propertyCheckboxStates[i] = {};
+        }
+        updateResult();
+      }
+
+      function attachGimmeeRandomBtn() {
+        const btn = document.getElementById("gimmeeRandomBtn");
+        if (btn) {
+          btn.onclick = function(e) {
+            console.log("Gimmee Random button clicked");
+            gimmeeRandom();
+          };
+          console.log("Gimmee Random button handler attached");
+        } else {
+          console.log("Gimmee Random button not found");
+        }
+      }
+
+      // Attach after selectors are rendered
+      function initWithButton() {
+        init();
+        attachGimmeeRandomBtn();
+      }
+
+      initWithButton();
+    });
   </script>
 </body>
 </html>

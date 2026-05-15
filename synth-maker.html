@@ -1053,9 +1053,9 @@
         // Pick a random base
         const baseIdx = getRandomInt(0, numItems - 1);
 
-        // For each item, pick 2-4 random properties, but total <= 12
+        // For each item, pick 2-4 random properties, but total <= 15
         let totalProps = 0;
-        const maxTotalProps = 12;
+        const maxTotalProps = 15;
         // Reset all selectors
         selectEls.forEach(sel => { sel.value = ""; });
         baseRadioEls.forEach((r, i) => { r.checked = (i === baseIdx); });

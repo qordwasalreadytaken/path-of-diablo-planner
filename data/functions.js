@@ -212,6 +212,7 @@ function setIronGolem(val) {
 		update();
 		updateAllEffects();
 		// Ensure URL is updated after a programmatic equip. updateURLDebounced
+
 		// already no-ops while loadParams is running, but we also avoid calling
 		// it here to keep updates atomic during page load.
 		updateURLDebounced();
@@ -1931,6 +1932,245 @@ function equip(group, val) {
 
 	update()
 	updateAllEffects()
+}
+
+const SYNTH_EQUIP_METADATA_KEYS = new Set([
+	"name", "type", "base", "img", "rarity", "only", "not", "req", "ethereal", "indestructible", "autorepair", "autoreplenish",
+	"stack_size", "set_bonuses", "pod_changes", "twoHanded", "sockets", "e_def", "req_strength", "req_dexterity", "req_level",
+	"baseSpeed", "tier", "max_sockets", "original_tier", "size", "group", "special", "upgrade", "downgrade", "nonmetal", "glow"
+]);
+
+function findSynthSourceItem(slot, baseName) {
+	if (!baseName) return null;
+	const slotItems = Array.isArray(equipment[slot]) ? equipment[slot] : [];
+	let item = slotItems.find(entry => entry && entry.name === baseName) || null;
+	if (!item && slot === "offhand" && Array.isArray(equipment.weapon)) {
+		item = equipment.weapon.find(entry => entry && entry.name === baseName) || null;
+	}
+	return item;
+}
+
+function removeSynthEffectsForItem(slot, item) {
+	if (!item || typeof item !== "object") return;
+
+	if (item.aura) {
+		removeEffect(item.aura.split(' ').join('_') + "-" + slot);
+	}
+
+	if (Array.isArray(item.cskill)) {
+		for (let i = 0; i < item.cskill.length; i++) {
+			const cskillName = item.cskill[i][1];
+			for (cskill in effect_cskills) {
+				if (cskill.split('_').join(' ') == cskillName) { removeEffect(cskill + "-" + slot); }
+			}
+		}
+	}
+
+	if (Array.isArray(item.ctc)) {
+		for (let i = 0; i < item.ctc.length; i++) {
+			const ctcSkillName = item.ctc[i][2];
+			for (ctcskill in effect_ctcskills) {
+				if (ctcskill.split('_').join(' ') == ctcSkillName) { removeEffect(ctcskill + "-" + slot); }
+			}
+		}
+	}
+}
+
+function stripSynthBaseMagic(slot, sourceItem) {
+	const eq = equipped[slot];
+	if (!eq || !sourceItem) return;
+
+	removeSynthEffectsForItem(slot, sourceItem);
+
+	for (const affix in sourceItem) {
+		if (SYNTH_EQUIP_METADATA_KEYS.has(affix)) continue;
+
+		if ((affix == "sup" || affix == "e_damage") && slot == "weapon") {
+			if (typeof eq.e_damage === "number") { eq.e_damage -= sourceItem[affix]; }
+			if (typeof character.e_damage === "number") { character.e_damage -= sourceItem[affix]; }
+			continue;
+		}
+
+		if (affix == "e_damage" && slot != "weapon") {
+			if (typeof eq.damage_bonus === "number") { eq.damage_bonus -= sourceItem[affix]; }
+			if (typeof character.damage_bonus === "number") { character.damage_bonus -= sourceItem[affix]; }
+			continue;
+		}
+
+		if (affix == "damage_vs_undead") {
+			if (typeof eq[affix] === "number") { eq[affix] -= sourceItem[affix]; }
+			if (typeof character[affix] === "number") { character[affix] -= sourceItem[affix]; }
+			continue;
+		}
+
+		if (affix == "aura" || affix == "aura_lvl" || affix == "ctc" || affix == "cskill") {
+			delete eq[affix];
+			continue;
+		}
+
+		if (typeof sourceItem[affix] === "number") {
+			if (typeof eq[affix] === "number") { eq[affix] -= sourceItem[affix]; }
+			if (typeof character[affix] === "number") { character[affix] -= sourceItem[affix]; }
+		} else {
+			delete eq[affix];
+		}
+	}
+
+	eq.PropertyList = [];
+	delete eq.props;
+	delete eq.aura;
+	delete eq.aura_lvl;
+	delete eq.ctc;
+	delete eq.cskill;
+}
+
+function buildSynthPropsFromSelection(selectedProps) {
+	const aggregated = {};
+	const propertyList = [];
+
+	(selectedProps || []).forEach(prop => {
+		if (!prop || !prop.key) return;
+		const key = prop.key;
+		const rawValue = prop.value;
+		const displayValue = typeof prop.displayValue === "string"
+			? prop.displayValue
+			: (Array.isArray(rawValue) || (typeof rawValue === "object" && rawValue !== null) ? JSON.stringify(rawValue) : String(rawValue));
+
+		propertyList.push(`${key}: ${displayValue}`);
+
+		if (key === "ctc" || key === "cskill") {
+			if (!Array.isArray(aggregated[key])) { aggregated[key] = []; }
+			if (Array.isArray(rawValue) && Array.isArray(rawValue[0])) { aggregated[key].push(...rawValue); }
+			else { aggregated[key].push(rawValue); }
+			return;
+		}
+
+		if (key === "aura") {
+			aggregated[key] = rawValue;
+			return;
+		}
+
+		if (key === "aura_lvl") {
+			aggregated[key] = Number(rawValue) || rawValue;
+			return;
+		}
+
+		if (typeof rawValue === "number") {
+			aggregated[key] = (typeof aggregated[key] === "number" ? aggregated[key] : 0) + rawValue;
+			return;
+		}
+
+		if (typeof rawValue === "string") {
+			const asNumber = Number(rawValue);
+			if (!Number.isNaN(asNumber) && rawValue.trim() !== "") {
+				aggregated[key] = (typeof aggregated[key] === "number" ? aggregated[key] : 0) + asNumber;
+				return;
+			}
+		}
+
+		aggregated[key] = rawValue;
+	});
+
+	return { aggregated, propertyList };
+}
+
+function applySynthPropsToEquipped(slot, props) {
+	if (!slot || !props || !equipped[slot]) return;
+	const eq = equipped[slot];
+
+	for (const key in props) {
+		const value = props[key];
+
+		if (key === "ctc" || key === "cskill") {
+			eq[key] = Array.isArray(value) ? value.slice() : [value];
+			continue;
+		}
+
+		if (key === "aura" || key === "aura_lvl") {
+			eq[key] = value;
+			continue;
+		}
+
+		if (typeof value === "number") {
+			eq[key] = (typeof eq[key] === "number" ? eq[key] : 0) + value;
+			character[key] = (typeof character[key] === "number" ? character[key] : 0) + value;
+			continue;
+		}
+
+		if (Array.isArray(value) && value.every(entry => typeof entry === "number")) {
+			const sum = value.reduce((total, entry) => total + entry, 0);
+			eq[key] = (typeof eq[key] === "number" ? eq[key] : 0) + sum;
+			character[key] = (typeof character[key] === "number" ? character[key] : 0) + sum;
+			continue;
+		}
+
+		eq[key] = value;
+	}
+}
+
+function addSynthEffectsFromEquipped(slot) {
+	const eq = equipped[slot];
+	if (!eq) return;
+
+	if (eq.aura && eq.aura_lvl) {
+		addEffect("aura", eq.aura, eq.aura_lvl, slot);
+	}
+
+	if (Array.isArray(eq.cskill)) {
+		for (let i = 0; i < eq.cskill.length; i++) {
+			const level = eq.cskill[i][0];
+			const name = eq.cskill[i][1];
+			for (cskill in effect_cskills) {
+				if (cskill.split('_').join(' ') == name) { addEffect("cskill", name, level, slot); }
+			}
+		}
+	}
+
+	if (Array.isArray(eq.ctc)) {
+		for (let i = 0; i < eq.ctc.length; i++) {
+			const level = eq.ctc[i][1];
+			const name = eq.ctc[i][2];
+			for (ctcskill in effect_ctcskills) {
+				if (ctcskill.split('_').join(' ') == name) { addEffect("ctcskill", name, level, slot); }
+			}
+		}
+	}
+}
+
+function equipSynthItem(slot, baseName, selectedProps, donorNames) {
+	if (!slot) return;
+
+	if (!baseName) {
+		equip(slot, "none");
+		return;
+	}
+
+	const sourceItem = findSynthSourceItem(slot, baseName);
+	if (!sourceItem) {
+		console.warn(`equipSynthItem: unable to find base item "${baseName}" for slot ${slot}`);
+		return;
+	}
+
+	equip(slot, baseName);
+	stripSynthBaseMagic(slot, sourceItem);
+
+	const synthData = buildSynthPropsFromSelection(selectedProps);
+	applySynthPropsToEquipped(slot, synthData.aggregated);
+
+	const eq = equipped[slot];
+	if (eq) {
+		eq.name = `Synthesized ${baseName}`;
+		eq.PropertyList = synthData.propertyList.slice();
+		eq.synth = true;
+		eq.synth_base_name = baseName;
+		eq.synth_donor_names = Array.isArray(donorNames) ? donorNames.slice() : [];
+	}
+
+	addSynthEffectsFromEquipped(slot);
+
+	try { updateSelectedItemSummary(slot); } catch(e) {}
+	try { update(); } catch(e) {}
+	try { updateAllEffects(); } catch(e) {}
 }
 
 // checkWield - Adjust base damage for two-handed swords (dependent on whether wielded with 1 or 2 hands)
@@ -4335,7 +4575,13 @@ function equipmentHover(group) {
 	else if (equipped[group].size == "large") { base = "Large Charm" }
 	else if (equipped[group].size == "grand") { base = "Grand Charm" }
 	
-	if (equipped[group].name != "none") { name = equipped[group].name.split(" ­ ")[0].split(" (")[0]; }
+	if (equipped[group].name != "none") {
+		if (equipped[group].synth == true && equipped[group].synth_base_name) {
+			name = "Synthesized " + equipped[group].synth_base_name;
+		} else {
+			name = equipped[group].name.split(" ­ ")[0].split(" (")[0];
+		}
+	}
 	if (base.split("_")[0] != "Special") { base = "<br>"+base }
 	if (equipped[group].rarity == "common" || equipped[group].rarity == "magic") { base = "" }
 	var corruption = "";
@@ -4506,6 +4752,9 @@ function equipmentHover(group) {
 		if (set_group_affixes != "") { set_group_affixes = "<br>"+group_bonuses[0]+":<br>"+set_group_affixes }
 	} }
 	if (socketed_affixes != "") { socketed_affixes = "<br>"+socketed_affixes }
+	if (equipped[group].synth == true && Array.isArray(equipped[group].synth_donor_names) && equipped[group].synth_donor_names.length > 0) {
+		affixes = "<span style='color:" + colors.Gray + "'>Synthesized from: " + equipped[group].synth_donor_names.join(", ") + "</span><br>" + affixes;
+	}
 	var runeword = "";
 	if (equipped[group].rarity == "rw") {
 		var rw_name = equipped[group].name.split(" ­ ")[0].split(" ").join("_").split("'").join("");
@@ -8588,7 +8837,6 @@ function applyInlinePropsToEquipped(slot, props) {
 	try { updateSelectedItemSummary(slot); } catch(e) {}
 	try { update(); } catch(e) {}
 }
-
 
 
 	function findMatchingStat(propertyText, stats) {

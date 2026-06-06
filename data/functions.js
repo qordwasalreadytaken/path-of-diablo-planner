@@ -4759,7 +4759,7 @@ function equipmentHover(group) {
 	} }
 	if (socketed_affixes != "") { socketed_affixes = "<br>"+socketed_affixes }
 	if (equipped[group].synth == true && Array.isArray(equipped[group].synth_donor_names) && equipped[group].synth_donor_names.length > 0) {
-		affixes = "<span style='color:" + colors.Gray + "'>Synthesized from: " + equipped[group].synth_donor_names.join(", ") + "</span><br>" + affixes;
+		affixes =  affixes + "<span style='color:" + colors.Gray + "'>Synthesized from: " + equipped[group].synth_donor_names.join(", ") + "</span><br>";
 	}
 	var runeword = "";
 	if (equipped[group].rarity == "rw") {

@@ -2071,6 +2071,11 @@ function buildSynthPropsFromSelection(selectedProps) {
 		aggregated[key] = rawValue;
 	});
 
+	// Match synth-maker behavior: synthesized enhanced damage cannot exceed 511.
+	if (typeof aggregated.e_damage === "number" && aggregated.e_damage > 511) {
+		aggregated.e_damage = 511;
+	}
+
 	return { aggregated, propertyList };
 }
 
@@ -2092,8 +2097,9 @@ function applySynthPropsToEquipped(slot, props) {
 		}
 
 		if (typeof value === "number") {
-			eq[key] = (typeof eq[key] === "number" ? eq[key] : 0) + value;
-			character[key] = (typeof character[key] === "number" ? character[key] : 0) + value;
+			const valueToApply = (key === "e_damage" && value > 511) ? 511 : value;
+			eq[key] = (typeof eq[key] === "number" ? eq[key] : 0) + valueToApply;
+			character[key] = (typeof character[key] === "number" ? character[key] : 0) + valueToApply;
 			continue;
 		}
 
@@ -12265,6 +12271,599 @@ async function equipsynth(friendly_id) {
 		alert('Error importing synth item: ' + err.message);
 		console.error(err);
 	}
+}
+
+
+// Synth builder functions
+//=========================================================================================================================
+// Synth builder functions
+//=========================================================================================================================
+
+/* Functions:
+
+*/
+
+
+const LIVE_SYNTH_META_KEYS = new Set([
+	"name", "type", "base", "img", "rarity", "only", "not", "set_bonuses", "set_IK", "set_Mav", "set_Gris", "set_TO", "set_TR", "set_Nat",
+	"set_Ald", "set_BK", "set_Disciple", "set_Angelic", "set_Cathan", "set_Cow", "set_Brethren", "set_Hwanin", "set_Naj", "set_Orphan",
+	"set_Sander", "set_Sazabi", "set_Arcanna", "set_Arctic", "set_Berserker", "set_Civerb", "set_Cleglaw", "set_Death", "set_Hsarus",
+	"set_Infernal", "set_Iratha", "set_Isenhart", "set_Milabrega", "set_Sigon", "set_Tancred", "set_Vidala", "synth", "pod_changes",
+	"req_level", "req_strength", "req_dexterity", "durability", "max_sockets", "tier", "group", "size", "special", "upgrade", "downgrade",
+	"weapon", "armor", "shield", "def_low", "def_high", "nonmetal", "sup", "original_tier", "glow"
+]);
+
+function isLiveSynthRunewordLikeName(name) {
+	if (typeof name !== "string") return false;
+	const normalized = name.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
+	return normalized.includes(" - ");
+}
+
+function getLiveSynthPanelItems() {
+	const weaponItems = Array.isArray(equipment?.weapon) ? equipment.weapon : [];
+	const byName = new Map();
+
+	weaponItems.forEach(item => {
+		if (!item || typeof item !== "object" || !item.name) return;
+
+		const rarity = item.rarity || "unique";
+		if (rarity !== "unique") return;
+		if (item.synth === "true" || item.synth === true) return;
+		if (isLiveSynthRunewordLikeName(item.name)) return;
+
+		const nonMetaKeys = Object.keys(item).filter(k => !LIVE_SYNTH_META_KEYS.has(k));
+		if (nonMetaKeys.length === 0) return;
+
+		if (!byName.has(item.name)) {
+			byName.set(item.name, item);
+		}
+	});
+
+	return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function setLiveSynthOptions(selectEl, items, includeNone, excludedNames) {
+	if (!selectEl) return;
+	const prev = selectEl.value;
+	selectEl.innerHTML = "";
+	if (includeNone) {
+		const noneOpt = document.createElement("option");
+		noneOpt.value = "";
+		noneOpt.textContent = "(none)";
+		selectEl.appendChild(noneOpt);
+	}
+	items.forEach(item => {
+		if (excludedNames && excludedNames.has(item.name)) return;
+		const opt = document.createElement("option");
+		opt.value = item.name;
+		opt.textContent = item.name;
+		selectEl.appendChild(opt);
+	});
+	if (prev && Array.from(selectEl.options).some(o => o.value === prev)) {
+		selectEl.value = prev;
+	} else if (includeNone) {
+		selectEl.value = "";
+	}
+}
+
+function collectLiveSynthSelection() {
+	const slot = document.getElementById("synth-panel-base-slot")?.value || "weapon";
+	const baseName = document.getElementById("synth-panel-base-item")?.value || "";
+	const donorNames = [
+		document.getElementById("synth-panel-donor-1")?.value || "",
+		document.getElementById("synth-panel-donor-2")?.value || "",
+		document.getElementById("synth-panel-donor-3")?.value || "",
+		document.getElementById("synth-panel-donor-4")?.value || "",
+		document.getElementById("synth-panel-donor-5")?.value || ""
+	].filter(Boolean);
+	const slotItems = getLiveSynthPanelItems();
+	const baseItem = slotItems.find(i => i.name === baseName) || null;
+	const donorItems = donorNames
+		.filter((name, idx, arr) => arr.indexOf(name) === idx && name !== baseName)
+		.map(name => slotItems.find(i => i.name === name))
+		.filter(Boolean);
+	return { slot, baseItem, donorItems };
+}
+
+const LIVE_SYNTH_PROPERTY_EXCLUDED_KEYS = new Set([
+	"name", "req_level", "type", "base", "img", "twoHanded", "Worn", "SynthesisedFrom", "Title", "PropertyList",
+	"tier", "max_sockets", "baseSpeed", "light_radius", "base_damage_min", "base_damage_max", "original_tier",
+	"pod_changes", "req_strength", "req_dexterity", "iasindex"
+]);
+
+function getLiveSynthPanelProperties(items) {
+	const result = [];
+
+	items.forEach(item => {
+		if (!item || typeof item !== "object") return;
+		const source = item.Title || item.name || "Unknown";
+
+		Object.entries(item).forEach(([key, value]) => {
+			if (LIVE_SYNTH_PROPERTY_EXCLUDED_KEYS.has(key)) return;
+			if (value === undefined || value === null || value === "") return;
+			result.push({ key, value, source });
+		});
+	});
+
+	return result;
+}
+
+function getLiveSynthStatDisplayName(key) {
+	if (key === "ctc") return "ctc";
+	if (key === "cskill") return "Cast Skill";
+
+	if (!window.stats || typeof window.stats !== "object") {
+		return formatLiveSynthPropName(key);
+	}
+
+	const stat = window.stats[key];
+	if (!stat || !Array.isArray(stat.format)) {
+		return formatLiveSynthPropName(key);
+	}
+
+	const formatParts = stat.format.filter(part => {
+		if (!part) return false;
+		return !/^[+\-*/%]+$/.test(part) && part.trim() !== "" && !/^\d+/.test(part);
+	});
+
+	if (formatParts.length > 0) {
+		return formatParts.join("").trim();
+	}
+
+	return formatLiveSynthPropName(key);
+}
+
+function formatLiveSynthPropName(key) {
+	return key
+		.replace(/_/g, " ")
+		.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function formatLiveSynthPropValue(value, key) {
+	if ((key === "ctc" || key === "cskill") && Array.isArray(value)) {
+		return JSON.stringify(value);
+	}
+
+	if (typeof value === "number") {
+		if (Number.isInteger(value)) {
+			return String(value);
+		}
+		return value.toFixed(2).replace(/\.00$/, "");
+	}
+
+	if (Array.isArray(value) || (typeof value === "object" && value !== null)) {
+		return JSON.stringify(value);
+	}
+
+	return String(value);
+}
+
+const LIVE_SYNTH_STATE = {
+	selectedPropIds: {
+		weapon: new Set(),
+		offhand: new Set()
+	},
+	knownPropIds: {
+		weapon: new Set(),
+		offhand: new Set()
+	},
+	selectionInitialized: {
+		weapon: false,
+		offhand: false
+	},
+	appliedBaseNames: {
+		weapon: "",
+		offhand: ""
+	}
+};
+
+const LIVE_SYNTH_BUILDER_OPTION_VALUE = "__synth_builder__";
+const LIVE_SYNTH_BUILDER_OPTION_LABEL = "Synth Builder";
+
+function getLiveSynthPropId(prop) {
+	return `${prop.key}::${formatLiveSynthPropValue(prop.value, prop.key)}::${prop.source || ""}`;
+}
+
+function isLiveSynthBuilderSelectedInMainEquip() {
+	const weaponEl = document.getElementById("dropdown_weapon");
+	const offhandEl = document.getElementById("dropdown_offhand");
+	return (weaponEl && weaponEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE) ||
+		(offhandEl && offhandEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE);
+}
+
+function isLiveSynthBuilderOffhandAllowed() {
+	const className = (character && typeof character.class_name === "string")
+		? character.class_name.toLowerCase()
+		: "";
+	return className === "barbarian";
+}
+
+function upsertLiveSynthBuilderOption(selectEl, enabled) {
+	if (!selectEl) return;
+	const existing = Array.from(selectEl.options).find(opt => opt.value === LIVE_SYNTH_BUILDER_OPTION_VALUE);
+	if (!enabled) {
+		if (existing) {
+			const wasSelected = selectEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE;
+			existing.remove();
+			if (wasSelected) {
+				selectEl.value = "none";
+			}
+		}
+		return;
+	}
+	if (!existing) {
+		const opt = document.createElement("option");
+		opt.value = LIVE_SYNTH_BUILDER_OPTION_VALUE;
+		opt.textContent = LIVE_SYNTH_BUILDER_OPTION_LABEL;
+		selectEl.insertBefore(opt, selectEl.firstChild);
+		return;
+	}
+
+	if (selectEl.firstChild !== existing) {
+		selectEl.insertBefore(existing, selectEl.firstChild);
+	}
+}
+
+function syncLiveSynthBuilderDropdownOptions() {
+	const weaponEl = document.getElementById("dropdown_weapon");
+	const offhandEl = document.getElementById("dropdown_offhand");
+	upsertLiveSynthBuilderOption(weaponEl, true);
+	upsertLiveSynthBuilderOption(offhandEl, isLiveSynthBuilderOffhandAllowed());
+}
+
+function updateLiveSynthPanelVisibility() {
+	const panelEl = document.getElementById("synth-inline-panel");
+	if (!panelEl) return;
+
+	const shouldShow = isLiveSynthBuilderSelectedInMainEquip();
+	panelEl.style.display = shouldShow ? "" : "none";
+	if (!shouldShow) return;
+
+	const slotEl = document.getElementById("synth-panel-base-slot");
+	const offhandEl = document.getElementById("dropdown_offhand");
+	if (slotEl) {
+		slotEl.value = (offhandEl && offhandEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE) ? "offhand" : "weapon";
+	}
+	refreshLiveSynthPanel();
+}
+
+function handleMainEquipChange(group, selectEl) {
+	if (!selectEl) return;
+	if (selectEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE) {
+		syncLiveSynthBuilderDropdownOptions();
+		updateLiveSynthPanelVisibility();
+		return;
+	}
+	equip(group, selectEl.value);
+	syncLiveSynthBuilderDropdownOptions();
+	updateLiveSynthPanelVisibility();
+}
+
+function initLiveSynthBuilderDropdownBridge() {
+	const weaponEl = document.getElementById("dropdown_weapon");
+	const offhandEl = document.getElementById("dropdown_offhand");
+	if (!weaponEl || !offhandEl) return;
+
+	syncLiveSynthBuilderDropdownOptions();
+	updateLiveSynthPanelVisibility();
+
+	const observer = new MutationObserver(() => {
+		syncLiveSynthBuilderDropdownOptions();
+		updateLiveSynthPanelVisibility();
+	});
+	observer.observe(weaponEl, { childList: true });
+	observer.observe(offhandEl, { childList: true });
+
+	const classEl = document.getElementById("dropdown_class");
+	if (classEl) {
+		classEl.addEventListener("change", () => {
+			setTimeout(() => {
+				syncLiveSynthBuilderDropdownOptions();
+				updateLiveSynthPanelVisibility();
+			}, 0);
+		});
+	}
+
+	setInterval(() => {
+		syncLiveSynthBuilderDropdownOptions();
+		updateLiveSynthPanelVisibility();
+	}, 400);
+}
+
+
+function applyLiveSynthSelection(slot, baseItem, donorItems, selectedProps) {
+	if (!slot) return;
+
+	if (!baseItem) {
+		if (LIVE_SYNTH_STATE.appliedBaseNames[slot] && typeof equipSynthItem === "function") {
+			equipSynthItem(slot, "", []);
+			LIVE_SYNTH_STATE.appliedBaseNames[slot] = "";
+		}
+		return;
+	}
+
+	if (typeof equipSynthItem !== "function") return;
+
+	const propsForEquip = selectedProps.map(prop => ({
+		...prop,
+		displayValue: formatLiveSynthPropValue(prop.value, prop.key)
+	}));
+
+	const donorNames = Array.isArray(donorItems) ? donorItems.map(item => item && item.name).filter(Boolean) : [];
+	equipSynthItem(slot, baseItem.name, propsForEquip, donorNames);
+	LIVE_SYNTH_STATE.appliedBaseNames[slot] = baseItem.name;
+}
+
+function renderLiveSynthPreview(selection, properties) {
+	const nameEl = document.getElementById("synth-preview-name");
+	const baseEl = document.getElementById("synth-preview-base");
+	const affixesEl = document.getElementById("synth-preview-affixes");
+	const noteEl = document.getElementById("synth-panel-note");
+	if (!nameEl || !baseEl || !affixesEl) return;
+
+	if (!selection.baseItem) {
+		nameEl.textContent = "No base selected";
+		baseEl.textContent = "";
+		affixesEl.innerHTML = '<div class="synth-preview-affix synth-preview-muted">Choose a slot and base item to preview synth properties.</div>';
+		if (noteEl) noteEl.textContent = "Selections update live from planner item data.";
+		return;
+	}
+
+	nameEl.textContent = selection.baseItem.name;
+	baseEl.textContent = selection.baseItem.base || "";
+	affixesEl.innerHTML = "";
+	const maxRows = Math.min(6, properties.length);
+	for (let i = 0; i < maxRows; i++) {
+		const row = document.createElement("div");
+		row.className = "synth-preview-affix";
+		row.textContent = `${properties[i].key}: ${properties[i].value}`;
+		affixesEl.appendChild(row);
+	}
+	if (properties.length === 0) {
+		affixesEl.innerHTML = '<div class="synth-preview-affix synth-preview-muted">No synth properties found for this combination.</div>';
+	}
+	if (noteEl) noteEl.textContent = `${selection.donorItems.length} donor item(s) selected.`;
+}
+
+function renderLiveSynthProperties(selection, properties) {
+	const baseContainer = document.getElementById("synth-panel-base-properties");
+	const donorContainers = [
+		document.getElementById("synth-panel-donor-properties-1"),
+		document.getElementById("synth-panel-donor-properties-2"),
+		document.getElementById("synth-panel-donor-properties-3"),
+		document.getElementById("synth-panel-donor-properties-4"),
+		document.getElementById("synth-panel-donor-properties-5")
+	];
+	if (!baseContainer || donorContainers.some(container => !container)) return;
+
+	const previousOpenState = new Map();
+	[baseContainer].concat(donorContainers).forEach(container => {
+		container.querySelectorAll("details.synth-property-group[data-group-id]").forEach(section => {
+			previousOpenState.set(section.dataset.groupId, section.open);
+		});
+	});
+
+	baseContainer.innerHTML = "";
+	donorContainers.forEach(container => container.innerHTML = "");
+
+	if (!properties.length) {
+		baseContainer.innerHTML = '<div class="synth-preview-affix synth-preview-muted"></div>';
+		donorContainers.forEach(container => {
+			container.innerHTML = '<div class="synth-preview-affix synth-preview-muted"></div>';
+		});
+		LIVE_SYNTH_STATE.selectedPropIds[selection.slot] = new Set();
+		applyLiveSynthSelection(selection.slot, selection.baseItem, selection.donorItems, []);
+		return;
+	}
+
+	const currentIds = new Set(properties.map(getLiveSynthPropId));
+	const priorSelectedIds = LIVE_SYNTH_STATE.selectedPropIds[selection.slot] || new Set();
+	const knownIds = LIVE_SYNTH_STATE.knownPropIds[selection.slot] || new Set();
+	const selectedIdsForRender = new Set();
+	const isInitialized = !!LIVE_SYNTH_STATE.selectionInitialized[selection.slot];
+
+	currentIds.forEach(id => {
+		if (!isInitialized) {
+			selectedIdsForRender.add(id);
+			return;
+		}
+		if (!knownIds.has(id)) {
+			selectedIdsForRender.add(id);
+			return;
+		}
+		if (priorSelectedIds.has(id)) {
+			selectedIdsForRender.add(id);
+		}
+	});
+
+	LIVE_SYNTH_STATE.selectedPropIds[selection.slot] = selectedIdsForRender;
+	LIVE_SYNTH_STATE.selectionInitialized[selection.slot] = true;
+	LIVE_SYNTH_STATE.knownPropIds[selection.slot] = new Set([...knownIds, ...currentIds]);
+
+	const groupedProps = new Map();
+	properties.forEach(prop => {
+		const source = prop.source || "Unknown";
+		if (!groupedProps.has(source)) {
+			groupedProps.set(source, []);
+		}
+		groupedProps.get(source).push(prop);
+	});
+
+	function buildGroupSection(groupConfig, sourceProps) {
+		if (!sourceProps.length) return null;
+
+		const section = document.createElement("details");
+		section.className = "synth-property-group";
+		section.dataset.groupId = groupConfig.id;
+		section.open = previousOpenState.has(groupConfig.id)
+			? previousOpenState.get(groupConfig.id)
+			: groupConfig.open;
+
+		const summary = document.createElement("summary");
+		summary.className = "synth-property-group-summary";
+
+		const heading = document.createElement("span");
+		heading.className = "synth-property-group-title";
+		heading.textContent = groupConfig.label;
+
+		const count = document.createElement("span");
+		count.className = "synth-property-group-count";
+		count.textContent = `${sourceProps.length} prop${sourceProps.length === 1 ? "" : "s"}`;
+
+		summary.appendChild(heading);
+		summary.appendChild(count);
+		section.appendChild(summary);
+
+		const list = document.createElement("div");
+		list.className = "synth-property-group-list";
+
+		sourceProps.forEach(prop => {
+			const row = document.createElement("label");
+			row.className = "synth-property-row";
+			const displayValue = formatLiveSynthPropValue(prop.value, prop.key);
+			const propId = getLiveSynthPropId(prop);
+
+			const cb = document.createElement("input");
+			cb.type = "checkbox";
+			cb.dataset.key = prop.key;
+			cb.dataset.value = displayValue;
+			cb.checked = selectedIdsForRender.has(propId);
+			cb.addEventListener("change", () => {
+				const selectedIds = LIVE_SYNTH_STATE.selectedPropIds[selection.slot] || new Set();
+				if (cb.checked) {
+					selectedIds.add(propId);
+				} else {
+					selectedIds.delete(propId);
+				}
+				LIVE_SYNTH_STATE.selectedPropIds[selection.slot] = selectedIds;
+				const selectedProps = properties.filter(p => selectedIds.has(getLiveSynthPropId(p)));
+				applyLiveSynthSelection(selection.slot, selection.baseItem, selection.donorItems, selectedProps);
+			});
+
+			const text = document.createElement("span");
+			text.className = "synth-property-text";
+			text.textContent = getLiveSynthStatDisplayName(prop.key);
+
+			const src = document.createElement("span");
+			src.className = "synth-property-value";
+			src.textContent = displayValue;
+			src.title = prop.source || "";
+
+			row.appendChild(cb);
+			row.appendChild(text);
+			row.appendChild(src);
+			list.appendChild(row);
+		});
+
+		section.appendChild(list);
+		return section;
+	}
+
+	if (selection.baseItem) {
+		const baseSection = buildGroupSection(
+			{ id: `base:${selection.baseItem.name}`, label: `Base: ${selection.baseItem.name}`, open: true },
+			groupedProps.get(selection.baseItem.name) || []
+		);
+		if (baseSection) baseContainer.appendChild(baseSection);
+	}
+
+	selection.donorItems.forEach((item, index) => {
+		const donorContainer = donorContainers[index];
+		if (!donorContainer) return;
+		const donorSection = buildGroupSection(
+			{ id: `donor:${index}:${item.name}`, label: `Donor ${index + 1}: ${item.name}`, open: false },
+			groupedProps.get(item.name) || []
+		);
+		if (donorSection) donorContainer.appendChild(donorSection);
+	});
+
+	const selectedProps = properties.filter(p => selectedIdsForRender.has(getLiveSynthPropId(p)));
+	applyLiveSynthSelection(selection.slot, selection.baseItem, selection.donorItems, selectedProps);
+}
+
+function refreshLiveSynthPanel() {
+	const slotEl = document.getElementById("synth-panel-base-slot");
+	const baseEl = document.getElementById("synth-panel-base-item");
+	const donorEls = [
+		document.getElementById("synth-panel-donor-1"),
+		document.getElementById("synth-panel-donor-2"),
+		document.getElementById("synth-panel-donor-3"),
+		document.getElementById("synth-panel-donor-4"),
+		document.getElementById("synth-panel-donor-5")
+	];
+	if (!slotEl || !baseEl || donorEls.some(el => !el)) return;
+
+	const slot = slotEl.value;
+	const slotItems = getLiveSynthPanelItems();
+	setLiveSynthOptions(baseEl, slotItems, true);
+
+	const selectedBaseName = baseEl.value || "";
+	const committedDonorNames = [];
+	donorEls.forEach(el => {
+		const excludedNames = new Set(committedDonorNames);
+		if (selectedBaseName) {
+			excludedNames.add(selectedBaseName);
+		}
+		setLiveSynthOptions(el, slotItems, true, excludedNames);
+		if (el.value) {
+			committedDonorNames.push(el.value);
+		}
+	});
+
+	const selection = collectLiveSynthSelection();
+	if (!selection.baseItem) {
+		renderLiveSynthPreview(selection, []);
+		renderLiveSynthProperties(selection, []);
+		applyLiveSynthSelection(selection.slot, null, [], []);
+		return;
+	}
+
+	const props = getLiveSynthPanelProperties([selection.baseItem, ...selection.donorItems]);
+	const excludedPrefixes = ["img", "base", "twoHanded", "name", "req_", "type"];
+	const excludedKeys = new Set(["name", "type", "base", "img", "req_level"]);
+	const filteredProps = props.filter(p => {
+		if (!p || !p.key) return false;
+		if (excludedKeys.has(p.key)) return false;
+		if (excludedPrefixes.some(prefix => p.key.startsWith(prefix))) return false;
+		return true;
+	});
+
+	renderLiveSynthPreview(selection, filteredProps);
+	renderLiveSynthProperties(selection, filteredProps);
+}
+
+function initLiveSynthPanel() {
+	const slotEl = document.getElementById("synth-panel-base-slot");
+	if (!slotEl) return;
+	slotEl.value = "weapon";
+
+	const legacySlot = document.getElementById("slotSelect");
+	if (legacySlot) {
+		legacySlot.addEventListener("change", () => {
+			if (legacySlot.value === "weapon" || legacySlot.value === "offhand") {
+				slotEl.value = legacySlot.value;
+			}
+			refreshLiveSynthPanel();
+		});
+		slotEl.addEventListener("change", () => {
+			legacySlot.value = slotEl.value;
+			updateSelectedItemSummary();
+			refreshLiveSynthPanel();
+		});
+	}
+
+	[
+		document.getElementById("synth-panel-base-item"),
+		document.getElementById("synth-panel-donor-1"),
+		document.getElementById("synth-panel-donor-2"),
+		document.getElementById("synth-panel-donor-3"),
+		document.getElementById("synth-panel-donor-4"),
+		document.getElementById("synth-panel-donor-5")
+	].forEach(el => {
+		if (el) el.addEventListener("change", refreshLiveSynthPanel);
+	});
+
+	refreshLiveSynthPanel();
 }
 
 // Notes for Organization Overhaul:

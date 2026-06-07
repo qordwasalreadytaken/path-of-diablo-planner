@@ -1881,7 +1881,30 @@ function equip(group, val) {
 //		applyCustomED('weapon');
 		if (equipped.offhand.type != "quiver" && twoHanded == 1 && (itemType != "sword" || character.class_name != "Barbarian") && corruptsEquipped.offhand.name != "none") { reloadOffhandCorruptions("shield"); }
 	}
-	if (val == group || val == "none") { document.getElementById(("dropdown_"+group)).selectedIndex = 0; }
+	if (val == group || val == "none") {
+		const dropdown = document.getElementById(("dropdown_"+group));
+		if (dropdown) {
+			const options = Array.from(dropdown.options);
+			const normalize = text => String(text || "").toLowerCase().replace(/[^a-z]/g, "");
+			const placeholderOpt = options.find(o => normalize(o.value) === group || normalize(o.textContent) === group);
+
+			if (options.some(o => o.value === val)) {
+				dropdown.value = val;
+			} else if (placeholderOpt) {
+				dropdown.value = placeholderOpt.value;
+			} else if (Array.from(dropdown.options).some(o => o.value === "none")) {
+				dropdown.value = "none";
+			} else {
+				dropdown.selectedIndex = 0;
+			}
+		}
+
+		if (group === "weapon" || group === "offhand") {
+			clearLiveSynthPanelSelectionForSlot(group);
+			syncLiveSynthBuilderDropdownOptions();
+			updateLiveSynthPanelVisibility(true);
+		}
+	}
 
 	// Reset runeword option text if unequipped, runeword picker
 	if (val == group || val == "none") {
@@ -12451,6 +12474,12 @@ const LIVE_SYNTH_STATE = {
 		weapon: false,
 		offhand: false
 	},
+	panelControls: {
+		weapon: { baseName: "", donorNames: ["", "", "", "", ""] },
+		offhand: { baseName: "", donorNames: ["", "", "", "", ""] }
+	},
+	activePanelSlot: "weapon",
+	preferredPanelSlot: "weapon",
 	appliedBaseNames: {
 		weapon: "",
 		offhand: ""
@@ -12458,10 +12487,56 @@ const LIVE_SYNTH_STATE = {
 };
 
 const LIVE_SYNTH_BUILDER_OPTION_VALUE = "__synth_builder__";
-const LIVE_SYNTH_BUILDER_OPTION_LABEL = "Synth Builder";
+const LIVE_SYNTH_BUILDER_OPTION_LABEL = "Synth Maker";
 
 function getLiveSynthPropId(prop) {
 	return `${prop.key}::${formatLiveSynthPropValue(prop.value, prop.key)}::${prop.source || ""}`;
+}
+
+function readLiveSynthPanelControlsFromDom() {
+	return {
+		baseName: document.getElementById("synth-panel-base-item")?.value || "",
+		donorNames: [
+			document.getElementById("synth-panel-donor-1")?.value || "",
+			document.getElementById("synth-panel-donor-2")?.value || "",
+			document.getElementById("synth-panel-donor-3")?.value || "",
+			document.getElementById("synth-panel-donor-4")?.value || "",
+			document.getElementById("synth-panel-donor-5")?.value || ""
+		]
+	};
+}
+
+function writeLiveSynthPanelControlsToDom(panelState) {
+	if (!panelState) return;
+	const baseEl = document.getElementById("synth-panel-base-item");
+	const donorEls = [
+		document.getElementById("synth-panel-donor-1"),
+		document.getElementById("synth-panel-donor-2"),
+		document.getElementById("synth-panel-donor-3"),
+		document.getElementById("synth-panel-donor-4"),
+		document.getElementById("synth-panel-donor-5")
+	];
+
+	if (baseEl) { baseEl.value = panelState.baseName || ""; }
+	donorEls.forEach((el, idx) => {
+		if (el) { el.value = (panelState.donorNames && panelState.donorNames[idx]) || ""; }
+	});
+}
+
+function syncLiveSynthPanelSlotState(slot) {
+	if (slot !== "weapon" && slot !== "offhand") return;
+	const previousSlot = LIVE_SYNTH_STATE.activePanelSlot;
+	if (previousSlot !== slot) {
+		LIVE_SYNTH_STATE.panelControls[previousSlot] = readLiveSynthPanelControlsFromDom();
+		LIVE_SYNTH_STATE.activePanelSlot = slot;
+		writeLiveSynthPanelControlsToDom(LIVE_SYNTH_STATE.panelControls[slot]);
+	}
+}
+
+function persistLiveSynthPanelControlsForActiveSlot() {
+	const slot = LIVE_SYNTH_STATE.activePanelSlot;
+	if (slot !== "weapon" && slot !== "offhand") return;
+	LIVE_SYNTH_STATE.panelControls[slot] = readLiveSynthPanelControlsFromDom();
 }
 
 function isLiveSynthBuilderSelectedInMainEquip() {
@@ -12511,25 +12586,64 @@ function syncLiveSynthBuilderDropdownOptions() {
 	upsertLiveSynthBuilderOption(offhandEl, isLiveSynthBuilderOffhandAllowed());
 }
 
-function updateLiveSynthPanelVisibility() {
+function updateLiveSynthPanelVisibility(skipRefresh) {
 	const panelEl = document.getElementById("synth-inline-panel");
 	if (!panelEl) return;
 
-	const shouldShow = isLiveSynthBuilderSelectedInMainEquip();
+	const weaponEl = document.getElementById("dropdown_weapon");
+	const offhandEl = document.getElementById("dropdown_offhand");
+	const weaponSelected = weaponEl && weaponEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE;
+	const offhandSelected = offhandEl && offhandEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE;
+	const shouldShow = !!(weaponSelected || offhandSelected);
 	panelEl.style.display = shouldShow ? "" : "none";
 	if (!shouldShow) return;
 
 	const slotEl = document.getElementById("synth-panel-base-slot");
-	const offhandEl = document.getElementById("dropdown_offhand");
-	if (slotEl) {
-		slotEl.value = (offhandEl && offhandEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE) ? "offhand" : "weapon";
+	let activeSlot = "weapon";
+	if (weaponSelected && offhandSelected) {
+		activeSlot = LIVE_SYNTH_STATE.preferredPanelSlot === "offhand" ? "offhand" : "weapon";
+	} else if (offhandSelected) {
+		activeSlot = "offhand";
 	}
-	refreshLiveSynthPanel();
+	LIVE_SYNTH_STATE.preferredPanelSlot = activeSlot;
+	if (slotEl) {
+		slotEl.value = activeSlot;
+	}
+	if (skipRefresh !== true) {
+		refreshLiveSynthPanel();
+	}
+}
+
+function clearLiveSynthPanelSelectionForSlot(slot) {
+	if (slot !== "weapon" && slot !== "offhand") return;
+
+	const slotEl = document.getElementById("synth-panel-base-slot");
+	const baseEl = document.getElementById("synth-panel-base-item");
+	const donorEls = [
+		document.getElementById("synth-panel-donor-1"),
+		document.getElementById("synth-panel-donor-2"),
+		document.getElementById("synth-panel-donor-3"),
+		document.getElementById("synth-panel-donor-4"),
+		document.getElementById("synth-panel-donor-5")
+	];
+
+	if (slotEl) { slotEl.value = slot; }
+	if (baseEl) { baseEl.value = ""; }
+	donorEls.forEach(el => { if (el) el.value = ""; });
+	LIVE_SYNTH_STATE.panelControls[slot] = { baseName: "", donorNames: ["", "", "", "", ""] };
+
+	LIVE_SYNTH_STATE.selectedPropIds[slot] = new Set();
+	LIVE_SYNTH_STATE.knownPropIds[slot] = new Set();
+	LIVE_SYNTH_STATE.selectionInitialized[slot] = false;
+	LIVE_SYNTH_STATE.appliedBaseNames[slot] = "";
 }
 
 function handleMainEquipChange(group, selectEl) {
 	if (!selectEl) return;
 	if (selectEl.value === LIVE_SYNTH_BUILDER_OPTION_VALUE) {
+		if (group === "weapon" || group === "offhand") {
+			LIVE_SYNTH_STATE.preferredPanelSlot = group;
+		}
 		syncLiveSynthBuilderDropdownOptions();
 		updateLiveSynthPanelVisibility();
 		return;
@@ -12794,6 +12908,7 @@ function refreshLiveSynthPanel() {
 	if (!slotEl || !baseEl || donorEls.some(el => !el)) return;
 
 	const slot = slotEl.value;
+	syncLiveSynthPanelSlotState(slot);
 	const slotItems = getLiveSynthPanelItems();
 	setLiveSynthOptions(baseEl, slotItems, true);
 
@@ -12836,6 +12951,8 @@ function initLiveSynthPanel() {
 	const slotEl = document.getElementById("synth-panel-base-slot");
 	if (!slotEl) return;
 	slotEl.value = "weapon";
+	LIVE_SYNTH_STATE.activePanelSlot = "weapon";
+	LIVE_SYNTH_STATE.preferredPanelSlot = "weapon";
 
 	const legacySlot = document.getElementById("slotSelect");
 	if (legacySlot) {
@@ -12846,6 +12963,7 @@ function initLiveSynthPanel() {
 			refreshLiveSynthPanel();
 		});
 		slotEl.addEventListener("change", () => {
+			LIVE_SYNTH_STATE.preferredPanelSlot = slotEl.value;
 			legacySlot.value = slotEl.value;
 			updateSelectedItemSummary();
 			refreshLiveSynthPanel();
@@ -12860,7 +12978,12 @@ function initLiveSynthPanel() {
 		document.getElementById("synth-panel-donor-4"),
 		document.getElementById("synth-panel-donor-5")
 	].forEach(el => {
-		if (el) el.addEventListener("change", refreshLiveSynthPanel);
+		if (el) {
+			el.addEventListener("change", () => {
+				persistLiveSynthPanelControlsForActiveSlot();
+				refreshLiveSynthPanel();
+			});
+		}
 	});
 
 	refreshLiveSynthPanel();
